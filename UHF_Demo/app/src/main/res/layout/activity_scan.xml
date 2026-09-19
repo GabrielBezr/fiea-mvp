@@ -5,27 +5,103 @@
     android:descendantFocusability="blocksDescendants"
     android:orientation="vertical" >
 
-    <!-- NOVO BLOCO: Seletor de Sala -->
+    <!-- MVP: metadados da sessão (sala digitada; técnica em lista fixa em arrays.xml) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="10dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="5dp"
         android:gravity="center_vertical">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Sala Atual:"
+            android:text="@string/lblSala"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/et_sala"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:hint="@string/hintSala"
+            android:inputType="text"
+            android:maxLines="1"
+            android:singleLine="true" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/lblTecnica"
             android:textSize="16sp"
             android:textStyle="bold" />
 
         <Spinner
-            android:id="@+id/spinner_sala"
+            android:id="@+id/spinner_tecnica"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp" />
+            android:layout_marginLeft="10dp"
+            android:entries="@array/spinner_tecnicas" />
     </LinearLayout>
+
+    <!-- MVP: controle explícito de sessão (inicio/fim) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:gravity="center_vertical">
+
+        <Button
+            android:id="@+id/BtIniciarSessao"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:textAllCaps="false"
+            android:background="@drawable/color_button_selector"
+            android:text="@string/btIniciarSessao"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/BtEncerrarSessao"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:textAllCaps="false"
+            android:background="@drawable/color_button_selector"
+            android:text="@string/btEncerrarSessao"
+            android:textColor="@color/white" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_sessao"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
+        android:paddingBottom="5dp"
+        android:text="@string/sessaoInativa"
+        android:textColor="@color/black"
+        android:textSize="13sp" />
 
     <View
         android:layout_width="match_parent"
@@ -66,10 +142,20 @@
                 android:id="@+id/BtImport"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
                 android:textAllCaps="false"
                 android:background="@drawable/color_button_selector"
                 android:textColor="@color/white"
                 android:text="@string/btImport" />
+
+            <Button
+                android:id="@+id/BtExportCsv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAllCaps="false"
+                android:background="@drawable/color_button_selector"
+                android:textColor="@color/white"
+                android:text="@string/btExportCsv" />
         </LinearLayout>
 
         <LinearLayout

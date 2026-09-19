@@ -11,8 +11,8 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
@@ -21,11 +21,15 @@ import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 
+import com.rfid.demo.utils.CsvExport;
 import com.rfid.demo.utils.FileImport;
+import com.rfid.demo.utils.Leitura;
+import com.rfid.demo.utils.Sessao;
 import com.ubx.usdk.RFIDSDKManager;
 import com.ubx.usdk.rfid.aidl.IRfidCallback;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -36,9 +40,18 @@ public class ScanActivity extends Activity implements OnClickListener {
     private ArrayList<HashMap<String, String>> tagList;
     SimpleAdapter adapter;
     Button BtClear, Btimport, BtInventory;
-    TextView tv_count, tv_alltag, tv_tips;
+    Button BtIniciarSessao, BtEncerrarSessao, BtExportCsv;
+    TextView tv_count, tv_alltag, tv_tips, tv_sessao;
     ListView LvTags;
-    Spinner spinnerSala;
+    EditText etSala;
+    Spinner spinnerTecnica;
+
+    // MVP: registro bruto de leituras (README T2/T3). Paralelo a tagList, que segue
+    // alimentando a tela. onInventoryTag roda em thread própria, por isso a lista
+    // é sincronizada e a sessão corrente é volatile.
+    private volatile Sessao sessaoAtual = null;
+    private Sessao ultimaSessaoEncerrada = null;
+    private final List<Leitura> leiturasBrutas = Collections.synchronizedList(new ArrayList<Leitura>());
 
     public static String epc;
     public static String tid = "";
@@ -69,13 +82,13 @@ public class ScanActivity extends Activity implements OnClickListener {
             tv_alltag = findViewById(R.id.tv_alltag);
             BtInventory = findViewById(R.id.BtInventory);
             LvTags = findViewById(R.id.LvTags);
-            spinnerSala = findViewById(R.id.spinner_sala);
-
-            // Configuração do Spinner (Seletor de Salas)
-            String[] salasMock = new String[]{"Sala A", "Sala B", "Corredor", "Estoque"};
-            ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, salasMock);
-            spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            spinnerSala.setAdapter(spinnerAdapter);
+            // Sala digitada pelo operador; técnica vem de lista fixa (arrays.xml)
+            etSala = findViewById(R.id.et_sala);
+            spinnerTecnica = findViewById(R.id.spinner_tecnica);
+            BtIniciarSessao = findViewById(R.id.BtIniciarSessao);
+            BtEncerrarSessao = findViewById(R.id.BtEncerrarSessao);
+            BtExportCsv = findViewById(R.id.BtExportCsv);
+            tv_sessao = findViewById(R.id.tv_sessao);
 
             tagList = new ArrayList<HashMap<String, String>>();
 
@@ -102,6 +115,10 @@ public class ScanActivity extends Activity implements OnClickListener {
             BtClear.setOnClickListener(this);
             Btimport.setOnClickListener(this);
             BtInventory.setOnClickListener(this);
+            BtIniciarSessao.setOnClickListener(this);
+            BtEncerrarSessao.setOnClickListener(this);
+            BtExportCsv.setOnClickListener(this);
+            atualizarStatusSessao();
 
             if (RFIDSDKManager.getInstance().getRfidManager() != null) {
                 RFIDSDKManager.getInstance().getRfidManager().registerCallback(callback);
@@ -142,7 +159,6 @@ public class ScanActivity extends Activity implements OnClickListener {
 
     private void setViewEnabled(boolean enabled) {
         BtClear.setEnabled(enabled);
-        spinnerSala.setEnabled(enabled);
         if (enabled) {
             BtInventory.setEnabled(enabled);
         }
@@ -186,7 +202,7 @@ public class ScanActivity extends Activity implements OnClickListener {
             map.put("tagUii", epc);
             
             // INJEÇÃO DA SALA SELECIONADA PARA O CSV
-            String salaAtual = spinnerSala.getSelectedItem().toString();
+            String salaAtual = etSala.getText().toString().trim();
             map.put("tagSala", salaAtual);
 
             map.put("tagCount", String.valueOf(1));
@@ -212,6 +228,82 @@ public class ScanActivity extends Activity implements OnClickListener {
     private void updateList() {
         tv_alltag.setText(String.valueOf(CardNumber));
         adapter.notifyDataSetChanged();
+        atualizarStatusSessao();
+    }
+
+    // ---------------------------------------------------------------------
+    // MVP: sessão de coleta e exportação CSV
+    // ---------------------------------------------------------------------
+
+    private void iniciarSessao() {
+        if (sessaoAtual != null) {
+            return;
+        }
+        String sala = etSala.getText().toString().trim();
+        if (sala.isEmpty()) {
+            Toast.makeText(getApplicationContext(), getString(R.string.msgSalaVazia), Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String tecnica = spinnerTecnica.getSelectedItem().toString();
+        // Potência lida da configuração corrente do SDK, nunca fixada (decisão 5).
+        int potencia = RFIDSDKManager.getInstance().getRfidManager().getOutputPower();
+        leiturasBrutas.clear();
+        sessaoAtual = new Sessao(sala, tecnica, potencia, System.currentTimeMillis());
+        etSala.setEnabled(false);
+        spinnerTecnica.setEnabled(false);
+        atualizarStatusSessao();
+    }
+
+    private void encerrarSessao() {
+        Sessao s = sessaoAtual;
+        if (s == null) {
+            return;
+        }
+        // Garante que nenhuma leitura entra depois da marcação de fim.
+        if (!BtInventory.getText().equals(getString(R.string.btInventory))) {
+            stopInventory();
+        }
+        s.fim = System.currentTimeMillis();
+        sessaoAtual = null;
+        ultimaSessaoEncerrada = s;
+        etSala.setEnabled(true);
+        spinnerTecnica.setEnabled(true);
+        atualizarStatusSessao();
+        exportarCsv();
+    }
+
+    /** Exporta a última sessão encerrada. Pode ser repetido (ex.: falha de escrita). */
+    private void exportarCsv() {
+        Sessao s = ultimaSessaoEncerrada;
+        if (s == null) {
+            Toast.makeText(getApplicationContext(), getString(R.string.msgSessaoNaoEncerrada), Toast.LENGTH_SHORT).show();
+            return;
+        }
+        List<Leitura> copia;
+        synchronized (leiturasBrutas) {
+            copia = new ArrayList<>(leiturasBrutas);
+        }
+        boolean ok = CsvExport.exportar(s, copia);
+        if (ok) {
+            Toast.makeText(getApplicationContext(),
+                    getString(R.string.msgCsvSucesso, CsvExport.pastaDestino()), Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(getApplicationContext(), getString(R.string.msgCsvFalha), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void atualizarStatusSessao() {
+        Sessao s = sessaoAtual;
+        if (s != null) {
+            tv_sessao.setText(getString(R.string.sessaoAtiva, s.id, s.potenciaDbm, leiturasBrutas.size()));
+        } else if (ultimaSessaoEncerrada != null) {
+            tv_sessao.setText(getString(R.string.sessaoEncerrada, ultimaSessaoEncerrada.id, leiturasBrutas.size()));
+        } else {
+            tv_sessao.setText(getString(R.string.sessaoInativa));
+        }
+        BtIniciarSessao.setEnabled(s == null);
+        BtEncerrarSessao.setEnabled(s != null);
+        BtExportCsv.setEnabled(s == null && ultimaSessaoEncerrada != null);
     }
 
     @Override
@@ -221,6 +313,12 @@ public class ScanActivity extends Activity implements OnClickListener {
                 readTag();
             } else if (arg0 == BtClear) {
                 clearData();
+            } else if (arg0 == BtIniciarSessao) {
+                iniciarSessao();
+            } else if (arg0 == BtEncerrarSessao) {
+                encerrarSessao();
+            } else if (arg0 == BtExportCsv) {
+                exportarCsv();
             } else if (arg0 == Btimport) {
                 if (tagList.size() == 0) {
                     Toast.makeText(getApplicationContext(), getString(R.string.msgNodata), Toast.LENGTH_SHORT).show();
@@ -265,6 +363,13 @@ public class ScanActivity extends Activity implements OnClickListener {
             String mem = "";
             if (EPC != null) epc = EPC.toUpperCase();
             if (Data != null) mem = Data.toUpperCase();
+
+            // MVP: registro bruto, uma entrada por evento, com o instante da leitura
+            // capturado aqui (não no handler). EPC puro, sem prefixo. RSSI como o SDK
+            // entrega. Só grava com sessão ativa, para toda linha ter id_sessao.
+            if (sessaoAtual != null && epc.length() > 0) {
+                leiturasBrutas.add(new Leitura(System.currentTimeMillis(), epc, rssi));
+            }
 
             Message msg = handler.obtainMessage();
             msg.what = MSG_UPDATE_LISTVIEW;

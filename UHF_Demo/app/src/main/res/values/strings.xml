@@ -76,6 +76,21 @@
     <string name="title_stop_Inventory">Stop Inventory</string>
     <string name="dwelltime">DwellTime:</string>
     <string name="btImport">Export</string>
+
+    <!-- MVP: sessão de coleta e exportação CSV -->
+    <string name="lblSala">Sala:</string>
+    <string name="hintSala">nome da sala</string>
+    <string name="msgSalaVazia">Informe o nome da sala antes de iniciar</string>
+    <string name="lblTecnica">Técnica:</string>
+    <string name="btIniciarSessao">Iniciar sessão</string>
+    <string name="btEncerrarSessao">Encerrar sessão</string>
+    <string name="btExportCsv">Exportar CSV</string>
+    <string name="sessaoInativa">Sem sessão ativa — leituras não serão gravadas</string>
+    <string name="sessaoAtiva">Sessão: %1$s | %2$d dBm | leituras: %3$d</string>
+    <string name="sessaoEncerrada">Sessão encerrada: %1$s | leituras: %2$d</string>
+    <string name="msgSessaoNaoEncerrada">Nenhuma sessão encerrada para exportar</string>
+    <string name="msgCsvSucesso">CSV gravado em %1$s</string>
+    <string name="msgCsvFalha">Falha ao gravar CSV</string>
     <string name="tvKillPwd">Kill Pwd：</string>
     <string name="btKill">Kill</string>
     <string name="btlock">Lock</string>

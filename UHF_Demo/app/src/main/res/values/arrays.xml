@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- MVP: lista fixa de técnicas de varredura -->
+    <string-array name="spinner_tecnicas">
+        <item>estatica_porta</item>
+        <item>movel_ambiente</item>
+    </string-array>
+
     <string-array name="spinner_mask_area">
         <item>EPC</item>
         <item>TID</item>
