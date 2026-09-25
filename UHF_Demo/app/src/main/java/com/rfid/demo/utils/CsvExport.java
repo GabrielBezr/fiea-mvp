@@ -8,25 +8,27 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
- * Exportador CSV do MVP (README, seção 5). Convive com FileImport.daochu(),
- * que segue gerando o .xls original. Grava na mesma pasta do .xls.
+ * Exportador CSV do MVP. Convive com FileImport.daochu(), que segue gerando o
+ * .xls original. Grava na mesma pasta do .xls.
  */
 public class CsvExport {
     private static final String TAG = "CsvExport";
     private static final String SEP = ",";
     private static final String EOL = "\n";
+    private static final String FORMATO_TIMESTAMP = "yyyy-MM-dd HH:mm:ss.SSS";
 
     /** Pasta de destino: a mesma já usada pelo exportador .xls. */
     public static String pastaDestino() {
         return FileImport.xlsFilePath;
     }
 
-    /**
-     * Gera leituras_<id>.csv e sessao_<id>.csv. Retorna true se ambos foram gravados.
-     */
+    /** Gera leituras_<sala>_<tecnica>_<data>.csv. Retorna true se gravou. */
     public static boolean exportar(Sessao sessao, List<Leitura> leituras) {
         try {
             File pasta = new File(pastaDestino());
@@ -34,8 +36,7 @@ public class CsvExport {
                 Log.e(TAG, "Nao foi possivel criar a pasta " + pasta);
                 return false;
             }
-            escreverLeituras(new File(pasta, "leituras_" + sessao.id + ".csv"), sessao, leituras);
-            escreverSessao(new File(pasta, "sessao_" + sessao.id + ".csv"), sessao);
+            escreverLeituras(new File(pasta, "leituras_" + sessao.nomeArquivo + ".csv"), sessao, leituras);
             return true;
         } catch (Exception ex) {
             Log.e(TAG, "Falha ao exportar CSV", ex);
@@ -44,32 +45,24 @@ public class CsvExport {
     }
 
     private static void escreverLeituras(File arquivo, Sessao s, List<Leitura> leituras) throws IOException {
+        // Uma instância só, reutilizada no laço: SimpleDateFormat não é thread-safe,
+        // mas a exportação roda inteira na thread principal, sobre uma cópia da lista.
+        SimpleDateFormat fmt = new SimpleDateFormat(FORMATO_TIMESTAMP, Locale.US);
         BufferedWriter w = abrir(arquivo);
         try {
             w.write("id_sessao,timestamp,epc,rssi,sala,tecnica,potencia_dbm" + EOL);
-            // Constantes da sessão, repetidas em todas as linhas (README 5.1).
-            String sufixo = SEP + campo(s.sala) + SEP + campo(s.tecnica) + SEP + s.potenciaDbm + EOL;
+            // Constantes da sessão, repetidas em todas as linhas.
             String prefixo = campo(s.id) + SEP;
+            String sufixo = SEP + campo(s.sala) + SEP + campo(s.tecnica) + SEP + s.potenciaDbm + EOL;
             for (Leitura l : leituras) {
                 w.write(prefixo);
-                w.write(Long.toString(l.timestamp));
+                w.write(fmt.format(new Date(l.timestamp)));
                 w.write(SEP);
                 w.write(campo(l.epc));
                 w.write(SEP);
                 w.write(Integer.toString(l.rssi));
                 w.write(sufixo);
             }
-        } finally {
-            w.close();
-        }
-    }
-
-    private static void escreverSessao(File arquivo, Sessao s) throws IOException {
-        BufferedWriter w = abrir(arquivo);
-        try {
-            w.write("id_sessao,sala,tecnica,potencia_dbm,inicio,fim" + EOL);
-            w.write(campo(s.id) + SEP + campo(s.sala) + SEP + campo(s.tecnica) + SEP
-                    + s.potenciaDbm + SEP + s.inicio + SEP + s.fim + EOL);
         } finally {
             w.close();
         }

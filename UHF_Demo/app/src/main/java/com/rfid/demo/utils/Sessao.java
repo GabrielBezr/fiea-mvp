@@ -5,11 +5,17 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * Metadados de uma sessão de coleta do MVP (README, seção 5.2).
+ * Metadados de uma sessão de coleta do MVP.
  * Sala, técnica e potência são fixados ao iniciar e não mudam durante a sessão.
  */
 public class Sessao {
+
+    /** Número único da sessão (yyyyMMddHHmmss do início), gravado em toda linha do CSV. */
     public final String id;
+
+    /** Base descritiva do nome do arquivo: <sala>_<tecnica>_<yyyyMMdd-HHmmss>. */
+    public final String nomeArquivo;
+
     public final String sala;
     public final String tecnica;
     public final int potenciaDbm;
@@ -21,19 +27,17 @@ public class Sessao {
         this.tecnica = tecnica;
         this.potenciaDbm = potenciaDbm;
         this.inicio = inicio;
-        this.id = gerarId(sala, tecnica, inicio);
+        Date d = new Date(inicio);
+        this.id = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US).format(d);
+        this.nomeArquivo = slug(sala) + "_" + slug(tecnica) + "_"
+                + new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(d);
     }
 
     public boolean encerrada() {
         return fim > 0;
     }
 
-    /** <sala>_<tecnica>_<yyyyMMdd-HHmmss>, apenas caracteres seguros para nome de arquivo. */
-    private static String gerarId(String sala, String tecnica, long inicio) {
-        String data = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(new Date(inicio));
-        return slug(sala) + "_" + slug(tecnica) + "_" + data;
-    }
-
+    /** Mantém apenas caracteres seguros para nome de arquivo. */
     private static String slug(String s) {
         return s.trim().replaceAll("[^A-Za-z0-9]+", "-");
     }
