@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">UHFDemo</string>
+    <string name="app_name">FIEA Coleta</string>
     <string name="version">版本号:</string>
     <string name="dmin">最小频点:</string>
     <string name="band">频段:</string>

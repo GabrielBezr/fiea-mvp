@@ -17,9 +17,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 
+import com.rfid.demo.utils.StoragePermission;
 import com.ubx.usdk.RFIDSDKManager;
 import com.ubx.usdk.listener.InitListener;
 
@@ -29,6 +31,11 @@ public class SplashActivity extends AppCompatActivity {
     private TextView tvShow;
     private ProgressBar progress;
     private Button BtConnect  ;
+
+    // Permissão de armazenamento pedida na inicialização, antes de entrar no app.
+    // A leitura não depende dela; só a exportação dos CSV.
+    private boolean pedidoEnviado = false;
+    private boolean pausado = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +61,39 @@ public class SplashActivity extends AppCompatActivity {
             window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
 
+        // Pede o acesso ao armazenamento antes de seguir. O init do RFID só começa
+        // depois que o operador responde, para a tela de permissão não ser encoberta.
+        if (StoragePermission.concedida(this)) {
+            initRFID();
+        } else {
+            pedidoEnviado = true;
+            Toast.makeText(this, getString(R.string.msgPermissaoPedido), Toast.LENGTH_LONG).show();
+            StoragePermission.solicitar(this);
+        }
+    }
+
+    /** Chamado quando o operador responde ao pedido, concedendo ou não. */
+    private void concluirPedidoPermissao() {
+        if (!StoragePermission.concedida(this)) {
+            Toast.makeText(this, getString(R.string.msgPermissaoNegada), Toast.LENGTH_LONG).show();
+        }
         initRFID();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == StoragePermission.REQUEST_CODE && pedidoEnviado) {
+            pedidoEnviado = false;
+            concluirPedidoPermissao();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        pausado = true;
     }
 
 
@@ -106,7 +145,12 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
+        // Retorno da tela de configurações (Android 11+). O "pausado" evita que este
+        // onResume, o primeiro do ciclo, seja confundido com esse retorno.
+        if (pedidoEnviado && pausado) {
+            pedidoEnviado = false;
+            concluirPedidoPermissao();
+        }
     }
 
     /**

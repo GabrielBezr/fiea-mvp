@@ -25,6 +25,7 @@ import com.rfid.demo.utils.CsvExport;
 import com.rfid.demo.utils.FileImport;
 import com.rfid.demo.utils.Leitura;
 import com.rfid.demo.utils.Sessao;
+import com.rfid.demo.utils.StoragePermission;
 import com.ubx.usdk.RFIDSDKManager;
 import com.ubx.usdk.rfid.aidl.IRfidCallback;
 
@@ -277,6 +278,12 @@ public class ScanActivity extends Activity implements OnClickListener {
         Sessao s = ultimaSessaoEncerrada;
         if (s == null) {
             Toast.makeText(getApplicationContext(), getString(R.string.msgSessaoNaoEncerrada), Toast.LENGTH_SHORT).show();
+            return;
+        }
+        // Rede de segurança: a permissão pode ter sido revogada depois da inicialização.
+        if (!StoragePermission.concedida(this)) {
+            Toast.makeText(getApplicationContext(), getString(R.string.msgPermissaoExport), Toast.LENGTH_LONG).show();
+            StoragePermission.solicitar(this);
             return;
         }
         List<Leitura> copia;

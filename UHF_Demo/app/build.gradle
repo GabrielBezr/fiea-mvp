@@ -5,7 +5,7 @@ android {
  
 
     defaultConfig {
-        applicationId "com.uhf.demo"
+        applicationId "br.fiea.mvp.rfid"
         minSdkVersion 26
         targetSdkVersion 34
         versionCode 1
@@ -44,7 +44,7 @@ android {
     }
     applicationVariants.all { variant ->
         variant.outputs.all {
-            def fileName = "UHFDemo_v${defaultConfig.versionName}.apk" 
+            def fileName = "FieaColeta_v${defaultConfig.versionName}.apk"
             outputFileName = fileName
         }
     }

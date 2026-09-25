@@ -2,7 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:descendantFocusability="blocksDescendants"
+    android:descendantFocusability="beforeDescendants"
+    android:focusableInTouchMode="true"
     android:orientation="vertical" >
 
     <!-- MVP: metadados da sessão (sala digitada; técnica em lista fixa em arrays.xml) -->
@@ -24,10 +25,14 @@
 
         <EditText
             android:id="@+id/et_sala"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:layout_marginLeft="10dp"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             android:hint="@string/hintSala"
+            android:imeOptions="actionDone"
             android:inputType="text"
             android:maxLines="1"
             android:singleLine="true" />

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">UHFDemo</string>
+    <string name="app_name">FIEA Coleta</string>
     <string name="version">Version:</string>
     <string name="dmin">MinFre:</string>
     <string name="band">Band:</string>
@@ -91,6 +91,9 @@
     <string name="msgSessaoNaoEncerrada">Nenhuma sessão encerrada para exportar</string>
     <string name="msgCsvSucesso">CSV gravado em %1$s</string>
     <string name="msgCsvFalha">Falha ao gravar CSV</string>
+    <string name="msgPermissaoPedido">Permita o acesso a todos os arquivos para exportar os CSV</string>
+    <string name="msgPermissaoNegada">Sem permissão de armazenamento: a leitura funciona, mas a exportação vai falhar</string>
+    <string name="msgPermissaoExport">Conceda o acesso a todos os arquivos para exportar</string>
     <string name="tvKillPwd">Kill Pwd：</string>
     <string name="btKill">Kill</string>
     <string name="btlock">Lock</string>
