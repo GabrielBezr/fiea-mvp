@@ -35,6 +35,8 @@ public class MainActivity extends TabActivity   {
 		Intent intent2 = new Intent(this, SettingActivity.class);
 		Intent intent3 = new Intent(this,MaskActivity.class);
 		Intent intent4 = new Intent(this, FindingActivity.class);
+		Intent intent5 = new Intent(this, EtiquetagemActivity.class);
+		Intent intent6 = new Intent(this, TagsSalaActivity.class);
 
 
 		TabHost.TabSpec tabSpec0 = myTabHost.newTabSpec(getString(R.string.tab_scan)).setIndicator(getString(R.string.tab_scan)).setContent(intent0);
@@ -42,8 +44,12 @@ public class MainActivity extends TabActivity   {
 		TabHost.TabSpec tabSpec2 = myTabHost.newTabSpec(getString(R.string.tab_param)).setIndicator(getString(R.string.tab_param)).setContent(intent2);
 		TabHost.TabSpec tabSpec3 = myTabHost.newTabSpec(getString(R.string.tab_mask)).setIndicator(getString(R.string.tab_mask)).setContent(intent3);
 		TabHost.TabSpec tabSpec4 = myTabHost.newTabSpec(getString(R.string.finding)).setIndicator(getString(R.string.finding)).setContent(intent4);
+		TabHost.TabSpec tabSpec5 = myTabHost.newTabSpec(getString(R.string.tab_etiquetagem)).setIndicator(getString(R.string.tab_etiquetagem)).setContent(intent5);
+		TabHost.TabSpec tabSpec6 = myTabHost.newTabSpec(getString(R.string.tab_tags_sala)).setIndicator(getString(R.string.tab_tags_sala)).setContent(intent6);
 
 		myTabHost.addTab(tabSpec0);
+		myTabHost.addTab(tabSpec6);
+		myTabHost.addTab(tabSpec5);
 		myTabHost.addTab(tabSpec4);
 		myTabHost.addTab(tabSpec1);
 		myTabHost.addTab(tabSpec3);

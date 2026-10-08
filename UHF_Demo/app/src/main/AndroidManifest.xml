@@ -51,6 +51,12 @@
             android:screenOrientation="portrait"/>
         <activity android:name="com.rfid.demo.SettingActivity"
             android:screenOrientation="portrait"/>
+        <activity android:name="com.rfid.demo.TagsSalaActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan"/>
+        <activity android:name="com.rfid.demo.EtiquetagemActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan"/>
         <activity android:name="com.rfid.demo.ScanActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan"/>

@@ -78,19 +78,64 @@
     <string name="btImport">Export</string>
 
     <!-- MVP: sessão de coleta e exportação CSV -->
-    <string name="lblSala">Sala:</string>
-    <string name="hintSala">nome da sala</string>
-    <string name="msgSalaVazia">Informe o nome da sala antes de iniciar</string>
+    <string name="lblUnidade">Unidade:</string>
+    <string name="hintUnidade">unidade</string>
+    <string name="lblOperador">Operador:</string>
+    <string name="hintOperador">operador</string>
     <string name="lblTecnica">Técnica:</string>
     <string name="btIniciarSessao">Iniciar sessão</string>
     <string name="btEncerrarSessao">Encerrar sessão</string>
-    <string name="btExportCsv">Exportar CSV</string>
-    <string name="sessaoInativa">Sem sessão ativa — leituras não serão gravadas</string>
-    <string name="sessaoAtiva">Sessão: %1$s | %2$d dBm | leituras: %3$d</string>
-    <string name="sessaoEncerrada">Sessão encerrada: %1$s | leituras: %2$d</string>
-    <string name="msgSessaoNaoEncerrada">Nenhuma sessão encerrada para exportar</string>
+    <string name="btIniciarVarredura">Iniciar varredura</string>
+    <string name="btEncerrarVarredura">Encerrar varredura</string>
+    <string name="btTagReferencia">Tag de referência</string>
+    <string name="btExportCsv">Reexportar</string>
+    <string name="msgSessaoCamposVazios">Informe unidade e operador antes de iniciar a sessão</string>
+    <string name="sessaoInativa">Sem sessão de inventário ativa</string>
+    <string name="sessaoAtiva">Sessão %1$s · %2$s · %3$s · varreduras: %4$d</string>
+    <string name="sessaoEncerrada">Sessão %1$s encerrada · %2$d varreduras · %3$d s</string>
+    <string name="varreduraInativa">Sem varredura ativa — leituras não serão gravadas</string>
+    <string name="varreduraAtiva">Varredura %1$d · ref: %2$s · %3$d dBm · leituras: %4$d</string>
+    <string name="varreduraEncerrada">Varredura %1$d encerrada · %2$d leituras · %3$d s</string>
+    <string name="refNaoCapturada">não capturada</string>
+    <string name="msgSemSessao">Inicie a sessão de inventário antes</string>
+    <string name="msgSemVarredura">Inicie a varredura antes</string>
+    <string name="msgCapturandoRef">Aponte para a tag de referência da sala</string>
+    <string name="msgRefCapturada">Tag de referência: %1$s</string>
+    <string name="msgNadaParaReexportar">Nenhuma varredura encerrada para reexportar</string>
+    <string name="msgSessaoExportada">Sessão exportada em %1$s</string>
     <string name="msgCsvSucesso">CSV gravado em %1$s</string>
     <string name="msgCsvFalha">Falha ao gravar CSV</string>
+
+    <!-- RF03: etiquetagem -->
+    <string name="tab_etiquetagem">Etiquetagem</string>
+    <string name="lblEpc">EPC:</string>
+    <string name="hintEpc">leia a tag ou o QR</string>
+    <string name="lblPatrimonio">Patrimonio:</string>
+    <string name="hintPatrimonio">numero do bem</string>
+    <string name="lblMetalico">Metalico</string>
+    <string name="btLerTag">Ler tag</string>
+    <string name="btSalvarPar">Salvar par</string>
+    <string name="btLimparPar">Limpar</string>
+    <string name="dicaQr">Etiqueta sobre metal costuma nao responder ao radio: escaneie o QR dela, que carrega o mesmo EPC.</string>
+    <string name="etiqStatus">%1$d pares gravados</string>
+    <string name="etiqArquivo">Arquivo: %1$s</string>
+    <string name="etiqSemArquivo">Nenhum par gravado ainda</string>
+    <string name="msgEtiqCamposVazios">Informe o EPC e o numero de patrimonio</string>
+    <string name="msgEtiqEpcRepetido">Esta etiqueta ja foi vinculada nesta campanha</string>
+    <string name="msgEtiqPatrimonioRepetido">Este patrimonio ja foi vinculado nesta campanha</string>
+    <string name="msgEtiqLeituraFalhou">Nao foi possivel iniciar a leitura</string>
+
+    <!-- RF01: captura das tags de referencia -->
+    <string name="tab_tags_sala">Salas</string>
+    <string name="lblSalaTs">Sala:</string>
+    <string name="hintSalaTs">nome da sala</string>
+    <string name="btTsSalvar">Salvar tag de referencia</string>
+    <string name="tsStatus">%1$d tags gravadas</string>
+    <string name="tsArquivo">Arquivo: %1$s</string>
+    <string name="tsSemArquivo">Nenhuma tag gravada ainda</string>
+    <string name="msgTsCamposVazios">Informe unidade, sala e EPC</string>
+    <string name="msgTsEpcRepetido">Esta tag ja foi gravada nesta campanha</string>
+    <string name="msgTsPosicaoRepetida">Esta posicao da sala ja tem uma tag gravada</string>
     <string name="msgPermissaoPedido">Permita o acesso a todos os arquivos para exportar os CSV</string>
     <string name="msgPermissaoNegada">Sem permissão de armazenamento: a leitura funciona, mas a exportação vai falhar</string>
     <string name="msgPermissaoExport">Conceda o acesso a todos os arquivos para exportar</string>

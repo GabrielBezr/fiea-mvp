@@ -26,6 +26,7 @@ import com.rfid.demo.utils.FileImport;
 import com.rfid.demo.utils.Leitura;
 import com.rfid.demo.utils.Sessao;
 import com.rfid.demo.utils.StoragePermission;
+import com.rfid.demo.utils.Varredura;
 import com.ubx.usdk.RFIDSDKManager;
 import com.ubx.usdk.rfid.aidl.IRfidCallback;
 
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ScanActivity extends Activity implements OnClickListener {
 
@@ -42,17 +44,22 @@ public class ScanActivity extends Activity implements OnClickListener {
     SimpleAdapter adapter;
     Button BtClear, Btimport, BtInventory;
     Button BtIniciarSessao, BtEncerrarSessao, BtExportCsv;
-    TextView tv_count, tv_alltag, tv_tips, tv_sessao;
+    Button BtIniciarVarredura, BtEncerrarVarredura, BtTagReferencia;
+    TextView tv_count, tv_alltag, tv_tips, tv_sessao, tv_varredura;
     ListView LvTags;
-    EditText etSala;
+    EditText etUnidade, etOperador;
     Spinner spinnerTecnica;
 
-    // MVP: registro bruto de leituras (README T2/T3). Paralelo a tagList, que segue
-    // alimentando a tela. onInventoryTag roda em thread própria, por isso a lista
-    // é sincronizada e a sessão corrente é volatile.
+    // Sessão de inventário por unidade (RF04) com uma varredura por sala (RF05).
+    // Paralelo a tagList, que segue alimentando a tela. onInventoryTag roda em
+    // thread própria, por isso a lista é sincronizada e os estados são volatile.
     private volatile Sessao sessaoAtual = null;
+    private volatile Varredura varreduraAtual = null;
+    private Varredura ultimaVarreduraEncerrada = null;
     private Sessao ultimaSessaoEncerrada = null;
     private final List<Leitura> leiturasBrutas = Collections.synchronizedList(new ArrayList<Leitura>());
+    // Armado por "Tag de referência": a próxima leitura identifica a sala.
+    private final AtomicBoolean capturandoReferencia = new AtomicBoolean(false);
 
     public static String epc;
     public static String tid = "";
@@ -62,6 +69,7 @@ public class ScanActivity extends Activity implements OnClickListener {
 
     private static final int MSG_UPDATE_LISTVIEW = 0;
     private static final int MSG_UPDATE_STOP = 3;
+    private static final int MSG_REF_CAPTURADA = 4;
     
     public long CardNumber;
     public static List<String> mlist = new ArrayList<String>();
@@ -83,13 +91,18 @@ public class ScanActivity extends Activity implements OnClickListener {
             tv_alltag = findViewById(R.id.tv_alltag);
             BtInventory = findViewById(R.id.BtInventory);
             LvTags = findViewById(R.id.LvTags);
-            // Sala digitada pelo operador; técnica vem de lista fixa (arrays.xml)
-            etSala = findViewById(R.id.et_sala);
+            // A sala não é digitada: vem da tag de referência lida na entrada (RF01/RF05)
+            etUnidade = findViewById(R.id.et_unidade);
+            etOperador = findViewById(R.id.et_operador);
             spinnerTecnica = findViewById(R.id.spinner_tecnica);
             BtIniciarSessao = findViewById(R.id.BtIniciarSessao);
             BtEncerrarSessao = findViewById(R.id.BtEncerrarSessao);
+            BtIniciarVarredura = findViewById(R.id.BtIniciarVarredura);
+            BtEncerrarVarredura = findViewById(R.id.BtEncerrarVarredura);
+            BtTagReferencia = findViewById(R.id.BtTagReferencia);
             BtExportCsv = findViewById(R.id.BtExportCsv);
             tv_sessao = findViewById(R.id.tv_sessao);
+            tv_varredura = findViewById(R.id.tv_varredura);
 
             tagList = new ArrayList<HashMap<String, String>>();
 
@@ -118,8 +131,11 @@ public class ScanActivity extends Activity implements OnClickListener {
             BtInventory.setOnClickListener(this);
             BtIniciarSessao.setOnClickListener(this);
             BtEncerrarSessao.setOnClickListener(this);
+            BtIniciarVarredura.setOnClickListener(this);
+            BtEncerrarVarredura.setOnClickListener(this);
+            BtTagReferencia.setOnClickListener(this);
             BtExportCsv.setOnClickListener(this);
-            atualizarStatusSessao();
+            atualizarStatus();
 
             if (RFIDSDKManager.getInstance().getRfidManager() != null) {
                 RFIDSDKManager.getInstance().getRfidManager().registerCallback(callback);
@@ -141,6 +157,18 @@ public class ScanActivity extends Activity implements OnClickListener {
                                 } else {
                                     addEPCToList(strs[0] + "," + strs[1], strs[2]);
                                 }
+                                break;
+                            case MSG_REF_CAPTURADA:
+                                // A tag ja foi capturada; nao e preciso seguir lendo.
+                                stopInventory();
+                                BtInventory.setText(getString(R.string.btInventory));
+                                setViewEnabled(true);
+                                Varredura vr = varreduraAtual;
+                                Toast.makeText(getApplicationContext(),
+                                        getString(R.string.msgRefCapturada,
+                                                vr == null ? "" : vr.epcReferencia),
+                                        Toast.LENGTH_LONG).show();
+                                atualizarStatus();
                                 break;
                             case MSG_UPDATE_STOP:
                                 updateList();
@@ -202,9 +230,10 @@ public class ScanActivity extends Activity implements OnClickListener {
             int index = checkIsExist(epc);
             map.put("tagUii", epc);
             
-            // INJEÇÃO DA SALA SELECIONADA PARA O CSV
-            String salaAtual = etSala.getText().toString().trim();
-            map.put("tagSala", salaAtual);
+            // Sala no .xls legado: o EPC da tag de referência da varredura corrente,
+            // já que a sala deixou de ser digitada (RF01/RF05).
+            Varredura vAtual = varreduraAtual;
+            map.put("tagSala", vAtual == null ? "" : vAtual.epcReferencia);
 
             map.put("tagCount", String.valueOf(1));
             map.put("tagRssi", rssi);
@@ -229,30 +258,30 @@ public class ScanActivity extends Activity implements OnClickListener {
     private void updateList() {
         tv_alltag.setText(String.valueOf(CardNumber));
         adapter.notifyDataSetChanged();
-        atualizarStatusSessao();
+        atualizarStatus();
     }
 
     // ---------------------------------------------------------------------
-    // MVP: sessão de coleta e exportação CSV
+    // RF04 sessão de inventário por unidade, RF05 varredura por sala,
+    // RF11 tempo de cada varredura e tempo total da sessão
     // ---------------------------------------------------------------------
 
     private void iniciarSessao() {
         if (sessaoAtual != null) {
             return;
         }
-        String sala = etSala.getText().toString().trim();
-        if (sala.isEmpty()) {
-            Toast.makeText(getApplicationContext(), getString(R.string.msgSalaVazia), Toast.LENGTH_SHORT).show();
+        String unidade = etUnidade.getText().toString().trim();
+        String operador = etOperador.getText().toString().trim();
+        if (unidade.isEmpty() || operador.isEmpty()) {
+            avisar(R.string.msgSessaoCamposVazios);
             return;
         }
-        String tecnica = spinnerTecnica.getSelectedItem().toString();
-        // Potência lida da configuração corrente do SDK, nunca fixada (decisão 5).
-        int potencia = RFIDSDKManager.getInstance().getRfidManager().getOutputPower();
-        leiturasBrutas.clear();
-        sessaoAtual = new Sessao(sala, tecnica, potencia, System.currentTimeMillis());
-        etSala.setEnabled(false);
-        spinnerTecnica.setEnabled(false);
-        atualizarStatusSessao();
+        sessaoAtual = new Sessao(unidade, operador, System.currentTimeMillis());
+        ultimaSessaoEncerrada = null;
+        ultimaVarreduraEncerrada = null;
+        etUnidade.setEnabled(false);
+        etOperador.setEnabled(false);
+        atualizarStatus();
     }
 
     private void encerrarSessao() {
@@ -260,57 +289,167 @@ public class ScanActivity extends Activity implements OnClickListener {
         if (s == null) {
             return;
         }
-        // Garante que nenhuma leitura entra depois da marcação de fim.
-        if (!BtInventory.getText().equals(getString(R.string.btInventory))) {
-            stopInventory();
+        // Uma varredura aberta é encerrada e exportada antes de fechar a sessão.
+        if (varreduraAtual != null) {
+            encerrarVarredura();
         }
         s.fim = System.currentTimeMillis();
         sessaoAtual = null;
         ultimaSessaoEncerrada = s;
-        etSala.setEnabled(true);
-        spinnerTecnica.setEnabled(true);
-        atualizarStatusSessao();
-        exportarCsv();
+        etUnidade.setEnabled(true);
+        etOperador.setEnabled(true);
+        atualizarStatus();
+        exportarSessao(s);
     }
 
-    /** Exporta a última sessão encerrada. Pode ser repetido (ex.: falha de escrita). */
-    private void exportarCsv() {
-        Sessao s = ultimaSessaoEncerrada;
+    private void iniciarVarredura() {
+        Sessao s = sessaoAtual;
         if (s == null) {
-            Toast.makeText(getApplicationContext(), getString(R.string.msgSessaoNaoEncerrada), Toast.LENGTH_SHORT).show();
+            avisar(R.string.msgSemSessao);
             return;
         }
-        // Rede de segurança: a permissão pode ter sido revogada depois da inicialização.
-        if (!StoragePermission.concedida(this)) {
-            Toast.makeText(getApplicationContext(), getString(R.string.msgPermissaoExport), Toast.LENGTH_LONG).show();
-            StoragePermission.solicitar(this);
+        if (varreduraAtual != null) {
+            return;
+        }
+        String tecnica = spinnerTecnica.getSelectedItem().toString();
+        // Potência lida da configuração corrente do SDK, nunca fixada no código.
+        int potencia = RFIDSDKManager.getInstance().getRfidManager().getOutputPower();
+        leiturasBrutas.clear();
+        varreduraAtual = new Varredura(s, s.proximoNumero(), tecnica, potencia,
+                System.currentTimeMillis());
+        spinnerTecnica.setEnabled(false);
+        atualizarStatus();
+    }
+
+    private void encerrarVarredura() {
+        Varredura v = varreduraAtual;
+        if (v == null) {
+            return;
+        }
+        // Garante que nenhuma leitura entra depois da marcação de fim.
+        if (!BtInventory.getText().equals(getString(R.string.btInventory))) {
+            stopInventory();
+        }
+        capturandoReferencia.set(false);
+        v.fim = System.currentTimeMillis();
+        varreduraAtual = null;
+        ultimaVarreduraEncerrada = v;
+        spinnerTecnica.setEnabled(true);
+        atualizarStatus();
+        exportarVarredura(v);
+    }
+
+    /**
+     * Arma a captura da tag de referência da sala: a próxima etiqueta lida passa a
+     * identificar o ambiente (RF05). A tradução do EPC para o nome da sala é feita
+     * no computador, a partir do cadastro do administrador (RF01).
+     */
+    private void capturarTagReferencia() {
+        if (varreduraAtual == null) {
+            avisar(R.string.msgSemVarredura);
+            return;
+        }
+        capturandoReferencia.set(true);
+        avisar(R.string.msgCapturandoRef);
+        if (BtInventory.getText().equals(getString(R.string.btInventory))) {
+            readTag();
+        }
+    }
+
+    private void exportarVarredura(Varredura v) {
+        if (!permissaoDeArquivoOk()) {
             return;
         }
         List<Leitura> copia;
         synchronized (leiturasBrutas) {
             copia = new ArrayList<>(leiturasBrutas);
         }
-        boolean ok = CsvExport.exportar(s, copia);
-        if (ok) {
+        if (CsvExport.exportarVarredura(v, copia)) {
             Toast.makeText(getApplicationContext(),
-                    getString(R.string.msgCsvSucesso, CsvExport.pastaDestino()), Toast.LENGTH_LONG).show();
+                    getString(R.string.msgCsvSucesso, CsvExport.pastaDestino()),
+                    Toast.LENGTH_LONG).show();
         } else {
-            Toast.makeText(getApplicationContext(), getString(R.string.msgCsvFalha), Toast.LENGTH_LONG).show();
+            avisar(R.string.msgCsvFalha);
         }
     }
 
-    private void atualizarStatusSessao() {
+    private void exportarSessao(Sessao s) {
+        if (!permissaoDeArquivoOk()) {
+            return;
+        }
+        if (CsvExport.exportarSessao(s)) {
+            Toast.makeText(getApplicationContext(),
+                    getString(R.string.msgSessaoExportada, CsvExport.pastaDestino()),
+                    Toast.LENGTH_LONG).show();
+        } else {
+            avisar(R.string.msgCsvFalha);
+        }
+    }
+
+    /** Reexporta a última varredura encerrada, caso a gravação tenha falhado. */
+    private void reexportar() {
+        Varredura v = ultimaVarreduraEncerrada;
+        if (v == null) {
+            avisar(R.string.msgNadaParaReexportar);
+            return;
+        }
+        exportarVarredura(v);
+        if (ultimaSessaoEncerrada != null) {
+            exportarSessao(ultimaSessaoEncerrada);
+        }
+    }
+
+    /** Rede de segurança: a permissão pode ter sido revogada depois da inicialização. */
+    private boolean permissaoDeArquivoOk() {
+        if (StoragePermission.concedida(this)) {
+            return true;
+        }
+        avisar(R.string.msgPermissaoExport);
+        StoragePermission.solicitar(this);
+        return false;
+    }
+
+    private void avisar(int idMensagem) {
+        Toast.makeText(getApplicationContext(), getString(idMensagem), Toast.LENGTH_LONG).show();
+    }
+
+    private void atualizarStatus() {
         Sessao s = sessaoAtual;
         if (s != null) {
-            tv_sessao.setText(getString(R.string.sessaoAtiva, s.id, s.potenciaDbm, leiturasBrutas.size()));
+            tv_sessao.setText(getString(R.string.sessaoAtiva, s.id, s.unidade, s.operador,
+                    s.totalVarreduras()));
         } else if (ultimaSessaoEncerrada != null) {
-            tv_sessao.setText(getString(R.string.sessaoEncerrada, ultimaSessaoEncerrada.id, leiturasBrutas.size()));
+            Sessao fim = ultimaSessaoEncerrada;
+            tv_sessao.setText(getString(R.string.sessaoEncerrada, fim.id, fim.totalVarreduras(),
+                    segundos(fim.inicio, fim.fim)));
         } else {
             tv_sessao.setText(getString(R.string.sessaoInativa));
         }
+
+        Varredura v = varreduraAtual;
+        if (v != null) {
+            String ref = v.epcReferencia.isEmpty()
+                    ? getString(R.string.refNaoCapturada) : v.epcReferencia;
+            tv_varredura.setText(getString(R.string.varreduraAtiva, v.numero, ref,
+                    v.potenciaDbm, leiturasBrutas.size()));
+        } else if (ultimaVarreduraEncerrada != null) {
+            Varredura fim = ultimaVarreduraEncerrada;
+            tv_varredura.setText(getString(R.string.varreduraEncerrada, fim.numero,
+                    leiturasBrutas.size(), segundos(fim.inicio, fim.fim)));
+        } else {
+            tv_varredura.setText(getString(R.string.varreduraInativa));
+        }
+
         BtIniciarSessao.setEnabled(s == null);
         BtEncerrarSessao.setEnabled(s != null);
-        BtExportCsv.setEnabled(s == null && ultimaSessaoEncerrada != null);
+        BtIniciarVarredura.setEnabled(s != null && v == null);
+        BtEncerrarVarredura.setEnabled(v != null);
+        BtTagReferencia.setEnabled(v != null);
+        BtExportCsv.setEnabled(ultimaVarreduraEncerrada != null);
+    }
+
+    private int segundos(long inicio, long fim) {
+        return fim > inicio ? (int) Math.round((fim - inicio) / 1000.0) : 0;
     }
 
     @Override
@@ -324,8 +463,14 @@ public class ScanActivity extends Activity implements OnClickListener {
                 iniciarSessao();
             } else if (arg0 == BtEncerrarSessao) {
                 encerrarSessao();
+            } else if (arg0 == BtIniciarVarredura) {
+                iniciarVarredura();
+            } else if (arg0 == BtEncerrarVarredura) {
+                encerrarVarredura();
+            } else if (arg0 == BtTagReferencia) {
+                capturarTagReferencia();
             } else if (arg0 == BtExportCsv) {
-                exportarCsv();
+                reexportar();
             } else if (arg0 == Btimport) {
                 if (tagList.size() == 0) {
                     Toast.makeText(getApplicationContext(), getString(R.string.msgNodata), Toast.LENGTH_SHORT).show();
@@ -371,11 +516,18 @@ public class ScanActivity extends Activity implements OnClickListener {
             if (EPC != null) epc = EPC.toUpperCase();
             if (Data != null) mem = Data.toUpperCase();
 
-            // MVP: registro bruto, uma entrada por evento, com o instante da leitura
+            // Registro bruto, uma entrada por evento, com o instante da leitura
             // capturado aqui (não no handler). EPC puro, sem prefixo. RSSI como o SDK
-            // entrega. Só grava com sessão ativa, para toda linha ter id_sessao.
-            if (sessaoAtual != null && epc.length() > 0) {
+            // entrega. Só grava com varredura aberta, para toda linha ter id_varredura.
+            Varredura v = varreduraAtual;
+            if (v != null && epc.length() > 0) {
                 leiturasBrutas.add(new Leitura(System.currentTimeMillis(), epc, rssi));
+                // A primeira leitura após armar a captura identifica a sala. O
+                // compareAndSet garante uma única vencedora entre threads do callback.
+                if (capturandoReferencia.compareAndSet(true, false)) {
+                    v.epcReferencia = epc;
+                    handler.sendEmptyMessage(MSG_REF_CAPTURADA);
+                }
             }
 
             Message msg = handler.obtainMessage();

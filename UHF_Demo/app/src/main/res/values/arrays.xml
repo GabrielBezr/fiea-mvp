@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- RF01: os cinco pontos de tag de referência de uma sala, na ordem em que
+         o operador percorre o ambiente -->
+    <string-array name="spinner_posicoes">
+        <item>centro</item>
+        <item>canto_ne</item>
+        <item>canto_nw</item>
+        <item>canto_se</item>
+        <item>canto_sw</item>
+    </string-array>
+
     <!-- MVP: lista fixa de técnicas de varredura -->
     <string-array name="spinner_tecnicas">
         <item>estatica_porta</item>

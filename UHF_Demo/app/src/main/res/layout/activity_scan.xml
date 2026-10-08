@@ -6,7 +6,7 @@
     android:focusableInTouchMode="true"
     android:orientation="vertical" >
 
-    <!-- MVP: metadados da sessão (sala digitada; técnica em lista fixa em arrays.xml) -->
+    <!-- RF04: sessão de inventário, uma por unidade -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -19,57 +19,52 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/lblSala"
-            android:textSize="16sp"
+            android:text="@string/lblUnidade"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
         <EditText
-            android:id="@+id/et_sala"
+            android:id="@+id/et_unidade"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginLeft="10dp"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:hint="@string/hintSala"
-            android:imeOptions="actionDone"
+            android:layout_marginLeft="5dp"
+            android:hint="@string/hintUnidade"
+            android:imeOptions="actionNext"
             android:inputType="text"
             android:maxLines="1"
-            android:singleLine="true" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:gravity="center_vertical">
+            android:singleLine="true"
+            android:textSize="14sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/lblTecnica"
-            android:textSize="16sp"
+            android:layout_marginLeft="8dp"
+            android:text="@string/lblOperador"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
-        <Spinner
-            android:id="@+id/spinner_tecnica"
-            android:layout_width="match_parent"
+        <EditText
+            android:id="@+id/et_operador"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:entries="@array/spinner_tecnicas" />
+            android:layout_weight="1"
+            android:layout_marginLeft="5dp"
+            android:hint="@string/hintOperador"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:textSize="14sp" />
     </LinearLayout>
 
-    <!-- MVP: controle explícito de sessão (inicio/fim) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp"
+        android:paddingTop="3dp"
         android:gravity="center_vertical">
 
         <Button
@@ -77,9 +72,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
             android:textAllCaps="false"
+            android:textSize="13sp"
             android:background="@drawable/color_button_selector"
             android:text="@string/btIniciarSessao"
             android:textColor="@color/white" />
@@ -89,9 +84,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
             android:textAllCaps="false"
+            android:textSize="13sp"
             android:background="@drawable/color_button_selector"
             android:text="@string/btEncerrarSessao"
             android:textColor="@color/white" />
@@ -103,15 +97,98 @@
         android:layout_height="wrap_content"
         android:paddingLeft="15dp"
         android:paddingRight="15dp"
-        android:paddingBottom="5dp"
+        android:paddingTop="2dp"
         android:text="@string/sessaoInativa"
         android:textColor="@color/black"
-        android:textSize="13sp" />
+        android:textSize="12sp" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1px"
+        android:layout_marginTop="3dp"
         android:background="@color/gray1" />
+
+    <!-- RF05: varredura por sala, identificada pela tag de referência -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="3dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/lblTecnica"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/spinner_tecnica"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="5dp"
+            android:entries="@array/spinner_tecnicas" />
+
+        <Button
+            android:id="@+id/BtTagReferencia"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:textAllCaps="false"
+            android:textSize="13sp"
+            android:background="@drawable/color_button_selector"
+            android:text="@string/btTagReferencia"
+            android:textColor="@color/white" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="3dp"
+        android:gravity="center_vertical">
+
+        <Button
+            android:id="@+id/BtIniciarVarredura"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginRight="5dp"
+            android:textAllCaps="false"
+            android:textSize="13sp"
+            android:background="@drawable/color_button_selector"
+            android:text="@string/btIniciarVarredura"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/BtEncerrarVarredura"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAllCaps="false"
+            android:textSize="13sp"
+            android:background="@drawable/color_button_selector"
+            android:text="@string/btEncerrarVarredura"
+            android:textColor="@color/white" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_varredura"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="3dp"
+        android:text="@string/varreduraInativa"
+        android:textColor="@color/black"
+        android:textSize="12sp" />
 
     <LinearLayout
         android:layout_width="fill_parent"
