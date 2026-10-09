@@ -14,6 +14,10 @@ from . import esquema
 from .cadastro import (
     bens_sem_sala, importar_bens, importar_salas, salas_com_poucas_tags,
 )
+from .conferencia import (
+    FORA_DO_LOCAL, LOCALIZADO, NAO_CADASTRADO, NAO_LOCALIZADO, SEM_COBERTURA,
+    SessaoNaoEncontrada, conferir_sessao,
+)
 from .etiquetagem import (
     EtiquetagemInvalida, bens_sem_etiqueta, importar_etiquetagem, progresso,
 )
@@ -60,6 +64,10 @@ def main(argv=None):
         "--sem-arquivar", action="store_true",
         help="nao copia o CSV original para a pasta de brutos")
 
+    conferir = comandos.add_parser(
+        "conferir", help="confronta os bens com as leituras de uma sessao (RF07/RF08)")
+    conferir.add_argument("sessao_id", help="id da sessao exibido pelo comando resumo")
+
     comandos.add_parser("resumo", help="mostra o cadastro e as coletas ja importadas")
 
     args = analisador.parse_args(argv)
@@ -71,6 +79,7 @@ def main(argv=None):
             "bens": lambda: _bens(args, conexao),
             "etiquetagem": lambda: _etiquetagem(args, conexao),
             "importar": lambda: _importar(args, conexao),
+            "conferir": lambda: _conferir(args, conexao),
             "resumo": lambda: _resumo(conexao),
         }[args.comando]()
     finally:
@@ -236,6 +245,54 @@ def _importar(args, conexao):
             f"importadas. Falta copiar arquivo do aparelho?",
             file=sys.stderr,
         )
+    return 0
+
+
+# ------------------------------------------------------------------ resumo
+
+def _conferir(args, conexao):
+    try:
+        relatorio = conferir_sessao(conexao, args.sessao_id)
+    except SessaoNaoEncontrada as erro:
+        print(f"ERRO: {erro}", file=sys.stderr)
+        return 1
+
+    print(f"Conferencia da sessao {relatorio.sessao_id} | {relatorio.unidade}")
+    contagens = {
+        LOCALIZADO: 0,
+        NAO_LOCALIZADO: 0,
+        FORA_DO_LOCAL: 0,
+        SEM_COBERTURA: 0,
+    }
+    for bem in relatorio.bens:
+        contagens[bem.situacao] += 1
+
+    print(
+        f"Bens: {contagens[LOCALIZADO]} localizados, "
+        f"{contagens[NAO_LOCALIZADO]} nao localizados, "
+        f"{contagens[FORA_DO_LOCAL]} fora do local, "
+        f"{contagens[SEM_COBERTURA]} sem cobertura"
+    )
+    print("\nDetalhe dos bens:")
+    for bem in relatorio.bens:
+        sala_esperada = bem.sala_esperada or "sem sala esperada"
+        salas_lidas = ", ".join(bem.salas_lidas) or "nenhuma"
+        observacao = ""
+        if bem.situacao == LOCALIZADO and any(
+                sala != bem.sala_esperada for sala in bem.salas_lidas):
+            observacao = " (tambem lido em outra sala)"
+        elif bem.situacao == SEM_COBERTURA:
+            observacao = " (sala esperada sem varredura)"
+        elif bem.situacao == NAO_LOCALIZADO and not bem.epc:
+            observacao = " (sem EPC cadastrado)"
+        print(
+            f"  {bem.situacao}: patrimonio {bem.patrimonio} | {bem.descricao} | "
+            f"esperada: {sala_esperada} | lido em: {salas_lidas}{observacao}"
+        )
+
+    print(f"\nEPCs sem bem cadastrado: {len(relatorio.epcs_nao_cadastrados)}")
+    for item in relatorio.epcs_nao_cadastrados:
+        print(f"  {NAO_CADASTRADO}: {item.epc} | lido em: {', '.join(item.salas_lidas)}")
     return 0
 
 
