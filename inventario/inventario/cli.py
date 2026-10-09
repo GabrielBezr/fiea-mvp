@@ -214,6 +214,9 @@ def _importar(args, conexao):
             total_distintas += r.etiquetas_distintas
             print(
                 f"{r.arquivo}: varredura {r.identificador}{marca} | "
+                + (f"sala: {r.sala}" if r.sala else
+                   f"sala nao identificada (tag: {r.epc_referencia or 'ausente'})")
+                + " | "
                 f"{r.linhas_brutas} leituras -> {r.etiquetas_distintas} etiquetas "
                 f"({r.linhas_descartadas} repetidas descartadas)"
             )
@@ -265,14 +268,17 @@ def _resumo(conexao):
         duracao = f"{s['duracao_s']} s" if s["duracao_s"] is not None else "em aberto"
         print(f"\nSessao {s['id']} | {s['unidade']} | {s['operador']} | {duracao}")
         for v in conexao.execute(
-            "SELECT v.numero, v.duracao_s, v.linhas_brutas, COUNT(l.epc) AS etiquetas "
+            "SELECT v.numero, v.duracao_s, v.linhas_brutas, s.nome AS sala, "
+            "COUNT(l.epc) AS etiquetas "
             "FROM varredura v LEFT JOIN leitura l ON l.varredura_id = v.id "
+            "LEFT JOIN sala s ON s.id = v.sala_id "
             "WHERE v.sessao_id = ? GROUP BY v.id ORDER BY v.numero",
             (s["id"],),
         ):
             duracao_v = f"{v['duracao_s']} s" if v["duracao_s"] is not None else "?"
+            sala_v = v["sala"] if v["sala"] else "sala nao identificada"
             print(
-                f"  v{v['numero']:02d} | {duracao_v:>7} | "
+                f"  v{v['numero']:02d} | {sala_v} | {duracao_v:>7} | "
                 f"{v['linhas_brutas']:>6} leituras -> {v['etiquetas']:>4} etiquetas"
             )
     return 0

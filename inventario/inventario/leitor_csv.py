@@ -145,6 +145,11 @@ def ler_varredura(caminho):
 
     if metadados is None:
         raise ArquivoInvalido(f"{caminho.name}: arquivo sem nenhuma leitura")
+    if metadados["epc_referencia"] and metadados["epc_referencia"] not in agregados:
+        raise ArquivoInvalido(
+            f"{caminho.name}: tag de referencia {metadados['epc_referencia']} "
+            "nao consta entre as leituras da varredura"
+        )
 
     arquivo = ArquivoVarredura(linhas_brutas=linhas, **metadados)
     arquivo.leituras = [

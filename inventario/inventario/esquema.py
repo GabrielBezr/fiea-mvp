@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS varredura (
     sessao_id       TEXT NOT NULL REFERENCES sessao(id),
     numero          INTEGER NOT NULL,
     epc_referencia  TEXT,
+    sala_id         INTEGER REFERENCES sala(id),
     tecnica         TEXT,
     potencia_dbm    INTEGER,
     inicio          TEXT NOT NULL,
@@ -95,5 +96,12 @@ def conectar(caminho_db):
     conexao = sqlite3.connect(caminho)
     conexao.row_factory = sqlite3.Row
     conexao.executescript(DDL)
+    colunas_varredura = {
+        coluna["name"] for coluna in conexao.execute("PRAGMA table_info(varredura)")
+    }
+    if "sala_id" not in colunas_varredura:
+        conexao.execute(
+            "ALTER TABLE varredura ADD COLUMN sala_id INTEGER REFERENCES sala(id)"
+        )
     conexao.commit()
     return conexao

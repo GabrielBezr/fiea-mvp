@@ -3,6 +3,7 @@
 Rodar da pasta `inventario/`:  python -m unittest discover -s testes
 """
 
+import sqlite3
 import sys
 import tempfile
 import unittest
@@ -13,14 +14,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from inventario import esquema, leitor_csv  # noqa: E402
 from inventario.importador import importar_arquivo, importar_caminho  # noqa: E402
 from inventario.leitor_csv import ArquivoInvalido  # noqa: E402
+from inventario.cadastro import importar_salas  # noqa: E402
 
 CABECALHO = ",".join(leitor_csv.CABECALHO_LEITURAS)
-META = "20261008090000,Casa da Industria,Gabriel,20261008090000-v01,E28011REF01,"\
+META = "20261008090000,Casa da Industria,Gabriel,20261008090000-v01,,"\
        "estatica_porta,30,2026-10-08 09:10:00.000,2026-10-08 09:12:30.000,150"
 
 
-def linha(timestamp, epc, rssi):
-    return f"{META},{timestamp},{epc},{rssi}"
+def linha(timestamp, epc, rssi, referencia=""):
+    meta = META.replace("-v01,,", f"-v01,{referencia},")
+    return f"{meta},{timestamp},{epc},{rssi}"
 
 
 def csv_varredura(linhas):
@@ -123,6 +126,88 @@ class TestIdempotencia(BaseTemp):
         epcs = [r[0] for r in self.conexao.execute(
             "SELECT epc FROM leitura ORDER BY epc")]
         self.assertEqual(epcs, ["AAA", "CCC"])
+
+
+class TestAtribuicaoSala(BaseTemp):
+    def test_associa_varredura_a_sala_da_primeira_tag_de_referencia(self):
+        salas = self.escrever(
+            "salas.csv",
+            "unidade,sala,posicao,epc\n"
+            "Casa da Industria,Lab 1,centro,E28011REF01\n",
+        )
+        importar_salas(salas, self.conexao)
+        caminho = self.escrever(
+            "leituras_20261008090000_v01.csv",
+            csv_varredura([linha(
+                "2026-10-08 09:10:01.000", "E28011REF01", 80, "E28011REF01")]),
+        )
+
+        resultado = importar_arquivo(caminho, self.conexao)
+        varredura = self.conexao.execute(
+            "SELECT s.nome FROM varredura v "
+            "JOIN sala s ON s.id = v.sala_id WHERE v.id = ?",
+            (resultado.identificador,),
+        ).fetchone()
+
+        self.assertEqual(varredura["nome"], "Lab 1")
+        self.assertEqual(resultado.sala, "Lab 1")
+
+    def test_nao_associa_tag_de_outra_unidade(self):
+        salas = self.escrever(
+            "salas.csv",
+            "unidade,sala,posicao,epc\nOutra unidade,Lab 1,centro,E28011REF01\n",
+        )
+        importar_salas(salas, self.conexao)
+        caminho = self.escrever(
+            "leituras_20261008090000_v01.csv",
+            csv_varredura([linha(
+                "2026-10-08 09:10:01.000", "E28011REF01", 80, "E28011REF01")]),
+        )
+
+        resultado = importar_arquivo(caminho, self.conexao)
+        varredura = self.conexao.execute(
+            "SELECT sala_id FROM varredura WHERE id = ?", (resultado.identificador,)
+        ).fetchone()
+
+        self.assertIsNone(varredura["sala_id"])
+        self.assertEqual(resultado.sala, "")
+
+    def test_recusa_epc_referencia_que_nao_foi_lido_no_arquivo(self):
+        caminho = self.escrever(
+            "leituras_20261008090000_v01.csv",
+            csv_varredura([linha(
+                "2026-10-08 09:10:01.000", "AAA", 80, "E28011REF01")]),
+        )
+
+        with self.assertRaisesRegex(ArquivoInvalido, "nao consta entre as leituras"):
+            leitor_csv.ler_varredura(caminho)
+
+
+class TestMigracaoEsquema(BaseTemp):
+    def test_adiciona_sala_id_a_banco_existente(self):
+        caminho_db = self.pasta / "banco_anterior.db"
+        legado = sqlite3.connect(caminho_db)
+        try:
+            legado.executescript(
+                "CREATE TABLE sessao (id TEXT PRIMARY KEY, unidade TEXT NOT NULL, "
+                "operador TEXT NOT NULL, inicio TEXT, fim TEXT, duracao_s INTEGER, "
+                "n_varreduras INTEGER);"
+                "CREATE TABLE varredura (id TEXT PRIMARY KEY, sessao_id TEXT NOT NULL, "
+                "numero INTEGER NOT NULL, epc_referencia TEXT, tecnica TEXT, "
+                "potencia_dbm INTEGER, inicio TEXT NOT NULL, fim TEXT, "
+                "duracao_s INTEGER, arquivo_origem TEXT NOT NULL, "
+                "importado_em TEXT NOT NULL, linhas_brutas INTEGER NOT NULL);"
+            )
+        finally:
+            legado.close()
+
+        banco = esquema.conectar(caminho_db)
+        self.addCleanup(banco.close)
+
+        colunas = {
+            coluna["name"] for coluna in banco.execute("PRAGMA table_info(varredura)")
+        }
+        self.assertIn("sala_id", colunas)
 
 
 class TestOrdemDosArquivos(BaseTemp):

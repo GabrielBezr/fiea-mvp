@@ -54,6 +54,15 @@ Duas recusas deliberadas: a mesma tag em duas salas, e duas tags na mesma
 posição. Aceitar qualquer uma mandaria a varredura inteira para o ambiente
 errado, e o erro só apareceria muito depois, na conciliação.
 
+Cada varredura no aplicativo precisa capturar uma tag de referência antes de
+ser encerrada. Essa primeira captura fica no campo `epc_referencia` do CSV e não
+pode ser substituída dentro da mesma varredura. Ao importar, o sistema procura
+esse EPC no cadastro de tags da **mesma unidade** e grava a sala correspondente
+em `varredura.sala_id`. Importe o cadastro de salas antes das varreduras. Se o
+EPC estiver ausente ou não pertencer a uma sala cadastrada na unidade, a
+varredura fica sem sala e o importador informa isso; corrija o cadastro e
+reimporte o CSV para atualizar a associação.
+
 ### Relação patrimonial (RF02)
 
 ```csv
