@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "br.fiea.mvp.rfid",
+  "variantName": "debug",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "versionCode": 1,
+      "versionName": "2.5.202610082211",
+      "outputFile": "FieaColeta_v2.5.202610082211.apk"
+    }
+  ],
+  "elementType": "File"
+}

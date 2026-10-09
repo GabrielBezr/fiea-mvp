@@ -294,6 +294,10 @@ public class ScanActivity extends Activity implements OnClickListener {
         }
         // Uma varredura aberta é encerrada e exportada antes de fechar a sessão.
         if (varreduraAtual != null) {
+            if (varreduraAtual.epcReferencia.isEmpty()) {
+                avisar(R.string.msgVarreduraSemReferencia);
+                return;
+            }
             encerrarVarredura();
         }
         s.fim = System.currentTimeMillis();
@@ -329,6 +333,10 @@ public class ScanActivity extends Activity implements OnClickListener {
         if (v == null) {
             return;
         }
+        if (v.epcReferencia.isEmpty()) {
+            avisar(R.string.msgVarreduraSemReferencia);
+            return;
+        }
         // Garante que nenhuma leitura entra depois da marcação de fim.
         if (!BtInventory.getText().equals(getString(R.string.btInventory))) {
             stopInventory();
@@ -350,6 +358,10 @@ public class ScanActivity extends Activity implements OnClickListener {
     private void capturarTagReferencia() {
         if (varreduraAtual == null) {
             avisar(R.string.msgSemVarredura);
+            return;
+        }
+        if (!varreduraAtual.epcReferencia.isEmpty()) {
+            avisar(R.string.msgRefJaCapturada);
             return;
         }
         capturandoReferencia.set(true);
@@ -450,7 +462,7 @@ public class ScanActivity extends Activity implements OnClickListener {
         BtEncerrarSessao.setEnabled(s != null);
         BtIniciarVarredura.setEnabled(s != null && v == null);
         BtEncerrarVarredura.setEnabled(v != null);
-        BtTagReferencia.setEnabled(v != null);
+        BtTagReferencia.setEnabled(v != null && v.epcReferencia.isEmpty());
         BtExportCsv.setEnabled(ultimaVarreduraEncerrada != null);
     }
 

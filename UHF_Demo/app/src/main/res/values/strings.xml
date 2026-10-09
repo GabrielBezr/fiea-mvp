@@ -99,6 +99,8 @@
     <string name="refNaoCapturada">não capturada</string>
     <string name="msgSemSessao">Inicie a sessão de inventário antes</string>
     <string name="msgSemVarredura">Inicie a varredura antes</string>
+    <string name="msgVarreduraSemReferencia">Leia a tag de referência da sala antes de encerrar a varredura</string>
+    <string name="msgRefJaCapturada">A tag de referência desta varredura já foi capturada</string>
     <string name="msgCapturandoRef">Aponte para a tag de referência da sala</string>
     <string name="msgRefCapturada">Tag de referência: %1$s</string>
     <string name="msgNadaParaReexportar">Nenhuma varredura encerrada para reexportar</string>

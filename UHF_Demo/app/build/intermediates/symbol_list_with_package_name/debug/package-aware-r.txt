@@ -1594,6 +1594,7 @@ string msgPermissaoExport
 string msgPermissaoNegada
 string msgPermissaoPedido
 string msgRefCapturada
+string msgRefJaCapturada
 string msgSemSessao
 string msgSemVarredura
 string msgSessaoCamposVazios
@@ -1601,6 +1602,7 @@ string msgSessaoExportada
 string msgTsCamposVazios
 string msgTsEpcRepetido
 string msgTsPosicaoRepetida
+string msgVarreduraSemReferencia
 string need_all_permisssion
 string not_change
 string noteStr
