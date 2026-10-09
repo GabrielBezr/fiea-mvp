@@ -91,8 +91,8 @@
     <string name="btExportCsv">Reexportar</string>
     <string name="msgSessaoCamposVazios">Informe unidade e operador antes de iniciar a sessão</string>
     <string name="sessaoInativa">Sem sessão de inventário ativa</string>
-    <string name="sessaoAtiva">Sessão %1$s · %2$s · %3$s · varreduras: %4$d</string>
-    <string name="sessaoEncerrada">Sessão %1$s encerrada · %2$d varreduras · %3$d s</string>
+    <string name="sessaoAtiva">Sessão %1$s · unidade: %2$s · operador: %3$s · início: %4$s · varreduras: %5$d</string>
+    <string name="sessaoEncerrada">Sessão %1$s · unidade: %2$s · início: %3$s · fim: %4$s · %5$d varreduras · %6$d s</string>
     <string name="varreduraInativa">Sem varredura ativa — leituras não serão gravadas</string>
     <string name="varreduraAtiva">Varredura %1$d · ref: %2$s · %3$d dBm · leituras: %4$d</string>
     <string name="varreduraEncerrada">Varredura %1$d encerrada · %2$d leituras · %3$d s</string>

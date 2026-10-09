@@ -4,7 +4,7 @@
     "type": "PACKAGED_MANIFESTS",
     "kind": "Directory"
   },
-  "applicationId": "com.uhf.demo.test",
+  "applicationId": "br.fiea.mvp.rfid.test",
   "variantName": "debugAndroidTest",
   "elements": [
     {

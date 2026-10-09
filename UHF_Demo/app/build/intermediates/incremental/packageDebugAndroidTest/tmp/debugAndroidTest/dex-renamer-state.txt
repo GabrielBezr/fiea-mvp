@@ -1,4 +1,4 @@
-#Fri Sep 18 13:47:32 GFT 2026
+#Fri Sep 25 15:03:23 GFT 2026
 base.1=C\:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\dex\\debugAndroidTest\\mergeProjectDexDebugAndroidTest\\6\\classes.dex
 path.1=6/classes.dex
 base.0=C\:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\dex\\debugAndroidTest\\mergeProjectDexDebugAndroidTest\\0\\classes.dex

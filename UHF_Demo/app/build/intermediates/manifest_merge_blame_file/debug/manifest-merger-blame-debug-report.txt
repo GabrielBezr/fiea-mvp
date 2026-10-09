@@ -1,8 +1,8 @@
 1<?xml version="1.0" encoding="utf-8"?>
 2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-3    package="com.uhf.demo"
+3    package="br.fiea.mvp.rfid"
 4    android:versionCode="1"
-5    android:versionName="2.5.202609181427" >
+5    android:versionName="2.5.202610082117" >
 6
 7    <uses-sdk
 8        android:minSdkVersion="26"
@@ -67,7 +67,7 @@
 35-->[com.journeyapps:zxing-android-embedded:4.3.0] C:\Users\rafae\.gradle\caches\transforms-3\31bf71b79aa1019f3b09720060c5b849\transformed\jetified-zxing-android-embedded-4.3.0\AndroidManifest.xml:44:9-33
 36
 37    <application
-37-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:15:5-62:19
+37-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:15:5-69:19
 38        android:name="com.rfid.demo.BaseApplication"
 38-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:16:9-53
 39        android:allowBackup="true"
@@ -148,37 +148,55 @@
 79            android:screenOrientation="portrait" />
 79-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:53:13-49
 80        <activity
-80-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:54:9-55:51
-81            android:name="com.rfid.demo.ScanActivity"
-81-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:54:19-60
-82            android:screenOrientation="portrait" />
+80-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:54:9-56:54
+81            android:name="com.rfid.demo.TagsSalaActivity"
+81-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:54:19-64
+82            android:screenOrientation="portrait"
 82-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:55:13-49
-83        <activity
-83-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:56:9-57:51
-84            android:name="com.rfid.demo.utils.ScanModeGroup"
-84-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:56:19-67
-85            android:screenOrientation="portrait" />
-85-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:57:13-49
-86        <activity
-86-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:58:9-59:51
-87            android:name="com.rfid.demo.ReadWriteActivity"
-87-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:58:19-65
-88            android:screenOrientation="portrait" />
-88-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:59:13-49
-89        <activity
-89-->[com.journeyapps:zxing-android-embedded:4.3.0] C:\Users\rafae\.gradle\caches\transforms-3\31bf71b79aa1019f3b09720060c5b849\transformed\jetified-zxing-android-embedded-4.3.0\AndroidManifest.xml:47:9-53:63
-90            android:name="com.journeyapps.barcodescanner.CaptureActivity"
-90-->[com.journeyapps:zxing-android-embedded:4.3.0] C:\Users\rafae\.gradle\caches\transforms-3\31bf71b79aa1019f3b09720060c5b849\transformed\jetified-zxing-android-embedded-4.3.0\AndroidManifest.xml:48:13-74
-91            android:clearTaskOnLaunch="true"
-91-->[com.journeyapps:zxing-android-embedded:4.3.0] C:\Users\rafae\.gradle\caches\transforms-3\31bf71b79aa1019f3b09720060c5b849\transformed\jetified-zxing-android-embedded-4.3.0\AndroidManifest.xml:49:13-45
-92            android:screenOrientation="sensorLandscape"
-92-->[com.journeyapps:zxing-android-embedded:4.3.0] C:\Users\rafae\.gradle\caches\transforms-3\31bf71b79aa1019f3b09720060c5b849\transformed\jetified-zxing-android-embedded-4.3.0\AndroidManifest.xml:50:13-56
-93            android:stateNotNeeded="true"
-93-->[com.journeyapps:zxing-android-embedded:4.3.0] C:\Users\rafae\.gradle\caches\transforms-3\31bf71b79aa1019f3b09720060c5b849\transformed\jetified-zxing-android-embedded-4.3.0\AndroidManifest.xml:51:13-42
-94            android:theme="@style/zxing_CaptureTheme"
-94-->[com.journeyapps:zxing-android-embedded:4.3.0] C:\Users\rafae\.gradle\caches\transforms-3\31bf71b79aa1019f3b09720060c5b849\transformed\jetified-zxing-android-embedded-4.3.0\AndroidManifest.xml:52:13-54
-95            android:windowSoftInputMode="stateAlwaysHidden" />
-95-->[com.journeyapps:zxing-android-embedded:4.3.0] C:\Users\rafae\.gradle\caches\transforms-3\31bf71b79aa1019f3b09720060c5b849\transformed\jetified-zxing-android-embedded-4.3.0\AndroidManifest.xml:53:13-60
-96    </application>
-97
-98</manifest>
+83            android:windowSoftInputMode="adjustPan" />
+83-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:56:13-52
+84        <activity
+84-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:57:9-59:54
+85            android:name="com.rfid.demo.EtiquetagemActivity"
+85-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:57:19-67
+86            android:screenOrientation="portrait"
+86-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:58:13-49
+87            android:windowSoftInputMode="adjustPan" />
+87-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:59:13-52
+88        <activity
+88-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:60:9-62:54
+89            android:name="com.rfid.demo.ScanActivity"
+89-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:60:19-60
+90            android:screenOrientation="portrait"
+90-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:61:13-49
+91            android:windowSoftInputMode="adjustPan" />
+91-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:62:13-52
+92        <activity
+92-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:63:9-64:51
+93            android:name="com.rfid.demo.utils.ScanModeGroup"
+93-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:63:19-67
+94            android:screenOrientation="portrait" />
+94-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:64:13-49
+95        <activity
+95-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:65:9-66:51
+96            android:name="com.rfid.demo.ReadWriteActivity"
+96-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:65:19-65
+97            android:screenOrientation="portrait" />
+97-->C:\Users\rafae\RFIDSDKSample\UHF_Demo\app\src\main\AndroidManifest.xml:66:13-49
+98        <activity
+98-->[com.journeyapps:zxing-android-embedded:4.3.0] C:\Users\rafae\.gradle\caches\transforms-3\31bf71b79aa1019f3b09720060c5b849\transformed\jetified-zxing-android-embedded-4.3.0\AndroidManifest.xml:47:9-53:63
+99            android:name="com.journeyapps.barcodescanner.CaptureActivity"
+99-->[com.journeyapps:zxing-android-embedded:4.3.0] C:\Users\rafae\.gradle\caches\transforms-3\31bf71b79aa1019f3b09720060c5b849\transformed\jetified-zxing-android-embedded-4.3.0\AndroidManifest.xml:48:13-74
+100            android:clearTaskOnLaunch="true"
+100-->[com.journeyapps:zxing-android-embedded:4.3.0] C:\Users\rafae\.gradle\caches\transforms-3\31bf71b79aa1019f3b09720060c5b849\transformed\jetified-zxing-android-embedded-4.3.0\AndroidManifest.xml:49:13-45
+101            android:screenOrientation="sensorLandscape"
+101-->[com.journeyapps:zxing-android-embedded:4.3.0] C:\Users\rafae\.gradle\caches\transforms-3\31bf71b79aa1019f3b09720060c5b849\transformed\jetified-zxing-android-embedded-4.3.0\AndroidManifest.xml:50:13-56
+102            android:stateNotNeeded="true"
+102-->[com.journeyapps:zxing-android-embedded:4.3.0] C:\Users\rafae\.gradle\caches\transforms-3\31bf71b79aa1019f3b09720060c5b849\transformed\jetified-zxing-android-embedded-4.3.0\AndroidManifest.xml:51:13-42
+103            android:theme="@style/zxing_CaptureTheme"
+103-->[com.journeyapps:zxing-android-embedded:4.3.0] C:\Users\rafae\.gradle\caches\transforms-3\31bf71b79aa1019f3b09720060c5b849\transformed\jetified-zxing-android-embedded-4.3.0\AndroidManifest.xml:52:13-54
+104            android:windowSoftInputMode="stateAlwaysHidden" />
+104-->[com.journeyapps:zxing-android-embedded:4.3.0] C:\Users\rafae\.gradle\caches\transforms-3\31bf71b79aa1019f3b09720060c5b849\transformed\jetified-zxing-android-embedded-4.3.0\AndroidManifest.xml:53:13-60
+105    </application>
+106
+107</manifest>

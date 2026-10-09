@@ -282,6 +282,9 @@ public class ScanActivity extends Activity implements OnClickListener {
         etUnidade.setEnabled(false);
         etOperador.setEnabled(false);
         atualizarStatus();
+        // Registra o início imediatamente. O arquivo será atualizado com o fim
+        // quando a sessão for encerrada.
+        exportarSessao(sessaoAtual, false);
     }
 
     private void encerrarSessao() {
@@ -299,7 +302,7 @@ public class ScanActivity extends Activity implements OnClickListener {
         etUnidade.setEnabled(true);
         etOperador.setEnabled(true);
         atualizarStatus();
-        exportarSessao(s);
+        exportarSessao(s, true);
     }
 
     private void iniciarVarredura() {
@@ -373,14 +376,16 @@ public class ScanActivity extends Activity implements OnClickListener {
         }
     }
 
-    private void exportarSessao(Sessao s) {
+    private void exportarSessao(Sessao s, boolean notificarSucesso) {
         if (!permissaoDeArquivoOk()) {
             return;
         }
         if (CsvExport.exportarSessao(s)) {
-            Toast.makeText(getApplicationContext(),
-                    getString(R.string.msgSessaoExportada, CsvExport.pastaDestino()),
-                    Toast.LENGTH_LONG).show();
+            if (notificarSucesso) {
+                Toast.makeText(getApplicationContext(),
+                        getString(R.string.msgSessaoExportada, CsvExport.pastaDestino()),
+                        Toast.LENGTH_LONG).show();
+            }
         } else {
             avisar(R.string.msgCsvFalha);
         }
@@ -395,7 +400,7 @@ public class ScanActivity extends Activity implements OnClickListener {
         }
         exportarVarredura(v);
         if (ultimaSessaoEncerrada != null) {
-            exportarSessao(ultimaSessaoEncerrada);
+            exportarSessao(ultimaSessaoEncerrada, true);
         }
     }
 
@@ -417,11 +422,12 @@ public class ScanActivity extends Activity implements OnClickListener {
         Sessao s = sessaoAtual;
         if (s != null) {
             tv_sessao.setText(getString(R.string.sessaoAtiva, s.id, s.unidade, s.operador,
-                    s.totalVarreduras()));
+                    Sessao.formatarInstante(s.inicio), s.totalVarreduras()));
         } else if (ultimaSessaoEncerrada != null) {
             Sessao fim = ultimaSessaoEncerrada;
-            tv_sessao.setText(getString(R.string.sessaoEncerrada, fim.id, fim.totalVarreduras(),
-                    segundos(fim.inicio, fim.fim)));
+            tv_sessao.setText(getString(R.string.sessaoEncerrada, fim.id, fim.unidade,
+                    Sessao.formatarInstante(fim.inicio), Sessao.formatarInstante(fim.fim),
+                    fim.totalVarreduras(), segundos(fim.inicio, fim.fim)));
         } else {
             tv_sessao.setText(getString(R.string.sessaoInativa));
         }

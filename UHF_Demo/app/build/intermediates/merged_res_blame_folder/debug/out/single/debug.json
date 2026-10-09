@@ -28,20 +28,28 @@
         "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\color_button_background.xml"
     },
     {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_activity_tags_sala.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\activity_tags_sala.xml"
+    },
+    {
         "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable-hdpi_ic_launcher.png.flat",
         "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable-hdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_activity_etiquetagem.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\activity_etiquetagem.xml"
     },
     {
         "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable-xhdpi_ic_launcher.png.flat",
         "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable-xhdpi\\ic_launcher.png"
     },
     {
-        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_activity_scan.xml.flat",
-        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\activity_scan.xml"
-    },
-    {
         "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_activity_setting.xml.flat",
         "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\activity_setting.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_activity_scan.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\activity_scan.xml"
     },
     {
         "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_color_button_selector.xml.flat",

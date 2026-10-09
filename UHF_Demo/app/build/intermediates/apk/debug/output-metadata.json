@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.uhf.demo",
+  "applicationId": "br.fiea.mvp.rfid",
   "variantName": "debug",
   "elements": [
     {
@@ -12,8 +12,8 @@
       "filters": [],
       "attributes": [],
       "versionCode": 1,
-      "versionName": "2.5.202609181347",
-      "outputFile": "UHFDemo_v2.5.202609181347.apk"
+      "versionName": "2.5.202609251503",
+      "outputFile": "FieaColeta_v2.5.202609251503.apk"
     }
   ],
   "elementType": "File"
