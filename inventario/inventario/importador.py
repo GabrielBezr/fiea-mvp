@@ -65,12 +65,25 @@ def importar_arquivo(caminho, conexao, pasta_brutos=None):
 
 def _importar_varredura(caminho, conexao):
     arquivo = leitor_csv.ler_varredura(caminho)
-    sala = conexao.execute(
-        "SELECT s.id, s.nome FROM tag_referencia t "
-        "JOIN sala s ON s.id = t.sala_id "
-        "WHERE t.epc = ? AND s.unidade = ?",
-        (arquivo.epc_referencia, arquivo.unidade),
-    ).fetchone() if arquivo.epc_referencia else None
+    sala = None
+    if arquivo.sala:
+        sala = conexao.execute(
+            "SELECT s.id, s.nome FROM sala s "
+            "WHERE LOWER(s.nome) = LOWER(?) AND s.unidade = ?",
+            (arquivo.sala, arquivo.unidade),
+        ).fetchone()
+        if not sala:
+            sala = conexao.execute(
+                "SELECT s.id, s.nome FROM sala s WHERE LOWER(s.nome) = LOWER(?)",
+                (arquivo.sala,),
+            ).fetchone()
+    if not sala and arquivo.epc_referencia:
+        sala = conexao.execute(
+            "SELECT s.id, s.nome FROM tag_referencia t "
+            "JOIN sala s ON s.id = t.sala_id "
+            "WHERE t.epc = ? AND s.unidade = ?",
+            (arquivo.epc_referencia, arquivo.unidade),
+        ).fetchone()
 
     ja_existia = conexao.execute(
         "SELECT 1 FROM varredura WHERE id = ?", (arquivo.varredura_id,)

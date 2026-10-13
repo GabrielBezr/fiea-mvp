@@ -15,17 +15,19 @@ public class Varredura {
     /** Identificador da varredura: <id_sessao>-v<nn>. */
     public final String id;
 
+    public final String sala;
     public final String tecnica;
     public final int potenciaDbm;
     public final long inicio;
     public volatile long fim = 0;
 
-    /** EPC da tag de referência da sala; vazio enquanto não for capturada. */
+    /** EPC da tag de referência da sala; vazio quando não utilizada. */
     public volatile String epcReferencia = "";
 
-    public Varredura(Sessao sessao, int numero, String tecnica, int potenciaDbm, long inicio) {
+    public Varredura(Sessao sessao, int numero, String sala, String tecnica, int potenciaDbm, long inicio) {
         this.sessao = sessao;
         this.numero = numero;
+        this.sala = sala != null ? sala : "";
         this.tecnica = tecnica;
         this.potenciaDbm = potenciaDbm;
         this.inicio = inicio;

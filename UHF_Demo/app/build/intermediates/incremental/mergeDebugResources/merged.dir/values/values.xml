@@ -604,6 +604,7 @@
     <color name="cardview_shadow_end_color">#03000000</color>
     <color name="cardview_shadow_start_color">#37000000</color>
     <color name="colorAccent">#D81B60</color>
+    <color name="colorLimitrofe">#D97706</color>
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#008577</color>
     <color name="colorRfid">#A9F8F0</color>
@@ -1024,6 +1025,7 @@
     <string name="hintEpc">leia a tag ou o QR</string>
     <string name="hintOperador">operador</string>
     <string name="hintPatrimonio">numero do bem</string>
+    <string name="hintSala">nome da sala</string>
     <string name="hintSalaTs">nome da sala</string>
     <string name="hintUnidade">unidade</string>
     <string name="info_result">Result:</string>
@@ -1038,6 +1040,7 @@
     <string name="lblMetalico">Metalico</string>
     <string name="lblOperador">Operador:</string>
     <string name="lblPatrimonio">Patrimonio:</string>
+    <string name="lblSala">Sala:</string>
     <string name="lblSalaTs">Sala:</string>
     <string name="lblTecnica">Técnica:</string>
     <string name="lblUnidade">Unidade:</string>
@@ -1078,8 +1081,9 @@
     <string name="msgPermissaoPedido">Permita o acesso a todos os arquivos para exportar os CSV</string>
     <string name="msgRefCapturada">Tag de referência: %1$s</string>
     <string name="msgRefJaCapturada">A tag de referência desta varredura já foi capturada</string>
+    <string name="msgSalaVazia">Informe a sala antes de iniciar a varredura</string>
     <string name="msgSemSessao">Inicie a sessão de inventário antes</string>
-    <string name="msgSemVarredura">Inicie a varredura antes</string>
+    <string name="msgSemVarredura">Inicie a varredura antes de ler</string>
     <string name="msgSessaoCamposVazios">Informe unidade e operador antes de iniciar a sessão</string>
     <string name="msgSessaoExportada">Sessão exportada em %1$s</string>
     <string name="msgTsCamposVazios">Informe unidade, sala e EPC</string>
@@ -1198,8 +1202,8 @@
     <string name="txt_returnloss">Return Loss:</string>
     <string name="txt_temp">Temperature</string>
     <string name="txtepc">EPC:</string>
-    <string name="varreduraAtiva">Varredura %1$d · ref: %2$s · %3$d dBm · leituras: %4$d</string>
-    <string name="varreduraEncerrada">Varredura %1$d encerrada · %2$d leituras · %3$d s</string>
+    <string name="varreduraAtiva">Varredura %1$d (%2$s) · %3$d dBm · leituras: %4$d</string>
+    <string name="varreduraEncerrada">Varredura %1$d (%2$s) encerrada · %3$d leituras · %4$d s</string>
     <string name="varreduraInativa">Sem varredura ativa — leituras não serão gravadas</string>
     <string name="version">Version:</string>
     <string name="wordptr_empty_warning">WordPtr can not be empty!</string>

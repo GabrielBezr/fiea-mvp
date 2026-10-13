@@ -16,7 +16,7 @@ from inventario.importador import importar_arquivo, importar_caminho  # noqa: E4
 from inventario.leitor_csv import ArquivoInvalido  # noqa: E402
 from inventario.cadastro import importar_salas  # noqa: E402
 
-CABECALHO = ",".join(leitor_csv.CABECALHO_LEITURAS)
+CABECALHO = ",".join(leitor_csv.CABECALHO_LEITURAS_LEGADO)
 META = "20261008090000,Casa da Industria,Gabriel,20261008090000-v01,,"\
        "estatica_porta,30,2026-10-08 09:10:00.000,2026-10-08 09:12:30.000,150"
 
@@ -151,6 +151,32 @@ class TestAtribuicaoSala(BaseTemp):
 
         self.assertEqual(varredura["nome"], "Lab 1")
         self.assertEqual(resultado.sala, "Lab 1")
+
+    def test_associa_varredura_por_coluna_sala(self):
+        salas = self.escrever(
+            "salas.csv",
+            "unidade,sala,posicao,epc\nCasa da Industria,Sala 101,centro,E28011REF99\n",
+        )
+        importar_salas(salas, self.conexao)
+        cabecalho_sala = ",".join(leitor_csv.CABECALHO_LEITURAS)
+        conteudo = (
+            f"{cabecalho_sala}\n"
+            "20261008090000,Casa da Industria,Gabriel,20261008090000-v01,Sala 101,"
+            "estatica_porta,30,2026-10-08 09:10:00.000,2026-10-08 09:12:30.000,150,"
+            "2026-10-08 09:10:01.000,E280110001,80\n"
+        )
+        caminho = self.escrever("leituras_20261008090000_v01.csv", conteudo)
+
+        resultado = importar_arquivo(caminho, self.conexao)
+        varredura = self.conexao.execute(
+            "SELECT s.nome FROM varredura v "
+            "JOIN sala s ON s.id = v.sala_id WHERE v.id = ?",
+            (resultado.identificador,),
+        ).fetchone()
+
+        self.assertIsNotNone(varredura)
+        self.assertEqual(varredura["nome"], "Sala 101")
+        self.assertEqual(resultado.sala, "Sala 101")
 
     def test_nao_associa_tag_de_outra_unidade(self):
         salas = self.escrever(

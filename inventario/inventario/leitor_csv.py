@@ -18,6 +18,12 @@ from pathlib import Path
 FORMATO_INSTANTE = "%Y-%m-%d %H:%M:%S.%f"
 
 CABECALHO_LEITURAS = [
+    "id_sessao", "unidade", "operador", "id_varredura", "sala",
+    "tecnica", "potencia_dbm", "varredura_inicio", "varredura_fim",
+    "varredura_duracao_s", "timestamp", "epc", "rssi",
+]
+
+CABECALHO_LEITURAS_LEGADO = [
     "id_sessao", "unidade", "operador", "id_varredura", "epc_referencia",
     "tecnica", "potencia_dbm", "varredura_inicio", "varredura_fim",
     "varredura_duracao_s", "timestamp", "epc", "rssi",
@@ -56,13 +62,14 @@ class ArquivoVarredura:
     operador: str
     varredura_id: str
     numero: int
-    epc_referencia: str
     tecnica: str
     potencia_dbm: int
     inicio: str
     fim: str
     duracao_s: int
     linhas_brutas: int
+    sala: str = ""
+    epc_referencia: str = ""
     leituras: list = field(default_factory=list)
 
     @property
@@ -89,7 +96,7 @@ class ArquivoSessao:
 def tipo_do_arquivo(caminho):
     """Descobre o tipo pelo cabecalho, nao pelo nome do arquivo."""
     cabecalho = _ler_cabecalho(caminho)
-    if cabecalho == CABECALHO_LEITURAS:
+    if cabecalho in (CABECALHO_LEITURAS, CABECALHO_LEITURAS_LEGADO):
         return "varredura"
     if cabecalho == CABECALHO_SESSAO:
         return "sessao"
@@ -145,7 +152,7 @@ def ler_varredura(caminho):
 
     if metadados is None:
         raise ArquivoInvalido(f"{caminho.name}: arquivo sem nenhuma leitura")
-    if metadados["epc_referencia"] and metadados["epc_referencia"] not in agregados:
+    if metadados.get("epc_referencia") and metadados["epc_referencia"] not in agregados:
         raise ArquivoInvalido(
             f"{caminho.name}: tag de referencia {metadados['epc_referencia']} "
             "nao consta entre as leituras da varredura"
@@ -206,11 +213,19 @@ def _ler_cabecalho(caminho):
 
 
 def _exigir_cabecalho(encontrado, esperado, caminho):
-    if list(encontrado or []) != esperado:
+    cabecalho = list(encontrado or [])
+    if esperado == CABECALHO_LEITURAS:
+        if cabecalho not in (CABECALHO_LEITURAS, CABECALHO_LEITURAS_LEGADO):
+            raise ArquivoInvalido(
+                f"{Path(caminho).name}: cabecalho inesperado.\n"
+                f"  esperado: {','.join(CABECALHO_LEITURAS)}\n"
+                f"  encontrado: {','.join(cabecalho)}"
+            )
+    elif cabecalho != esperado:
         raise ArquivoInvalido(
             f"{Path(caminho).name}: cabecalho inesperado.\n"
             f"  esperado: {','.join(esperado)}\n"
-            f"  encontrado: {','.join(encontrado or [])}"
+            f"  encontrado: {','.join(cabecalho)}"
         )
 
 
@@ -229,7 +244,8 @@ def _metadados(linha, caminho, numero_linha):
         "operador": linha["operador"].strip(),
         "varredura_id": varredura_id,
         "numero": _numero_da_varredura(varredura_id, caminho, numero_linha),
-        "epc_referencia": linha["epc_referencia"].strip().upper(),
+        "sala": linha.get("sala", "").strip(),
+        "epc_referencia": linha.get("epc_referencia", "").strip().upper() if "epc_referencia" in linha else "",
         "tecnica": linha["tecnica"].strip(),
         "potencia_dbm": _exigir_inteiro(
             linha["potencia_dbm"], caminho, numero_linha, "potencia_dbm"),

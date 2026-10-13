@@ -627,6 +627,7 @@ color cardview_light_background
 color cardview_shadow_end_color
 color cardview_shadow_start_color
 color colorAccent
+color colorLimitrofe
 color colorPrimary
 color colorPrimaryDark
 color colorRfid
@@ -951,7 +952,6 @@ id BtInventory
 id BtLerTag
 id BtLimparPar
 id BtSalvarPar
-id BtTagReferencia
 id BtTsLerTag
 id BtTsSalvar
 id CTRL
@@ -1126,6 +1126,7 @@ id et_operador
 id et_patrimonio
 id et_pwd
 id et_read_6c
+id et_sala
 id et_ts_epc
 id et_ts_sala
 id et_ts_unidade
@@ -1541,6 +1542,7 @@ string getstr
 string hintEpc
 string hintOperador
 string hintPatrimonio
+string hintSala
 string hintSalaTs
 string hintUnidade
 string info_result
@@ -1555,6 +1557,7 @@ string lblEpc
 string lblMetalico
 string lblOperador
 string lblPatrimonio
+string lblSala
 string lblSalaTs
 string lblTecnica
 string lblUnidade
@@ -1595,6 +1598,7 @@ string msgPermissaoNegada
 string msgPermissaoPedido
 string msgRefCapturada
 string msgRefJaCapturada
+string msgSalaVazia
 string msgSemSessao
 string msgSemVarredura
 string msgSessaoCamposVazios

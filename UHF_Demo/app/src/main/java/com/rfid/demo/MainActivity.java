@@ -60,7 +60,10 @@ public class MainActivity extends TabActivity   {
 		myTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
 			@Override
 			public void onTabChanged(String s) {
-//				changeTabBottomBg();
+				Activity current = getCurrentActivity();
+				if (current instanceof ScanActivity) {
+					((ScanActivity) current).registrarCallback();
+				}
 			}
 		});
 
@@ -153,6 +156,14 @@ public class MainActivity extends TabActivity   {
 	private long firstTime = 0;
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent event) {
+		int keyCode = event.getKeyCode();
+		if (ScanActivity.isTriggerKey(keyCode)) {
+			Activity current = getCurrentActivity();
+			if (current != null && current.dispatchKeyEvent(event)) {
+				return true;
+			}
+		}
+
 		long secondTime = System.currentTimeMillis();
 		if(event.getKeyCode() == KeyEvent.KEYCODE_BACK &&  event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0){
 			if (secondTime - firstTime < 2000) {

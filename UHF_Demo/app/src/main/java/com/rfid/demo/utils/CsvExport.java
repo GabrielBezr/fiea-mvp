@@ -167,7 +167,7 @@ public class CsvExport {
         SimpleDateFormat fmt = new SimpleDateFormat(FORMATO_DATA, Locale.US);
         BufferedWriter w = abrir(arquivo);
         try {
-            w.write("id_sessao,unidade,operador,id_varredura,epc_referencia,tecnica,"
+            w.write("id_sessao,unidade,operador,id_varredura,sala,tecnica,"
                     + "potencia_dbm,varredura_inicio,varredura_fim,varredura_duracao_s,"
                     + "timestamp,epc,rssi" + EOL);
             // Metadados da sessão e da varredura, constantes em todas as linhas.
@@ -175,7 +175,7 @@ public class CsvExport {
                     + campo(v.sessao.unidade) + SEP
                     + campo(v.sessao.operador) + SEP
                     + campo(v.id) + SEP
-                    + campo(v.epcReferencia) + SEP
+                    + campo(v.sala) + SEP
                     + campo(v.tecnica) + SEP
                     + v.potenciaDbm + SEP
                     + instante(fmt, v.inicio) + SEP

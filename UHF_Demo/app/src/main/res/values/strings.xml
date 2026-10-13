@@ -82,6 +82,9 @@
     <string name="hintUnidade">unidade</string>
     <string name="lblOperador">Operador:</string>
     <string name="hintOperador">operador</string>
+    <string name="lblSala">Sala:</string>
+    <string name="hintSala">nome da sala</string>
+    <string name="msgSalaVazia">Informe a sala antes de iniciar a varredura</string>
     <string name="lblTecnica">Técnica:</string>
     <string name="btIniciarSessao">Iniciar sessão</string>
     <string name="btEncerrarSessao">Encerrar sessão</string>
@@ -94,11 +97,11 @@
     <string name="sessaoAtiva">Sessão %1$s · unidade: %2$s · operador: %3$s · início: %4$s · varreduras: %5$d</string>
     <string name="sessaoEncerrada">Sessão %1$s · unidade: %2$s · início: %3$s · fim: %4$s · %5$d varreduras · %6$d s</string>
     <string name="varreduraInativa">Sem varredura ativa — leituras não serão gravadas</string>
-    <string name="varreduraAtiva">Varredura %1$d · ref: %2$s · %3$d dBm · leituras: %4$d</string>
-    <string name="varreduraEncerrada">Varredura %1$d encerrada · %2$d leituras · %3$d s</string>
+    <string name="varreduraAtiva">Varredura %1$d (%2$s) · %3$d dBm · leituras: %4$d</string>
+    <string name="varreduraEncerrada">Varredura %1$d (%2$s) encerrada · %3$d leituras · %4$d s</string>
     <string name="refNaoCapturada">não capturada</string>
     <string name="msgSemSessao">Inicie a sessão de inventário antes</string>
-    <string name="msgSemVarredura">Inicie a varredura antes</string>
+    <string name="msgSemVarredura">Inicie a varredura antes de ler</string>
     <string name="msgVarreduraSemReferencia">Leia a tag de referência da sala antes de encerrar a varredura</string>
     <string name="msgRefJaCapturada">A tag de referência desta varredura já foi capturada</string>
     <string name="msgCapturandoRef">Aponte para a tag de referência da sala</string>

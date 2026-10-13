@@ -99,9 +99,6 @@ public class TagsSalaActivity extends Activity implements OnClickListener {
             }
         };
 
-        if (RFIDSDKManager.getInstance().getRfidManager() != null) {
-            RFIDSDKManager.getInstance().getRfidManager().registerCallback(callback);
-        }
         atualizarStatus();
     }
 
@@ -217,13 +214,22 @@ public class TagsSalaActivity extends Activity implements OnClickListener {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if ((keyCode == 515 || keyCode == 523) && event.getRepeatCount() == 0) {
+        if (ScanActivity.isTriggerKey(keyCode) && event.getRepeatCount() == 0) {
             lerTag();
             return true;
         }
         return super.onKeyDown(keyCode, event);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (RFIDSDKManager.getInstance().getRfidManager() != null) {
+            // Regista o callback da TagsSalaActivity toda a vez que a aba for focada
+            RFIDSDKManager.getInstance().getRfidManager().registerCallback(callback);
+        }
+    }
+    
     @Override
     protected void onPause() {
         super.onPause();
