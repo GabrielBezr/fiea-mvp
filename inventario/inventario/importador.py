@@ -77,6 +77,17 @@ def _importar_varredura(caminho, conexao):
                 "SELECT s.id, s.nome FROM sala s WHERE LOWER(s.nome) = LOWER(?)",
                 (arquivo.sala,),
             ).fetchone()
+        if not sala:
+            conexao.execute(
+                "INSERT INTO sala (unidade, nome) VALUES (?, ?) "
+                "ON CONFLICT(unidade, nome) DO NOTHING",
+                (arquivo.unidade, arquivo.sala),
+            )
+            sala = conexao.execute(
+                "SELECT s.id, s.nome FROM sala s "
+                "WHERE LOWER(s.nome) = LOWER(?) AND s.unidade = ?",
+                (arquivo.sala, arquivo.unidade),
+            ).fetchone()
     if not sala and arquivo.epc_referencia:
         sala = conexao.execute(
             "SELECT s.id, s.nome FROM tag_referencia t "
