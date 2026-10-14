@@ -70,8 +70,17 @@ def main(argv=None):
 
     comandos.add_parser("resumo", help="mostra o cadastro e as coletas ja importadas")
 
+    servidor = comandos.add_parser("servidor", help="inicia o servidor local e interface web")
+    servidor.add_argument("--porta", type=int, default=5000, help="porta do servidor (padrao: 5000)")
+
     args = analisador.parse_args(argv)
     _saida_em_utf8()
+
+    if args.comando == "servidor":
+        from .servidor import iniciar_servidor
+        iniciar_servidor(porta=args.porta)
+        return 0
+
     conexao = esquema.conectar(args.db)
     try:
         return {

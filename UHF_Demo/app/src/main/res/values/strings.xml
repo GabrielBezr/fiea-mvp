@@ -129,9 +129,27 @@
     <string name="msgEtiqEpcRepetido">Esta etiqueta ja foi vinculada nesta campanha</string>
     <string name="msgEtiqPatrimonioRepetido">Este patrimonio ja foi vinculado nesta campanha</string>
     <string name="msgEtiqLeituraFalhou">Nao foi possivel iniciar a leitura</string>
+    <string name="btTransmitirPc">📡 Transmitir ao PC (Baixa Potência)</string>
+    <string name="msgTagTransmitindo">Aproxime a tag do leitor (potência reduzida)...</string>
+    <string name="msgTagTransmitidaSucesso">Tag transmitida ao PC com sucesso: %1$s</string>
+    <string name="msgTagTransmitidaFalha">Tag lida (%1$s), mas falhou ao enviar para o PC</string>
 
-    <!-- RF01: captura das tags de referencia -->
-    <string name="tab_tags_sala">Salas</string>
+    <!-- RF01 / RF09 / RF10: Pendencias e Conferencia -->
+    <string name="tab_tags_sala">Pendências</string>
+    <string name="tab_pendencias">Pendências</string>
+    <string name="lblServidor">Servidor:</string>
+    <string name="hintServidor">http://192.168.1.100:5000</string>
+    <string name="btConfigServidor">Configurar PC</string>
+    <string name="tituloPendencias">Conferência de Pendências</string>
+    <string name="msgPendenciasDetectadas">Varredura encerrada! %1$d lidos via RFID e %2$d bens pendentes na sala %3$s. Deseja resolver as pendências agora?</string>
+    <string name="btResolverAgora">Resolver Pendências</string>
+    <string name="btResolverDepois">Mais Tarde</string>
+    <string name="msgReconexaoTitulo">Conexão Restabelecida</string>
+    <string name="msgReconexaoTexto">Conexão com o computador restabelecida! Foram detectados dados de coletas offline. Deseja sincronizar agora?</string>
+    <string name="btSincronizarAgora">Sincronizar Agora</string>
+    <string name="metodoQr">Ler QR Code (Câmera)</string>
+    <string name="metodoManual">Conferência Manual</string>
+    <string name="metodoFaltante">Item Faltante / Desaparecido</string>
     <string name="lblSalaTs">Sala:</string>
     <string name="hintSalaTs">nome da sala</string>
     <string name="btTsSalvar">Salvar tag de referencia</string>

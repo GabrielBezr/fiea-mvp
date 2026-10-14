@@ -1,161 +1,154 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:descendantFocusability="beforeDescendants"
-    android:focusableInTouchMode="true"
-    android:orientation="vertical" >
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/white"
+    android:padding="8dp">
 
-    <!-- RF01: captura das 5 tags de referência de cada sala -->
+    <!-- Cabeçalho: Sala e Configuração do Servidor -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:paddingTop="8dp"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:paddingBottom="4dp">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/tv_pend_sala"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/lblUnidade"
-            android:textSize="14sp"
+            android:layout_weight="1"
+            android:text="Sala: (Nenhuma varredura selecionada)"
+            android:textColor="@color/black"
+            android:textSize="15sp"
             android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/et_ts_unidade"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginLeft="5dp"
-            android:hint="@string/hintUnidade"
-            android:imeOptions="actionNext"
-            android:inputType="text"
-            android:maxLines="1"
-            android:singleLine="true"
-            android:textSize="13sp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:paddingTop="5dp"
-        android:gravity="center_vertical">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/lblSalaTs"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/et_ts_sala"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginLeft="5dp"
-            android:hint="@string/hintSalaTs"
-            android:imeOptions="actionDone"
-            android:inputType="text"
-            android:maxLines="1"
-            android:singleLine="true"
-            android:textSize="13sp" />
-
-        <Spinner
-            android:id="@+id/spinner_posicao"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginLeft="5dp"
-            android:entries="@array/spinner_posicoes" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:paddingTop="5dp"
-        android:gravity="center_vertical">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/lblEpc"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/et_ts_epc"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginLeft="5dp"
-            android:hint="@string/hintEpc"
-            android:imeOptions="actionDone"
-            android:inputType="textCapCharacters|textNoSuggestions"
-            android:maxLines="1"
-            android:singleLine="true"
-            android:textSize="13sp" />
 
         <Button
-            android:id="@+id/BtTsLerTag"
+            android:id="@+id/btn_config_servidor"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
+            android:layout_height="36dp"
+            android:text="@string/btConfigServidor"
+            android:textSize="11sp"
             android:textAllCaps="false"
-            android:textSize="13sp"
             android:background="@drawable/color_button_selector"
-            android:text="@string/btLerTag"
             android:textColor="@color/white" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/BtTsSalvar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginTop="5dp"
-        android:textAllCaps="false"
-        android:background="@drawable/color_button_selector"
-        android:text="@string/btTsSalvar"
-        android:textColor="@color/white" />
-
+    <!-- Resumo dos Contadores -->
     <TextView
-        android:id="@+id/tv_ts_status"
+        android:id="@+id/tv_pend_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingLeft="15dp"
-        android:paddingRight="15dp"
-        android:paddingTop="5dp"
-        android:textColor="@color/black"
-        android:textSize="13sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/tv_ts_arquivo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingLeft="15dp"
-        android:paddingRight="15dp"
-        android:paddingBottom="5dp"
-        android:textSize="11sp" />
+        android:text="Status: 0 bens esperados"
+        android:textSize="12sp"
+        android:textColor="@color/colorPrimary"
+        android:paddingBottom="6dp" />
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="1px"
-        android:background="@color/gray1" />
+        android:layout_height="1dp"
+        android:background="@color/gray1"
+        android:layout_marginBottom="8dp" />
 
+    <!-- Painel de Resolução (RF10: Dropbox com QR Code / Manual / Faltante) -->
+    <LinearLayout
+        android:id="@+id/layout_painel_resolucao"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#F1F5F9"
+        android:padding="8dp"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:id="@+id/tv_item_selecionado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Toque em um bem na lista abaixo para resolver:"
+            android:textSize="13sp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:paddingBottom="4dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- Dropbox de Seleção do Método -->
+            <Spinner
+                android:id="@+id/spinner_metodo_resolucao"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:background="@android:drawable/btn_dropdown"
+                android:layout_marginRight="6dp" />
+
+            <Button
+                android:id="@+id/btn_executar_acao"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="Aplicar"
+                android:textSize="12sp"
+                android:textAllCaps="false"
+                android:background="@drawable/color_button_selector"
+                android:textColor="@color/white" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Título da Lista -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Bens da Sala (Toque para selecionar):"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:paddingBottom="2dp" />
+
+    <!-- Lista de Bens / Pendências -->
     <ListView
-        android:id="@+id/lv_tags_sala"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent" />
+        android:id="@+id/lv_pendencias"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@color/gray1"
+        android:dividerHeight="1dp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/gray1"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp" />
+
+    <!-- Barra Inferior: Sincronização com o Servidor -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tv_sync_status"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Servidor: Verificando..."
+            android:textSize="11sp"
+            android:textColor="@color/gray2" />
+
+        <Button
+            android:id="@+id/btn_sincronizar_servidor"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:text="Sincronizar com PC"
+            android:textSize="11sp"
+            android:textAllCaps="false"
+            android:background="@drawable/color_button_selector"
+            android:textColor="@color/white" />
+    </LinearLayout>
 
 </LinearLayout>

@@ -18,9 +18,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import android.util.Log;
+
 import com.rfid.demo.utils.CsvExport;
 import com.rfid.demo.utils.ParEtiquetagem;
 import com.rfid.demo.utils.StoragePermission;
+import com.rfid.demo.utils.SyncManager;
 import com.ubx.usdk.RFIDSDKManager;
 import com.ubx.usdk.rfid.aidl.IRfidCallback;
 
@@ -45,11 +48,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class EtiquetagemActivity extends Activity implements OnClickListener {
 
+    private static final String TAG = "EtiquetagemActivity";
     private static final int MSG_EPC_CAPTURADO = 1;
 
     private EditText etEpc, etPatrimonio;
     private CheckBox cbMetalico;
-    private Button btLerTag, btSalvar, btLimpar;
+    private Button btLerTag, btSalvar, btLimpar, btnTransmitirPc;
+    private final AtomicBoolean transmitindoAoPc = new AtomicBoolean(false);
+    private int potenciaOriginal = -1;
+    private Runnable timeoutTransmitirPc = null;
     private TextView tvStatus, tvArquivo;
     private ListView lvPares;
 
@@ -83,6 +90,7 @@ public class EtiquetagemActivity extends Activity implements OnClickListener {
         btLerTag = findViewById(R.id.BtLerTag);
         btSalvar = findViewById(R.id.BtSalvarPar);
         btLimpar = findViewById(R.id.BtLimparPar);
+        btnTransmitirPc = findViewById(R.id.btn_transmitir_pc);
         tvStatus = findViewById(R.id.tv_etiq_status);
         tvArquivo = findViewById(R.id.tv_etiq_arquivo);
         lvPares = findViewById(R.id.lv_pares);
@@ -90,6 +98,7 @@ public class EtiquetagemActivity extends Activity implements OnClickListener {
         btLerTag.setOnClickListener(this);
         btSalvar.setOnClickListener(this);
         btLimpar.setOnClickListener(this);
+        btnTransmitirPc.setOnClickListener(this);
 
         adaptador = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, linhasDaTela);
         lvPares.setAdapter(adaptador);
@@ -118,9 +127,21 @@ public class EtiquetagemActivity extends Activity implements OnClickListener {
             @Override
             public void handleMessage(Message msg) {
                 if (msg.what == MSG_EPC_CAPTURADO) {
+                    boolean eraTransmissaoPc = (msg.arg1 == 1);
+                    String epc = epcCapturado;
                     pararLeitura();
-                    preencherEpc(epcCapturado, ParEtiquetagem.ORIGEM_RFID);
+                    preencherEpc(epc, ParEtiquetagem.ORIGEM_RFID);
                     etPatrimonio.requestFocus();
+
+                    if (eraTransmissaoPc) {
+                        SyncManager.getInstance(EtiquetagemActivity.this).enviarTagCapturada(epc, sucesso -> {
+                            if (sucesso) {
+                                Toast.makeText(getApplicationContext(), getString(R.string.msgTagTransmitidaSucesso, epc), Toast.LENGTH_LONG).show();
+                            } else {
+                                Toast.makeText(getApplicationContext(), getString(R.string.msgTagTransmitidaFalha, epc), Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
                 }
             }
         };
@@ -132,6 +153,8 @@ public class EtiquetagemActivity extends Activity implements OnClickListener {
     public void onClick(View v) {
         if (v == btLerTag) {
             lerTag();
+        } else if (v == btnTransmitirPc) {
+            iniciarLeituraTransmitirPc();
         } else if (v == btSalvar) {
             salvarPar();
         } else if (v == btLimpar) {
@@ -141,18 +164,87 @@ public class EtiquetagemActivity extends Activity implements OnClickListener {
 
     /** Arma a captura e dispara uma leitura: a primeira etiqueta vista vence. */
     private void lerTag() {
+        transmitindoAoPc.set(false);
         capturandoEpc.set(true);
         int resultado = RFIDSDKManager.getInstance().getRfidManager()
                 .startInventoryWithTimeout(5);
         if (resultado != 0) {
-            capturandoEpc.set(false);
+            pararLeitura();
+            avisar(R.string.msgEtiqLeituraFalhou);
+        }
+    }
+
+    /**
+     * Leitura por proximidade para cadastro no PC: reduz potência para 5 dBm
+     * e garante restauração estrita para a potência original ao terminar.
+     */
+    private void iniciarLeituraTransmitirPc() {
+        if (RFIDSDKManager.getInstance().getRfidManager() == null) {
+            avisar(R.string.rfid_initialization_failure);
+            return;
+        }
+        if (capturandoEpc.get() || transmitindoAoPc.get()) {
+            pararLeitura();
+            return;
+        }
+
+        try {
+            potenciaOriginal = RFIDSDKManager.getInstance().getRfidManager().getOutputPower();
+            Log.d(TAG, "Potência RF original gravada: " + potenciaOriginal + " dBm");
+            // Reduz potência para 5 dBm para leitura estrita por aproximação
+            RFIDSDKManager.getInstance().getRfidManager().setOutputPower(5);
+        } catch (Exception e) {
+            Log.e(TAG, "Falha ao definir potência mínima: " + e.getMessage());
+        }
+
+        transmitindoAoPc.set(true);
+        capturandoEpc.set(true);
+        btnTransmitirPc.setText("Aguardando tag próxima...");
+        Toast.makeText(this, R.string.msgTagTransmitindo, Toast.LENGTH_SHORT).show();
+
+        timeoutTransmitirPc = () -> {
+            if (transmitindoAoPc.get()) {
+                pararLeitura();
+                Toast.makeText(getApplicationContext(), "Tempo esgotado. Nenhuma tag detectada.", Toast.LENGTH_SHORT).show();
+            }
+        };
+        handler.postDelayed(timeoutTransmitirPc, 6000);
+
+        int resultado = RFIDSDKManager.getInstance().getRfidManager()
+                .startInventoryWithTimeout(5);
+        if (resultado != 0) {
+            pararLeitura();
             avisar(R.string.msgEtiqLeituraFalhou);
         }
     }
 
     private void pararLeitura() {
+        if (timeoutTransmitirPc != null) {
+            handler.removeCallbacks(timeoutTransmitirPc);
+            timeoutTransmitirPc = null;
+        }
         capturandoEpc.set(false);
-        RFIDSDKManager.getInstance().getRfidManager().stopInventory();
+        boolean eraPc = transmitindoAoPc.getAndSet(false);
+
+        if (RFIDSDKManager.getInstance().getRfidManager() != null) {
+            try {
+                RFIDSDKManager.getInstance().getRfidManager().stopInventory();
+            } catch (Exception ignored) {}
+
+            // Restauração OBRIGATÓRIA da potência original
+            if (eraPc && potenciaOriginal > 0) {
+                try {
+                    RFIDSDKManager.getInstance().getRfidManager().setOutputPower(potenciaOriginal);
+                    Log.d(TAG, "Potência RF restaurada estritamente para: " + potenciaOriginal + " dBm");
+                } catch (Exception e) {
+                    Log.e(TAG, "Falha ao restaurar potência: " + e.getMessage());
+                }
+                potenciaOriginal = -1;
+            }
+        }
+        if (btnTransmitirPc != null) {
+            btnTransmitirPc.setText(R.string.btTransmitirPc);
+        }
     }
 
     private void preencherEpc(String epc, String origem) {
@@ -235,7 +327,9 @@ public class EtiquetagemActivity extends Activity implements OnClickListener {
             // compareAndSet garante que só a primeira etiqueta seja aproveitada.
             if (capturandoEpc.compareAndSet(true, false)) {
                 epcCapturado = EPC.toUpperCase();
-                handler.sendEmptyMessage(MSG_EPC_CAPTURADO);
+                Message msg = handler.obtainMessage(MSG_EPC_CAPTURADO);
+                msg.arg1 = transmitindoAoPc.get() ? 1 : 0;
+                handler.sendMessage(msg);
             }
         }
 
