@@ -1,6 +1,7 @@
 package com.rfid.demo;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -11,6 +12,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -26,6 +28,7 @@ import com.rfid.demo.utils.FileImport;
 import com.rfid.demo.utils.Leitura;
 import com.rfid.demo.utils.Sessao;
 import com.rfid.demo.utils.StoragePermission;
+import com.rfid.demo.utils.SyncManager;
 import com.rfid.demo.utils.Varredura;
 import com.ubx.usdk.RFIDSDKManager;
 import com.ubx.usdk.rfid.aidl.IRfidCallback;
@@ -33,7 +36,9 @@ import com.ubx.usdk.rfid.aidl.IRfidCallback;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ScanActivity extends Activity implements OnClickListener {
@@ -44,11 +49,11 @@ public class ScanActivity extends Activity implements OnClickListener {
     SimpleAdapter adapter;
     Button BtClear, Btimport, BtInventory;
     Button BtIniciarSessao, BtEncerrarSessao, BtExportCsv;
-    Button BtIniciarVarredura, BtEncerrarVarredura, BtTagReferencia;
+    Button BtIniciarVarredura, BtEncerrarVarredura;
     TextView tv_count, tv_alltag, tv_tips, tv_sessao, tv_varredura;
     ListView LvTags;
     EditText etUnidade, etOperador;
-    Spinner spinnerTecnica;
+    Spinner spinnerTecnica, spinnerSala;
 
     // Sessão de inventário por unidade (RF04) com uma varredura por sala (RF05).
     // Paralelo a tagList, que segue alimentando a tela. onInventoryTag roda em
@@ -58,18 +63,17 @@ public class ScanActivity extends Activity implements OnClickListener {
     private Varredura ultimaVarreduraEncerrada = null;
     private Sessao ultimaSessaoEncerrada = null;
     private final List<Leitura> leiturasBrutas = Collections.synchronizedList(new ArrayList<Leitura>());
-    // Armado por "Tag de referência": a próxima leitura identifica a sala.
-    private final AtomicBoolean capturandoReferencia = new AtomicBoolean(false);
 
     public static String epc;
     public static String tid = "";
     private HashMap<String, String> map;
     public boolean isStopThread = false;
+    private volatile boolean isInventoryRunning = false;
+    private long triggerDownTime = 0;
     ScanCallback callback = new ScanCallback();
 
     private static final int MSG_UPDATE_LISTVIEW = 0;
     private static final int MSG_UPDATE_STOP = 3;
-    private static final int MSG_REF_CAPTURADA = 4;
     
     public long CardNumber;
     public static List<String> mlist = new ArrayList<String>();
@@ -91,15 +95,15 @@ public class ScanActivity extends Activity implements OnClickListener {
             tv_alltag = findViewById(R.id.tv_alltag);
             BtInventory = findViewById(R.id.BtInventory);
             LvTags = findViewById(R.id.LvTags);
-            // A sala não é digitada: vem da tag de referência lida na entrada (RF01/RF05)
             etUnidade = findViewById(R.id.et_unidade);
             etOperador = findViewById(R.id.et_operador);
+            spinnerSala = findViewById(R.id.spinner_sala);
+            carregarSalasNoSpinner();
             spinnerTecnica = findViewById(R.id.spinner_tecnica);
             BtIniciarSessao = findViewById(R.id.BtIniciarSessao);
             BtEncerrarSessao = findViewById(R.id.BtEncerrarSessao);
             BtIniciarVarredura = findViewById(R.id.BtIniciarVarredura);
             BtEncerrarVarredura = findViewById(R.id.BtEncerrarVarredura);
-            BtTagReferencia = findViewById(R.id.BtTagReferencia);
             BtExportCsv = findViewById(R.id.BtExportCsv);
             tv_sessao = findViewById(R.id.tv_sessao);
             tv_varredura = findViewById(R.id.tv_varredura);
@@ -116,12 +120,29 @@ public class ScanActivity extends Activity implements OnClickListener {
                     TextView TvTagLen = view.findViewById(R.id.TvTagLen);
                     TextView TvTagCount = view.findViewById(R.id.TvTagCount);
                     TextView TvTagRssi = view.findViewById(R.id.TvTagRssi);
-                    
+
+                    HashMap<String, String> item = position < tagList.size() ? tagList.get(position) : null;
+                    String rssiStr = item != null ? item.get("tagRssi") : "";
+                    boolean limitrofe = false;
+                    try {
+                        if (rssiStr != null && !rssiStr.isEmpty()) {
+                            int rssiVal = Integer.parseInt(rssiStr.trim());
+                            limitrofe = (rssiVal < 0 && rssiVal <= -70) || (rssiVal > 0 && rssiVal >= 70);
+                        }
+                    } catch (Exception ignored) {}
+
                     TvTagUii.setTextColor(ContextCompat.getColor(ScanActivity.this, R.color.colorPrimary));
                     TvTagLen.setTextColor(ContextCompat.getColor(ScanActivity.this, R.color.colorPrimary));
                     TvTagCount.setTextColor(ContextCompat.getColor(ScanActivity.this, R.color.colorPrimary));
-                    TvTagRssi.setTextColor(ContextCompat.getColor(ScanActivity.this, R.color.colorPrimary));
-                    
+
+                    if (limitrofe) {
+                        TvTagRssi.setTextColor(ContextCompat.getColor(ScanActivity.this, R.color.colorLimitrofe));
+                        TvTagRssi.setText(rssiStr + " [!]");
+                    } else {
+                        TvTagRssi.setTextColor(ContextCompat.getColor(ScanActivity.this, R.color.colorPrimary));
+                        TvTagRssi.setText(rssiStr);
+                    }
+
                     return super.getView(position, convertView, parent);
                 }
             };
@@ -133,7 +154,6 @@ public class ScanActivity extends Activity implements OnClickListener {
             BtEncerrarSessao.setOnClickListener(this);
             BtIniciarVarredura.setOnClickListener(this);
             BtEncerrarVarredura.setOnClickListener(this);
-            BtTagReferencia.setOnClickListener(this);
             BtExportCsv.setOnClickListener(this);
             atualizarStatus();
 
@@ -158,22 +178,12 @@ public class ScanActivity extends Activity implements OnClickListener {
                                     addEPCToList(strs[0] + "," + strs[1], strs[2]);
                                 }
                                 break;
-                            case MSG_REF_CAPTURADA:
-                                // A tag ja foi capturada; nao e preciso seguir lendo.
-                                stopInventory();
-                                BtInventory.setText(getString(R.string.btInventory));
-                                setViewEnabled(true);
-                                Varredura vr = varreduraAtual;
-                                Toast.makeText(getApplicationContext(),
-                                        getString(R.string.msgRefCapturada,
-                                                vr == null ? "" : vr.epcReferencia),
-                                        Toast.LENGTH_LONG).show();
-                                atualizarStatus();
-                                break;
                             case MSG_UPDATE_STOP:
+                                isInventoryRunning = false;
                                 updateList();
                                 setViewEnabled(true);
                                 BtInventory.setText(getString(R.string.btInventory));
+                                tv_tips.setText("");
                                 break;
                         }
                     } catch (Exception ex) {
@@ -233,7 +243,7 @@ public class ScanActivity extends Activity implements OnClickListener {
             // Sala no .xls legado: o EPC da tag de referência da varredura corrente,
             // já que a sala deixou de ser digitada (RF01/RF05).
             Varredura vAtual = varreduraAtual;
-            map.put("tagSala", vAtual == null ? "" : vAtual.epcReferencia);
+            map.put("tagSala", vAtual == null ? "" : vAtual.sala);
 
             map.put("tagCount", String.valueOf(1));
             map.put("tagRssi", rssi);
@@ -282,6 +292,9 @@ public class ScanActivity extends Activity implements OnClickListener {
         etUnidade.setEnabled(false);
         etOperador.setEnabled(false);
         atualizarStatus();
+        // Registra o início imediatamente. O arquivo será atualizado com o fim
+        // quando a sessão for encerrada.
+        exportarSessao(sessaoAtual, false);
     }
 
     private void encerrarSessao() {
@@ -299,7 +312,7 @@ public class ScanActivity extends Activity implements OnClickListener {
         etUnidade.setEnabled(true);
         etOperador.setEnabled(true);
         atualizarStatus();
-        exportarSessao(s);
+        exportarSessao(s, true);
     }
 
     private void iniciarVarredura() {
@@ -311,14 +324,32 @@ public class ScanActivity extends Activity implements OnClickListener {
         if (varreduraAtual != null) {
             return;
         }
+        Object itemSala = spinnerSala != null ? spinnerSala.getSelectedItem() : null;
+        String sala = itemSala != null ? itemSala.toString().trim() : "";
+        if (sala.isEmpty()) {
+            avisar(R.string.msgSalaVazia);
+            return;
+        }
         String tecnica = spinnerTecnica.getSelectedItem().toString();
         // Potência lida da configuração corrente do SDK, nunca fixada no código.
-        int potencia = RFIDSDKManager.getInstance().getRfidManager().getOutputPower();
+        int potencia = 30;
+        try {
+            if (RFIDSDKManager.getInstance().getRfidManager() != null) {
+                potencia = RFIDSDKManager.getInstance().getRfidManager().getOutputPower();
+            }
+        } catch (Exception ignored) {}
         leiturasBrutas.clear();
-        varreduraAtual = new Varredura(s, s.proximoNumero(), tecnica, potencia,
+        clearData(); // Limpa as tags exibidas na tela para a nova sala
+        varreduraAtual = new Varredura(s, s.proximoNumero(), sala, tecnica, potencia,
                 System.currentTimeMillis());
         spinnerTecnica.setEnabled(false);
+        if (spinnerSala != null) {
+            spinnerSala.setEnabled(false);
+        }
         atualizarStatus();
+
+        // Pré-carrega bens da sala se online
+        SyncManager.getInstance(this).buscarBensDaSala(sala, null);
     }
 
     private void encerrarVarredura() {
@@ -326,34 +357,81 @@ public class ScanActivity extends Activity implements OnClickListener {
         if (v == null) {
             return;
         }
-        // Garante que nenhuma leitura entra depois da marcação de fim.
-        if (!BtInventory.getText().equals(getString(R.string.btInventory))) {
-            stopInventory();
-        }
-        capturandoReferencia.set(false);
+        stopReading();
         v.fim = System.currentTimeMillis();
         varreduraAtual = null;
         ultimaVarreduraEncerrada = v;
         spinnerTecnica.setEnabled(true);
+        if (spinnerSala != null) {
+            spinnerSala.setEnabled(true);
+        }
         atualizarStatus();
         exportarVarredura(v);
+
+        // RF09: Verifica se há bens pendentes na sala
+        verificarPendenciasDaSala(v);
     }
 
-    /**
-     * Arma a captura da tag de referência da sala: a próxima etiqueta lida passa a
-     * identificar o ambiente (RF05). A tradução do EPC para o nome da sala é feita
-     * no computador, a partir do cadastro do administrador (RF01).
-     */
-    private void capturarTagReferencia() {
-        if (varreduraAtual == null) {
-            avisar(R.string.msgSemVarredura);
-            return;
+    private void verificarPendenciasDaSala(final Varredura v) {
+        if (v == null) return;
+
+        final List<Leitura> copiaLeituras;
+        final Set<String> epcsLidos = new HashSet<>();
+        synchronized (leiturasBrutas) {
+            copiaLeituras = new ArrayList<>(leiturasBrutas);
+            for (Leitura l : copiaLeituras) {
+                if (l.epc != null && !l.epc.isEmpty()) {
+                    epcsLidos.add(l.epc.toUpperCase());
+                }
+            }
         }
-        capturandoReferencia.set(true);
-        avisar(R.string.msgCapturandoRef);
-        if (BtInventory.getText().equals(getString(R.string.btInventory))) {
-            readTag();
-        }
+
+        SyncManager.getInstance(this).buscarBensDaSala(v.sala, bens -> {
+            if (bens == null || bens.isEmpty()) {
+                // Sincroniza diretamente se não há cadastro prévio de bens
+                SyncManager.getInstance(ScanActivity.this).sincronizarVarredura(v.sessao, v, copiaLeituras, null, sucesso -> {
+                    if (sucesso) {
+                        Toast.makeText(getApplicationContext(), "Varredura sincronizada com o computador via Wi-Fi!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                return;
+            }
+
+            int pendentesCount = 0;
+            int lidosCount = 0;
+            for (SyncManager.BemEsperado b : bens) {
+                if (b.epc != null && !b.epc.isEmpty() && epcsLidos.contains(b.epc.toUpperCase())) {
+                    lidosCount++;
+                } else {
+                    pendentesCount++;
+                }
+            }
+
+            final int finalPendentes = pendentesCount;
+            final int finalLidos = lidosCount;
+
+            if (finalPendentes > 0) {
+                // Alerta ao operador conforme RF09
+                new AlertDialog.Builder(ScanActivity.this)
+                        .setTitle("Varredura Encerrada")
+                        .setMessage(getString(R.string.msgPendenciasDetectadas, finalLidos, finalPendentes, v.sala))
+                        .setPositiveButton(R.string.btResolverAgora, (dialog, which) -> {
+                            TagsSalaActivity.carregarParaConferencia(v.sessao, v, copiaLeituras, epcsLidos, v.sala);
+                            if (MainActivity.myTabHost != null) {
+                                MainActivity.myTabHost.setCurrentTab(1); // Abre a aba de Pendências
+                            }
+                        })
+                        .setNegativeButton(R.string.btResolverDepois, (dialog, which) -> {
+                            // Salva na fila de sincronização
+                            SyncManager.getInstance(ScanActivity.this).sincronizarVarredura(v.sessao, v, copiaLeituras, null, null);
+                        })
+                        .setCancelable(false)
+                        .show();
+            } else {
+                Toast.makeText(getApplicationContext(), "Excelente! Todos os " + finalLidos + " bens da sala foram lidos via RFID.", Toast.LENGTH_LONG).show();
+                SyncManager.getInstance(ScanActivity.this).sincronizarVarredura(v.sessao, v, copiaLeituras, null, null);
+            }
+        });
     }
 
     private void exportarVarredura(Varredura v) {
@@ -373,14 +451,16 @@ public class ScanActivity extends Activity implements OnClickListener {
         }
     }
 
-    private void exportarSessao(Sessao s) {
+    private void exportarSessao(Sessao s, boolean notificarSucesso) {
         if (!permissaoDeArquivoOk()) {
             return;
         }
         if (CsvExport.exportarSessao(s)) {
-            Toast.makeText(getApplicationContext(),
-                    getString(R.string.msgSessaoExportada, CsvExport.pastaDestino()),
-                    Toast.LENGTH_LONG).show();
+            if (notificarSucesso) {
+                Toast.makeText(getApplicationContext(),
+                        getString(R.string.msgSessaoExportada, CsvExport.pastaDestino()),
+                        Toast.LENGTH_LONG).show();
+            }
         } else {
             avisar(R.string.msgCsvFalha);
         }
@@ -395,7 +475,7 @@ public class ScanActivity extends Activity implements OnClickListener {
         }
         exportarVarredura(v);
         if (ultimaSessaoEncerrada != null) {
-            exportarSessao(ultimaSessaoEncerrada);
+            exportarSessao(ultimaSessaoEncerrada, true);
         }
     }
 
@@ -417,24 +497,23 @@ public class ScanActivity extends Activity implements OnClickListener {
         Sessao s = sessaoAtual;
         if (s != null) {
             tv_sessao.setText(getString(R.string.sessaoAtiva, s.id, s.unidade, s.operador,
-                    s.totalVarreduras()));
+                    Sessao.formatarInstante(s.inicio), s.totalVarreduras()));
         } else if (ultimaSessaoEncerrada != null) {
             Sessao fim = ultimaSessaoEncerrada;
-            tv_sessao.setText(getString(R.string.sessaoEncerrada, fim.id, fim.totalVarreduras(),
-                    segundos(fim.inicio, fim.fim)));
+            tv_sessao.setText(getString(R.string.sessaoEncerrada, fim.id, fim.unidade,
+                    Sessao.formatarInstante(fim.inicio), Sessao.formatarInstante(fim.fim),
+                    fim.totalVarreduras(), segundos(fim.inicio, fim.fim)));
         } else {
             tv_sessao.setText(getString(R.string.sessaoInativa));
         }
 
         Varredura v = varreduraAtual;
         if (v != null) {
-            String ref = v.epcReferencia.isEmpty()
-                    ? getString(R.string.refNaoCapturada) : v.epcReferencia;
-            tv_varredura.setText(getString(R.string.varreduraAtiva, v.numero, ref,
+            tv_varredura.setText(getString(R.string.varreduraAtiva, v.numero, v.sala,
                     v.potenciaDbm, leiturasBrutas.size()));
         } else if (ultimaVarreduraEncerrada != null) {
             Varredura fim = ultimaVarreduraEncerrada;
-            tv_varredura.setText(getString(R.string.varreduraEncerrada, fim.numero,
+            tv_varredura.setText(getString(R.string.varreduraEncerrada, fim.numero, fim.sala,
                     leiturasBrutas.size(), segundos(fim.inicio, fim.fim)));
         } else {
             tv_varredura.setText(getString(R.string.varreduraInativa));
@@ -444,8 +523,14 @@ public class ScanActivity extends Activity implements OnClickListener {
         BtEncerrarSessao.setEnabled(s != null);
         BtIniciarVarredura.setEnabled(s != null && v == null);
         BtEncerrarVarredura.setEnabled(v != null);
-        BtTagReferencia.setEnabled(v != null);
         BtExportCsv.setEnabled(ultimaVarreduraEncerrada != null);
+        if (spinnerSala != null) {
+            spinnerSala.setEnabled(s != null && v == null);
+        }
+        if (spinnerTecnica != null) {
+            spinnerTecnica.setEnabled(s != null && v == null);
+        }
+        BtInventory.setEnabled(s != null && v != null);
     }
 
     private int segundos(long inicio, long fim) {
@@ -456,7 +541,15 @@ public class ScanActivity extends Activity implements OnClickListener {
     public void onClick(View arg0) {
         try {
             if (arg0 == BtInventory) {
-                readTag();
+                if (sessaoAtual == null) {
+                    avisar(R.string.msgSemSessao);
+                    return;
+                }
+                if (varreduraAtual == null) {
+                    avisar(R.string.msgSemVarredura);
+                    return;
+                }
+                toggleReading();
             } else if (arg0 == BtClear) {
                 clearData();
             } else if (arg0 == BtIniciarSessao) {
@@ -467,8 +560,6 @@ public class ScanActivity extends Activity implements OnClickListener {
                 iniciarVarredura();
             } else if (arg0 == BtEncerrarVarredura) {
                 encerrarVarredura();
-            } else if (arg0 == BtTagReferencia) {
-                capturarTagReferencia();
             } else if (arg0 == BtExportCsv) {
                 reexportar();
             } else if (arg0 == Btimport) {
@@ -484,28 +575,64 @@ public class ScanActivity extends Activity implements OnClickListener {
                 }
             }
         } catch (Exception e) {
-            stopInventory();
+            stopReading();
         }
     }
 
-    private void readTag() {
+    public void registrarCallback() {
+        if (RFIDSDKManager.getInstance().getRfidManager() != null) {
+            RFIDSDKManager.getInstance().getRfidManager().registerCallback(callback);
+            RFIDSDKManager.getInstance().enableScanHead(false);
+        }
+    }
+
+    private synchronized void startReading() {
+        if (isInventoryRunning) {
+            return;
+        }
+        if (sessaoAtual == null) {
+            avisar(R.string.msgSemSessao);
+            return;
+        }
+        if (varreduraAtual == null) {
+            avisar(R.string.msgSemVarredura);
+            return;
+        }
+        if (RFIDSDKManager.getInstance().getRfidManager() == null) {
+            avisar(R.string.rfid_initialization_failure);
+            return;
+        }
+        registrarCallback();
         epc = "";
-        if (BtInventory.getText().equals(getString(R.string.btInventory))) {
-            int result = RFIDSDKManager.getInstance().getRfidManager().startInventoryWithTimeout(timeout);
-            if (result == 0) {
-                String content = String.format(getResources().getString(R.string.tips_inv_timeout), timeout);
-                tv_tips.setText(content);
-                BtInventory.setText(getString(R.string.title_stop_Inventory));
-                setViewEnabled(false);
-            }
+        int result = RFIDSDKManager.getInstance().getRfidManager().startInventoryWithTimeout(timeout);
+        if (result == 0) {
+            isInventoryRunning = true;
+            String content = String.format(getResources().getString(R.string.tips_inv_timeout), timeout);
+            tv_tips.setText(content);
+            BtInventory.setText(getString(R.string.title_stop_Inventory));
+            setViewEnabled(false);
         } else {
-            stopInventory();
+            Log.e(TAG, "startInventoryWithTimeout retornou erro: " + result);
+            Toast.makeText(getApplicationContext(), "Falha ao iniciar leitura: " + result, Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void stopInventory() {
-        RFIDSDKManager.getInstance().getRfidManager().stopInventory();
+    private synchronized void stopReading() {
+        isInventoryRunning = false;
+        if (RFIDSDKManager.getInstance().getRfidManager() != null) {
+            RFIDSDKManager.getInstance().getRfidManager().stopInventory();
+        }
         tv_tips.setText("");
+        BtInventory.setText(getString(R.string.btInventory));
+        setViewEnabled(true);
+    }
+
+    private void toggleReading() {
+        if (isInventoryRunning) {
+            stopReading();
+        } else {
+            startReading();
+        }
     }
 
     class ScanCallback implements IRfidCallback {
@@ -522,12 +649,6 @@ public class ScanActivity extends Activity implements OnClickListener {
             Varredura v = varreduraAtual;
             if (v != null && epc.length() > 0) {
                 leiturasBrutas.add(new Leitura(System.currentTimeMillis(), epc, rssi));
-                // A primeira leitura após armar a captura identifica a sala. O
-                // compareAndSet garante uma única vencedora entre threads do callback.
-                if (capturandoReferencia.compareAndSet(true, false)) {
-                    v.epcReferencia = epc;
-                    handler.sendEmptyMessage(MSG_REF_CAPTURADA);
-                }
             }
 
             Message msg = handler.obtainMessage();
@@ -541,6 +662,7 @@ public class ScanActivity extends Activity implements OnClickListener {
 
         @Override
         public void onInventoryTagEnd() {
+            isInventoryRunning = false;
             Message msg = handler.obtainMessage();
             msg.what = MSG_UPDATE_STOP;
             msg.obj = "";
@@ -549,27 +671,99 @@ public class ScanActivity extends Activity implements OnClickListener {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        registrarCallback();
+        carregarSalasNoSpinner();
+    }
+
+    private void carregarSalasNoSpinner() {
+        if (spinnerSala == null) return;
+        SyncManager.getInstance(this).buscarSalasNomes(salas -> {
+            List<String> lista = new ArrayList<>();
+            if (salas != null && !salas.isEmpty()) {
+                lista.addAll(salas);
+            }
+            if (lista.isEmpty()) {
+                lista.add("Sala Padrão");
+            }
+            String selected = spinnerSala.getSelectedItem() != null ? spinnerSala.getSelectedItem().toString() : "";
+            ArrayAdapter<String> adapterSalas = new ArrayAdapter<>(ScanActivity.this,
+                    android.R.layout.simple_spinner_item, lista);
+            adapterSalas.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerSala.setAdapter(adapterSalas);
+            if (!selected.isEmpty()) {
+                int pos = lista.indexOf(selected);
+                if (pos >= 0) {
+                    spinnerSala.setSelection(pos);
+                }
+            }
+        });
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
-        stopInventory();
+        stopReading();
+    }
+
+    public static boolean isTriggerKey(int keyCode) {
+        return keyCode == 515 || keyCode == 523 || keyCode == 293 || keyCode == 294
+                || keyCode == 131 || keyCode == 132 || keyCode == 133 || keyCode == 134
+                || keyCode == KeyEvent.KEYCODE_BUTTON_R1 || keyCode == KeyEvent.KEYCODE_BUTTON_L1
+                || keyCode == KeyEvent.KEYCODE_FOCUS;
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        int keyCode = event.getKeyCode();
+        if (isTriggerKey(keyCode)) {
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                if (event.getRepeatCount() == 0) {
+                    onKeyDown(keyCode, event);
+                }
+                return true;
+            } else if (event.getAction() == KeyEvent.ACTION_UP) {
+                onKeyUp(keyCode, event);
+                return true;
+            }
+            return true;
+        }
+        return super.dispatchKeyEvent(event);
     }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if ((keyCode == 515 || keyCode == 523) && event.getRepeatCount() == 0) {
-            if (BtInventory.getText().equals(getString(R.string.btInventory))) {
-                readTag();
+        if (isTriggerKey(keyCode) && event.getRepeatCount() == 0) {
+            if (sessaoAtual == null) {
+                avisar(R.string.msgSemSessao);
+                return true;
             }
+            if (varreduraAtual == null) {
+                avisar(R.string.msgSemVarredura);
+                return true;
+            }
+            triggerDownTime = System.currentTimeMillis();
+            if (!isInventoryRunning) {
+                startReading();
+            } else {
+                stopReading();
+            }
+            return true;
         }
         return super.onKeyDown(keyCode, event);
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if ((keyCode == 515 || keyCode == 523) && event.getRepeatCount() == 0) {
-            if (!BtInventory.getText().equals(getString(R.string.btInventory))) {
-                readTag();
+        if (isTriggerKey(keyCode)) {
+            long duration = System.currentTimeMillis() - triggerDownTime;
+            // Se o operador segurou o gatilho (> 500ms), soltar encerra a leitura.
+            // Se foi um toque rápido (<= 500ms), mantém a varredura contínua ativa.
+            if (isInventoryRunning && duration > 500) {
+                stopReading();
             }
+            return true;
         }
         return super.onKeyUp(keyCode, event);
     }

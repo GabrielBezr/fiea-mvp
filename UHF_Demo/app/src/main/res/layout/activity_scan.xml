@@ -108,7 +108,7 @@
         android:layout_marginTop="3dp"
         android:background="@color/gray1" />
 
-    <!-- RF05: varredura por sala, identificada pela tag de referência -->
+    <!-- RF05: varredura por sala -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -121,6 +121,21 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="@string/lblSala"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/spinner_sala"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="5dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
             android:text="@string/lblTecnica"
             android:textSize="14sp"
             android:textStyle="bold" />
@@ -132,17 +147,6 @@
             android:layout_weight="1"
             android:layout_marginLeft="5dp"
             android:entries="@array/spinner_tecnicas" />
-
-        <Button
-            android:id="@+id/BtTagReferencia"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:textAllCaps="false"
-            android:textSize="13sp"
-            android:background="@drawable/color_button_selector"
-            android:text="@string/btTagReferencia"
-            android:textColor="@color/white" />
     </LinearLayout>
 
     <LinearLayout

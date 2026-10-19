@@ -15,6 +15,7 @@ python -m inventario bens relacao_patrimonial.csv   # RF02, antes de cada invent
 python -m inventario etiquetagem etiquetagem_*.csv  # RF03, durante a etiquetagem
 python -m inventario importar /pasta/dos/csv        # RF06, a cada varredura
 python -m inventario resumo                         # o que já está no banco
+python -m inventario conferir ID_DA_SESSAO          # RF07/RF08, após importar os CSV
 ```
 
 A ordem importa: sem as salas cadastradas, os bens não têm a que ambiente se
@@ -53,6 +54,15 @@ por sala, que ninguém precisa transcrever.
 Duas recusas deliberadas: a mesma tag em duas salas, e duas tags na mesma
 posição. Aceitar qualquer uma mandaria a varredura inteira para o ambiente
 errado, e o erro só apareceria muito depois, na conciliação.
+
+Cada varredura no aplicativo precisa capturar uma tag de referência antes de
+ser encerrada. Essa primeira captura fica no campo `epc_referencia` do CSV e não
+pode ser substituída dentro da mesma varredura. Ao importar, o sistema procura
+esse EPC no cadastro de tags da **mesma unidade** e grava a sala correspondente
+em `varredura.sala_id`. Importe o cadastro de salas antes das varreduras. Se o
+EPC estiver ausente ou não pertencer a uma sala cadastrada na unidade, a
+varredura fica sem sala e o importador informa isso; corrija o cadastro e
+reimporte o CSV para atualizar a associação.
 
 ### Relação patrimonial (RF02)
 
@@ -153,6 +163,7 @@ inventario/
   etiquetagem.py  vínculo entre EPC e patrimônio (RF03)
   leitor_csv.py   parser, validação e agregação do RF06
   importador.py   grava no banco, arquiva o bruto, trata reimportação
+  conferencia.py  conciliação de bens com leituras por sessão (RF07/RF08)
   cli.py          linha de comando
 testes/           python -m unittest discover -s testes
 ```
@@ -177,9 +188,19 @@ O caminho testado é CSV, que sai da biblioteca padrão. Para ler `.xlsx`
 diretamente, instale `openpyxl`; sem ele o comando diz isso em vez de estourar
 um erro de importação. Salvar a planilha como CSV no Excel também resolve.
 
-## Ainda não existe
+## Conciliação por sessão (RF07/RF08)
 
-Conciliação (RF07), leitura cruzada (RF08), lista de não localizados (RF09),
-planilha final (RF12) e indicadores (RF13). O banco já tem tudo de que eles
-precisam: salas com suas tags, bens com sua sala esperada e seu EPC, e leituras
-deduplicadas por varredura.
+Depois de cadastrar salas, importar a relação patrimonial e etiquetagem, e
+importar os CSV de leituras da sessão, rode `python -m inventario resumo` para
+ver o ID da sessão e então `python -m inventario conferir ID_DA_SESSAO`.
+
+O relatório classifica cada bem da unidade como localizado, não localizado,
+fora do local ou sem cobertura. “Não localizado” só se aplica quando a sala
+esperada foi varrida; bens cuja sala ainda não foi varrida ficam “sem
+cobertura”. Um bem encontrado na sala esperada continua “localizado” mesmo que
+também tenha sido lido em outra sala; o relatório sinaliza essa leitura
+adicional. EPCs lidos que não correspondem a um bem nem a uma tag de referência
+cadastrada são listados separadamente como não cadastrados. Uma varredura sem
+sala identificada não é usada para atribuir localização.
+
+Ainda não existem planilha final (RF12) nem indicadores (RF13).

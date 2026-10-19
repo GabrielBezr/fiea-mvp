@@ -11,6 +11,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.app.AlertDialog;
+import android.graphics.Color;
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.EditText;
 import android.widget.TabHost;
 import android.widget.TabWidget;
 import android.widget.TextView;
@@ -23,6 +28,10 @@ import com.ubx.usdk.RFIDSDKManager;
 public class MainActivity extends TabActivity   {
 	
 	public static TabHost myTabHost;
+	private View layoutConexaoServidor;
+	private TextView tvStatusConexao, tvBtnConfigIp;
+	private final Handler handlerConexao = new Handler(Looper.getMainLooper());
+	private Runnable runnableVerificarConexao;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +54,7 @@ public class MainActivity extends TabActivity   {
 		TabHost.TabSpec tabSpec3 = myTabHost.newTabSpec(getString(R.string.tab_mask)).setIndicator(getString(R.string.tab_mask)).setContent(intent3);
 		TabHost.TabSpec tabSpec4 = myTabHost.newTabSpec(getString(R.string.finding)).setIndicator(getString(R.string.finding)).setContent(intent4);
 		TabHost.TabSpec tabSpec5 = myTabHost.newTabSpec(getString(R.string.tab_etiquetagem)).setIndicator(getString(R.string.tab_etiquetagem)).setContent(intent5);
-		TabHost.TabSpec tabSpec6 = myTabHost.newTabSpec(getString(R.string.tab_tags_sala)).setIndicator(getString(R.string.tab_tags_sala)).setContent(intent6);
+		TabHost.TabSpec tabSpec6 = myTabHost.newTabSpec(getString(R.string.tab_pendencias)).setIndicator(getString(R.string.tab_pendencias)).setContent(intent6);
 
 		myTabHost.addTab(tabSpec0);
 		myTabHost.addTab(tabSpec6);
@@ -60,7 +69,27 @@ public class MainActivity extends TabActivity   {
 		myTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
 			@Override
 			public void onTabChanged(String s) {
-//				changeTabBottomBg();
+				Activity current = getCurrentActivity();
+				if (current instanceof ScanActivity) {
+					((ScanActivity) current).registrarCallback();
+				}
+			}
+		});
+
+		// Monitor de Reconexão Wi-Fi (Modo Offline com Alerta)
+		com.rfid.demo.utils.SyncManager.getInstance(this).monitorarReconexao(new com.rfid.demo.utils.SyncManager.OnReconexaoListener() {
+			@Override
+			public void onReconexaoDetectada(int pendenciasCount) {
+				new android.app.AlertDialog.Builder(MainActivity.this)
+						.setTitle(R.string.msgReconexaoTitulo)
+						.setMessage(R.string.msgReconexaoTexto)
+						.setPositiveButton(R.string.btSincronizarAgora, (dialog, which) -> {
+							com.rfid.demo.utils.SyncManager.getInstance(MainActivity.this).sincronizarFilaOffline(sucessos -> {
+								android.widget.Toast.makeText(MainActivity.this, "Sincronizados " + sucessos + " pacotes com sucesso ao PC!", android.widget.Toast.LENGTH_LONG).show();
+							});
+						})
+						.setNegativeButton(R.string.btResolverDepois, null)
+						.show();
 			}
 		});
 
@@ -73,7 +102,72 @@ public class MainActivity extends TabActivity   {
 			Window window = getWindow();
 			window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
 		}
-    }
+		inicializarBarraConexao();
+	}
+
+	private void inicializarBarraConexao() {
+		layoutConexaoServidor = findViewById(R.id.layout_conexao_servidor);
+		tvStatusConexao = findViewById(R.id.tv_status_conexao);
+		tvBtnConfigIp = findViewById(R.id.tv_btn_config_ip);
+
+		View.OnClickListener abrirConfig = v -> abrirDialogoConfigIp();
+		if (tvBtnConfigIp != null) tvBtnConfigIp.setOnClickListener(abrirConfig);
+		if (layoutConexaoServidor != null) layoutConexaoServidor.setOnClickListener(abrirConfig);
+
+		runnableVerificarConexao = new Runnable() {
+			@Override
+			public void run() {
+				verificarStatusServidor();
+				handlerConexao.postDelayed(this, 8000);
+			}
+		};
+	}
+
+	private void verificarStatusServidor() {
+		com.rfid.demo.utils.SyncManager sm = com.rfid.demo.utils.SyncManager.getInstance(this);
+		sm.testarConexao(online -> {
+			if (layoutConexaoServidor == null || tvStatusConexao == null) return;
+			if (online) {
+				layoutConexaoServidor.setBackgroundColor(Color.parseColor("#DCFCE7"));
+				tvStatusConexao.setTextColor(Color.parseColor("#166534"));
+				int naFila = sm.totalPendenciasNaFila();
+				tvStatusConexao.setText("🟢 Conectado ao PC (" + sm.getServerUrl() + ")" + (naFila > 0 ? " · " + naFila + " na fila" : ""));
+			} else {
+				layoutConexaoServidor.setBackgroundColor(Color.parseColor("#FEE2E2"));
+				tvStatusConexao.setTextColor(Color.parseColor("#991B1B"));
+				tvStatusConexao.setText("🔴 Sem Conexão com PC (Modo Offline)");
+			}
+		});
+	}
+
+	private void abrirDialogoConfigIp() {
+		com.rfid.demo.utils.SyncManager sm = com.rfid.demo.utils.SyncManager.getInstance(this);
+		EditText input = new EditText(this);
+		input.setSingleLine(true);
+		input.setText(sm.getServerUrl());
+
+		new AlertDialog.Builder(this)
+				.setTitle("Configurar Servidor Local")
+				.setMessage("Informe o endereço IP e porta do PC na rede Wi-Fi:\n(Ex: http://172.20.107.210:5000)")
+				.setView(input)
+				.setPositiveButton("Salvar e Testar", (dialog, which) -> {
+					String novaUrl = input.getText().toString().trim();
+					if (!novaUrl.isEmpty()) {
+						if (!novaUrl.startsWith("http://") && !novaUrl.startsWith("https://")) {
+							novaUrl = "http://" + novaUrl;
+						}
+						sm.setServerUrl(novaUrl);
+						if (tvStatusConexao != null) {
+							tvStatusConexao.setText("🟡 Testando " + novaUrl + "...");
+						}
+						verificarStatusServidor();
+					}
+				})
+				.setNegativeButton("Cancelar", null)
+				.show();
+	}
+
+
 	public int xorString(String input) {
 		int xorValue = 0;
 		for (int i = 0; i < input.length(); i++) {
@@ -128,17 +222,20 @@ public class MainActivity extends TabActivity   {
 	@Override
 	protected void onResume() {
 		super.onResume();
-			//关闭手柄按键处触发扫描头出光，长距设备，开启手柄按钮控制扫描头出光（Long distance device, open the handle button to control the scanning head light）
-			RFIDSDKManager.getInstance().enableScanHead(false);
+		RFIDSDKManager.getInstance().enableScanHead(false);
+		if (runnableVerificarConexao != null) {
+			handlerConexao.removeCallbacks(runnableVerificarConexao);
+			handlerConexao.post(runnableVerificarConexao);
+		}
 	}
-
-
 
 	@Override
 	protected void onPause() {
 		super.onPause();
-			//开启手柄按键处触发扫描头出光，长距设备，开启手柄按钮控制扫描头出光（Long distance device, open the handle button to control the scanning head light）
-			RFIDSDKManager.getInstance().enableScanHead(true);
+		RFIDSDKManager.getInstance().enableScanHead(true);
+		if (runnableVerificarConexao != null) {
+			handlerConexao.removeCallbacks(runnableVerificarConexao);
+		}
 	}
 
 	@Override
@@ -153,6 +250,14 @@ public class MainActivity extends TabActivity   {
 	private long firstTime = 0;
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent event) {
+		int keyCode = event.getKeyCode();
+		if (ScanActivity.isTriggerKey(keyCode)) {
+			Activity current = getCurrentActivity();
+			if (current != null && current.dispatchKeyEvent(event)) {
+				return true;
+			}
+		}
+
 		long secondTime = System.currentTimeMillis();
 		if(event.getKeyCode() == KeyEvent.KEYCODE_BACK &&  event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0){
 			if (secondTime - firstTime < 2000) {

@@ -4,7 +4,7 @@
     "type": "PROCESSED_RES",
     "kind": "Directory"
   },
-  "applicationId": "com.uhf.demo",
+  "applicationId": "br.fiea.mvp.rfid",
   "variantName": "debug",
   "elements": [
     {
@@ -12,7 +12,7 @@
       "filters": [],
       "attributes": [],
       "versionCode": 1,
-      "versionName": "2.5.202609181427",
+      "versionName": "2.5.202610141316",
       "outputFile": "resources-debug.ap_"
     }
   ],

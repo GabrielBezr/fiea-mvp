@@ -7,6 +7,7 @@
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="gray1">#dbdbdb</color>
+    <color name="gray2">#64748B</color>
     <color name="red">#FF0000</color>
     <color name="red1">#db2627</color>
     <color name="blue1">#2095ac</color>
@@ -17,6 +18,7 @@
     <color name="colorAccent">#D81B60</color>
 
     <color name="colorWarn">#B22222</color>
+    <color name="colorLimitrofe">#D97706</color>
 
     <color name="colorRfid">#A9F8F0</color>
     <color name="colorScan">#F6BCBC</color>

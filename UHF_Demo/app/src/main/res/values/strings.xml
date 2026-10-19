@@ -82,6 +82,9 @@
     <string name="hintUnidade">unidade</string>
     <string name="lblOperador">Operador:</string>
     <string name="hintOperador">operador</string>
+    <string name="lblSala">Sala:</string>
+    <string name="hintSala">nome da sala</string>
+    <string name="msgSalaVazia">Informe a sala antes de iniciar a varredura</string>
     <string name="lblTecnica">Técnica:</string>
     <string name="btIniciarSessao">Iniciar sessão</string>
     <string name="btEncerrarSessao">Encerrar sessão</string>
@@ -91,14 +94,16 @@
     <string name="btExportCsv">Reexportar</string>
     <string name="msgSessaoCamposVazios">Informe unidade e operador antes de iniciar a sessão</string>
     <string name="sessaoInativa">Sem sessão de inventário ativa</string>
-    <string name="sessaoAtiva">Sessão %1$s · %2$s · %3$s · varreduras: %4$d</string>
-    <string name="sessaoEncerrada">Sessão %1$s encerrada · %2$d varreduras · %3$d s</string>
+    <string name="sessaoAtiva">Sessão %1$s · unidade: %2$s · operador: %3$s · início: %4$s · varreduras: %5$d</string>
+    <string name="sessaoEncerrada">Sessão %1$s · unidade: %2$s · início: %3$s · fim: %4$s · %5$d varreduras · %6$d s</string>
     <string name="varreduraInativa">Sem varredura ativa — leituras não serão gravadas</string>
-    <string name="varreduraAtiva">Varredura %1$d · ref: %2$s · %3$d dBm · leituras: %4$d</string>
-    <string name="varreduraEncerrada">Varredura %1$d encerrada · %2$d leituras · %3$d s</string>
+    <string name="varreduraAtiva">Varredura %1$d (%2$s) · %3$d dBm · leituras: %4$d</string>
+    <string name="varreduraEncerrada">Varredura %1$d (%2$s) encerrada · %3$d leituras · %4$d s</string>
     <string name="refNaoCapturada">não capturada</string>
     <string name="msgSemSessao">Inicie a sessão de inventário antes</string>
-    <string name="msgSemVarredura">Inicie a varredura antes</string>
+    <string name="msgSemVarredura">Inicie a varredura antes de ler</string>
+    <string name="msgVarreduraSemReferencia">Leia a tag de referência da sala antes de encerrar a varredura</string>
+    <string name="msgRefJaCapturada">A tag de referência desta varredura já foi capturada</string>
     <string name="msgCapturandoRef">Aponte para a tag de referência da sala</string>
     <string name="msgRefCapturada">Tag de referência: %1$s</string>
     <string name="msgNadaParaReexportar">Nenhuma varredura encerrada para reexportar</string>
@@ -124,9 +129,27 @@
     <string name="msgEtiqEpcRepetido">Esta etiqueta ja foi vinculada nesta campanha</string>
     <string name="msgEtiqPatrimonioRepetido">Este patrimonio ja foi vinculado nesta campanha</string>
     <string name="msgEtiqLeituraFalhou">Nao foi possivel iniciar a leitura</string>
+    <string name="btTransmitirPc">📡 Transmitir ao PC (Baixa Potência)</string>
+    <string name="msgTagTransmitindo">Aproxime a tag do leitor (potência reduzida)...</string>
+    <string name="msgTagTransmitidaSucesso">Tag transmitida ao PC com sucesso: %1$s</string>
+    <string name="msgTagTransmitidaFalha">Tag lida (%1$s), mas falhou ao enviar para o PC</string>
 
-    <!-- RF01: captura das tags de referencia -->
-    <string name="tab_tags_sala">Salas</string>
+    <!-- RF01 / RF09 / RF10: Pendencias e Conferencia -->
+    <string name="tab_tags_sala">Pendências</string>
+    <string name="tab_pendencias">Pendências</string>
+    <string name="lblServidor">Servidor:</string>
+    <string name="hintServidor">http://192.168.1.100:5000</string>
+    <string name="btConfigServidor">Configurar PC</string>
+    <string name="tituloPendencias">Conferência de Pendências</string>
+    <string name="msgPendenciasDetectadas">Varredura encerrada! %1$d lidos via RFID e %2$d bens pendentes na sala %3$s. Deseja resolver as pendências agora?</string>
+    <string name="btResolverAgora">Resolver Pendências</string>
+    <string name="btResolverDepois">Mais Tarde</string>
+    <string name="msgReconexaoTitulo">Conexão Restabelecida</string>
+    <string name="msgReconexaoTexto">Conexão com o computador restabelecida! Foram detectados dados de coletas offline. Deseja sincronizar agora?</string>
+    <string name="btSincronizarAgora">Sincronizar Agora</string>
+    <string name="metodoQr">Ler QR Code (Câmera)</string>
+    <string name="metodoManual">Conferência Manual</string>
+    <string name="metodoFaltante">Item Faltante / Desaparecido</string>
     <string name="lblSalaTs">Sala:</string>
     <string name="hintSalaTs">nome da sala</string>
     <string name="btTsSalvar">Salvar tag de referencia</string>

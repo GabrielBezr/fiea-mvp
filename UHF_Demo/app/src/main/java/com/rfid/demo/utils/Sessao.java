@@ -10,7 +10,7 @@ import java.util.Locale;
  */
 public class Sessao {
 
-    /** Número único da sessão (yyyyMMddHHmmss do início). */
+    /** Número único da sessão (yyyyMMddHHmmssSSS do início). */
     public final String id;
 
     public final String unidade;
@@ -24,7 +24,13 @@ public class Sessao {
         this.unidade = unidade;
         this.operador = operador;
         this.inicio = inicio;
-        this.id = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US).format(new Date(inicio));
+        this.id = new SimpleDateFormat("yyyyMMddHHmmssSSS", Locale.US).format(new Date(inicio));
+    }
+
+    /** Formata os instantes da sessão para exibição e exportação legível. */
+    public static String formatarInstante(long instante) {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US)
+                .format(new Date(instante));
     }
 
     /** Numera a próxima varredura da sessão: 1, 2, 3... */

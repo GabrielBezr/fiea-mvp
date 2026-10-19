@@ -24,6 +24,8 @@ class Resultado:
     etiquetas_distintas: int = 0
     linhas_descartadas: int = 0
     reimportado: bool = False
+    sala: str = ""
+    epc_referencia: str = ""
 
 
 def importar_caminho(caminho, conexao, pasta_brutos=None):
@@ -63,6 +65,36 @@ def importar_arquivo(caminho, conexao, pasta_brutos=None):
 
 def _importar_varredura(caminho, conexao):
     arquivo = leitor_csv.ler_varredura(caminho)
+    sala = None
+    if arquivo.sala:
+        sala = conexao.execute(
+            "SELECT s.id, s.nome FROM sala s "
+            "WHERE LOWER(s.nome) = LOWER(?) AND s.unidade = ?",
+            (arquivo.sala, arquivo.unidade),
+        ).fetchone()
+        if not sala:
+            sala = conexao.execute(
+                "SELECT s.id, s.nome FROM sala s WHERE LOWER(s.nome) = LOWER(?)",
+                (arquivo.sala,),
+            ).fetchone()
+        if not sala:
+            conexao.execute(
+                "INSERT INTO sala (unidade, nome) VALUES (?, ?) "
+                "ON CONFLICT(unidade, nome) DO NOTHING",
+                (arquivo.unidade, arquivo.sala),
+            )
+            sala = conexao.execute(
+                "SELECT s.id, s.nome FROM sala s "
+                "WHERE LOWER(s.nome) = LOWER(?) AND s.unidade = ?",
+                (arquivo.sala, arquivo.unidade),
+            ).fetchone()
+    if not sala and arquivo.epc_referencia:
+        sala = conexao.execute(
+            "SELECT s.id, s.nome FROM tag_referencia t "
+            "JOIN sala s ON s.id = t.sala_id "
+            "WHERE t.epc = ? AND s.unidade = ?",
+            (arquivo.epc_referencia, arquivo.unidade),
+        ).fetchone()
 
     ja_existia = conexao.execute(
         "SELECT 1 FROM varredura WHERE id = ?", (arquivo.varredura_id,)
@@ -80,19 +112,21 @@ def _importar_varredura(caminho, conexao):
     )
 
     conexao.execute(
-        "INSERT INTO varredura (id, sessao_id, numero, epc_referencia, tecnica, "
+        "INSERT INTO varredura (id, sessao_id, numero, epc_referencia, sala_id, tecnica, "
         "potencia_dbm, inicio, fim, duracao_s, arquivo_origem, importado_em, linhas_brutas) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
         "ON CONFLICT(id) DO UPDATE SET "
         "  sessao_id = excluded.sessao_id, numero = excluded.numero, "
-        "  epc_referencia = excluded.epc_referencia, tecnica = excluded.tecnica, "
+        "  epc_referencia = excluded.epc_referencia, sala_id = excluded.sala_id, "
+        "  tecnica = excluded.tecnica, "
         "  potencia_dbm = excluded.potencia_dbm, inicio = excluded.inicio, "
         "  fim = excluded.fim, duracao_s = excluded.duracao_s, "
         "  arquivo_origem = excluded.arquivo_origem, "
         "  importado_em = excluded.importado_em, linhas_brutas = excluded.linhas_brutas",
         (
             arquivo.varredura_id, arquivo.sessao_id, arquivo.numero,
-            arquivo.epc_referencia, arquivo.tecnica, arquivo.potencia_dbm,
+            arquivo.epc_referencia, sala["id"] if sala else None,
+            arquivo.tecnica, arquivo.potencia_dbm,
             arquivo.inicio, arquivo.fim, arquivo.duracao_s,
             caminho.name, datetime.now().isoformat(timespec="seconds"),
             arquivo.linhas_brutas,
@@ -123,6 +157,8 @@ def _importar_varredura(caminho, conexao):
         etiquetas_distintas=arquivo.etiquetas_distintas,
         linhas_descartadas=arquivo.linhas_descartadas,
         reimportado=ja_existia,
+        sala=sala["nome"] if sala else "",
+        epc_referencia=arquivo.epc_referencia,
     )
 
 

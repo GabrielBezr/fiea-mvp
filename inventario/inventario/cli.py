@@ -14,6 +14,10 @@ from . import esquema
 from .cadastro import (
     bens_sem_sala, importar_bens, importar_salas, salas_com_poucas_tags,
 )
+from .conferencia import (
+    FORA_DO_LOCAL, LOCALIZADO, NAO_CADASTRADO, NAO_LOCALIZADO, SEM_COBERTURA,
+    SessaoNaoEncontrada, conferir_sessao,
+)
 from .etiquetagem import (
     EtiquetagemInvalida, bens_sem_etiqueta, importar_etiquetagem, progresso,
 )
@@ -60,10 +64,23 @@ def main(argv=None):
         "--sem-arquivar", action="store_true",
         help="nao copia o CSV original para a pasta de brutos")
 
+    conferir = comandos.add_parser(
+        "conferir", help="confronta os bens com as leituras de uma sessao (RF07/RF08)")
+    conferir.add_argument("sessao_id", help="id da sessao exibido pelo comando resumo")
+
     comandos.add_parser("resumo", help="mostra o cadastro e as coletas ja importadas")
+
+    servidor = comandos.add_parser("servidor", help="inicia o servidor local e interface web")
+    servidor.add_argument("--porta", type=int, default=5000, help="porta do servidor (padrao: 5000)")
 
     args = analisador.parse_args(argv)
     _saida_em_utf8()
+
+    if args.comando == "servidor":
+        from .servidor import iniciar_servidor
+        iniciar_servidor(porta=args.porta)
+        return 0
+
     conexao = esquema.conectar(args.db)
     try:
         return {
@@ -71,6 +88,7 @@ def main(argv=None):
             "bens": lambda: _bens(args, conexao),
             "etiquetagem": lambda: _etiquetagem(args, conexao),
             "importar": lambda: _importar(args, conexao),
+            "conferir": lambda: _conferir(args, conexao),
             "resumo": lambda: _resumo(conexao),
         }[args.comando]()
     finally:
@@ -214,6 +232,9 @@ def _importar(args, conexao):
             total_distintas += r.etiquetas_distintas
             print(
                 f"{r.arquivo}: varredura {r.identificador}{marca} | "
+                + (f"sala: {r.sala}" if r.sala else
+                   f"sala nao identificada (tag: {r.epc_referencia or 'ausente'})")
+                + " | "
                 f"{r.linhas_brutas} leituras -> {r.etiquetas_distintas} etiquetas "
                 f"({r.linhas_descartadas} repetidas descartadas)"
             )
@@ -233,6 +254,54 @@ def _importar(args, conexao):
             f"importadas. Falta copiar arquivo do aparelho?",
             file=sys.stderr,
         )
+    return 0
+
+
+# ------------------------------------------------------------------ resumo
+
+def _conferir(args, conexao):
+    try:
+        relatorio = conferir_sessao(conexao, args.sessao_id)
+    except SessaoNaoEncontrada as erro:
+        print(f"ERRO: {erro}", file=sys.stderr)
+        return 1
+
+    print(f"Conferencia da sessao {relatorio.sessao_id} | {relatorio.unidade}")
+    contagens = {
+        LOCALIZADO: 0,
+        NAO_LOCALIZADO: 0,
+        FORA_DO_LOCAL: 0,
+        SEM_COBERTURA: 0,
+    }
+    for bem in relatorio.bens:
+        contagens[bem.situacao] += 1
+
+    print(
+        f"Bens: {contagens[LOCALIZADO]} localizados, "
+        f"{contagens[NAO_LOCALIZADO]} nao localizados, "
+        f"{contagens[FORA_DO_LOCAL]} fora do local, "
+        f"{contagens[SEM_COBERTURA]} sem cobertura"
+    )
+    print("\nDetalhe dos bens:")
+    for bem in relatorio.bens:
+        sala_esperada = bem.sala_esperada or "sem sala esperada"
+        salas_lidas = ", ".join(bem.salas_lidas) or "nenhuma"
+        observacao = ""
+        if bem.situacao == LOCALIZADO and any(
+                sala != bem.sala_esperada for sala in bem.salas_lidas):
+            observacao = " (tambem lido em outra sala)"
+        elif bem.situacao == SEM_COBERTURA:
+            observacao = " (sala esperada sem varredura)"
+        elif bem.situacao == NAO_LOCALIZADO and not bem.epc:
+            observacao = " (sem EPC cadastrado)"
+        print(
+            f"  {bem.situacao}: patrimonio {bem.patrimonio} | {bem.descricao} | "
+            f"esperada: {sala_esperada} | lido em: {salas_lidas}{observacao}"
+        )
+
+    print(f"\nEPCs sem bem cadastrado: {len(relatorio.epcs_nao_cadastrados)}")
+    for item in relatorio.epcs_nao_cadastrados:
+        print(f"  {NAO_CADASTRADO}: {item.epc} | lido em: {', '.join(item.salas_lidas)}")
     return 0
 
 
@@ -265,14 +334,17 @@ def _resumo(conexao):
         duracao = f"{s['duracao_s']} s" if s["duracao_s"] is not None else "em aberto"
         print(f"\nSessao {s['id']} | {s['unidade']} | {s['operador']} | {duracao}")
         for v in conexao.execute(
-            "SELECT v.numero, v.duracao_s, v.linhas_brutas, COUNT(l.epc) AS etiquetas "
+            "SELECT v.numero, v.duracao_s, v.linhas_brutas, s.nome AS sala, "
+            "COUNT(l.epc) AS etiquetas "
             "FROM varredura v LEFT JOIN leitura l ON l.varredura_id = v.id "
+            "LEFT JOIN sala s ON s.id = v.sala_id "
             "WHERE v.sessao_id = ? GROUP BY v.id ORDER BY v.numero",
             (s["id"],),
         ):
             duracao_v = f"{v['duracao_s']} s" if v["duracao_s"] is not None else "?"
+            sala_v = v["sala"] if v["sala"] else "sala nao identificada"
             print(
-                f"  v{v['numero']:02d} | {duracao_v:>7} | "
+                f"  v{v['numero']:02d} | {sala_v} | {duracao_v:>7} | "
                 f"{v['linhas_brutas']:>6} leituras -> {v['etiquetas']:>4} etiquetas"
             )
     return 0
