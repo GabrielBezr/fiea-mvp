@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,6 +20,7 @@ import androidx.core.content.ContextCompat;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import com.rfid.demo.utils.Dialogos;
 import com.rfid.demo.utils.Leitura;
 import com.rfid.demo.utils.Sessao;
 import com.rfid.demo.utils.SyncManager;
@@ -257,14 +257,14 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
 
     private void executarAcao(int opcao) {
         if (bemSelecionado == null) {
-            Toast.makeText(this, "Selecione primeiro um bem na lista!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.itemNenhum), Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (opcao == ACAO_QR) {
             // [1] Ler QR Code (Câmera) via ZXing (RF10)
             IntentIntegrator integrator = new IntentIntegrator(this);
-            integrator.setPrompt("Aponte para o QR Code da etiqueta do bem " + bemSelecionado.patrimonio);
+            integrator.setPrompt(getString(R.string.qrPrompt, bemSelecionado.patrimonio));
             integrator.setBeepEnabled(true);
             integrator.setOrientationLocked(true);
             integrator.initiateScan();
@@ -273,50 +273,41 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
             // [2] Conferência Manual (RF10)
             final EditText etTombo = new EditText(this);
             etTombo.setText(bemSelecionado.patrimonio);
-            etTombo.setHint("Confirme o tombo/patrimônio");
+            etTombo.setHint(R.string.manualHint);
 
             new AlertDialog.Builder(this)
-                    .setTitle("Conferência Manual")
-                    .setMessage("Confirme o número de patrimônio localizado fisicamente:")
-                    .setView(comMargem(etTombo))
-                    .setPositiveButton("Confirmar Localização", (dialog, which) -> {
+                    .setTitle(R.string.manualTitulo)
+                    .setMessage(R.string.manualMensagem)
+                    .setView(Dialogos.comMargem(this, etTombo))
+                    .setPositiveButton(R.string.btConfirmar, (dialog, which) -> {
                         String digitado = etTombo.getText().toString().trim();
                         if (!digitado.isEmpty()) {
                             bemSelecionado.status = "LOCALIZADO_MANUAL";
                             pendenciasResolvidas.add(new SyncManager.PendenciaResolvida(bemSelecionado.patrimonio, bemSelecionado.epc, "MANUAL"));
                             atualizarContadores();
                             adaptador.notifyDataSetChanged();
-                            tvItemSelecionado.setText("Bem " + bemSelecionado.patrimonio + " marcado como LOCALIZADO (MANUAL)!");
-                            Toast.makeText(this, "Bem conferido manualmente!", Toast.LENGTH_SHORT).show();
+                            // O cartão já confirma; o toast que repetia a mesma frase saiu.
+                            tvItemSelecionado.setText(getString(R.string.resolvidoManual, bemSelecionado.patrimonio));
                         }
                     })
-                    .setNegativeButton("Cancelar", null)
+                    .setNegativeButton(R.string.btCancelar, null)
                     .show();
 
         } else if (opcao == ACAO_FALTANTE) {
             // [3] Item Faltante / Desaparecido
             new AlertDialog.Builder(this)
-                    .setTitle("Item Faltante")
-                    .setMessage("Confirmar que o bem " + bemSelecionado.patrimonio + " (" + bemSelecionado.descricao + ") foi procurado e NÃO está na sala?")
-                    .setPositiveButton("Sim, Confirmar Faltante", (dialog, which) -> {
+                    .setTitle(R.string.faltanteTitulo)
+                    .setMessage(getString(R.string.faltanteMensagem, bemSelecionado.patrimonio, bemSelecionado.descricao))
+                    .setPositiveButton(R.string.btMarcarFaltante, (dialog, which) -> {
                         bemSelecionado.status = "LOCALIZADO_FALTANTE";
                         pendenciasResolvidas.add(new SyncManager.PendenciaResolvida(bemSelecionado.patrimonio, bemSelecionado.epc, "FALTANTE"));
                         atualizarContadores();
                         adaptador.notifyDataSetChanged();
-                        tvItemSelecionado.setText("Bem " + bemSelecionado.patrimonio + " registrado como FALTANTE/DESAPARECIDO.");
+                        tvItemSelecionado.setText(getString(R.string.resolvidoFaltante, bemSelecionado.patrimonio));
                     })
-                    .setNegativeButton("Cancelar", null)
+                    .setNegativeButton(R.string.btCancelar, null)
                     .show();
         }
-    }
-
-    /** O setView do AlertDialog cola o campo na borda; este recuo acompanha o do título. */
-    private View comMargem(View campo) {
-        FrameLayout moldura = new FrameLayout(this);
-        int lado = getResources().getDimensionPixelSize(R.dimen.espaco_24);
-        moldura.setPadding(lado, getResources().getDimensionPixelSize(R.dimen.espaco_8), lado, 0);
-        moldura.addView(campo);
-        return moldura;
     }
 
     @Override
@@ -329,10 +320,10 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
                 pendenciasResolvidas.add(new SyncManager.PendenciaResolvida(bemSelecionado.patrimonio, conteudoQr, "QR"));
                 atualizarContadores();
                 adaptador.notifyDataSetChanged();
-                tvItemSelecionado.setText("Bem " + bemSelecionado.patrimonio + " LOCALIZADO via QR Code!");
-                Toast.makeText(this, "QR Code lido: " + conteudoQr, Toast.LENGTH_LONG).show();
+                tvItemSelecionado.setText(getString(R.string.resolvidoQr, bemSelecionado.patrimonio));
+                Toast.makeText(this, getString(R.string.msgQrLido, conteudoQr), Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(this, "Leitura de QR Code cancelada", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.msgQrCancelado), Toast.LENGTH_SHORT).show();
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
@@ -340,26 +331,26 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
     }
 
     private void sincronizarComServidor() {
-        Toast.makeText(this, "Sincronizando com o computador...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.msgEnviandoPc), Toast.LENGTH_SHORT).show();
         syncManager.sincronizarVarredura(sessaoVarredura, varreduraConcluida, leiturasVarredura, pendenciasResolvidas, sucesso -> {
             if (sucesso) {
-                Toast.makeText(this, "Varredura e pendências enviadas com sucesso ao PC!", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getString(R.string.msgEnviadoPc), Toast.LENGTH_LONG).show();
                 syncManager.sincronizarFilaOffline(filaSucesso -> {
                     verificarConexaoServidor();
                 });
             } else {
-                Toast.makeText(this, "Sem conexão no momento. Dados salvos com segurança no aparelho para envio posterior!", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getString(R.string.msgEnvioNaFila), Toast.LENGTH_LONG).show();
                 verificarConexaoServidor();
             }
         });
     }
 
     private String formatarStatus(String status) {
-        if ("LOCALIZADO_RFID".equals(status)) return "Localizado (RFID)";
-        if ("LOCALIZADO_QR".equals(status)) return "Localizado (QR Code)";
-        if ("LOCALIZADO_MANUAL".equals(status)) return "Localizado (Manual)";
-        if ("LOCALIZADO_FALTANTE".equals(status) || "FALTANTE".equals(status)) return "Item Faltante";
-        return "Pendente";
+        if ("LOCALIZADO_RFID".equals(status)) return getString(R.string.statusRfid);
+        if ("LOCALIZADO_QR".equals(status)) return getString(R.string.statusQr);
+        if ("LOCALIZADO_MANUAL".equals(status)) return getString(R.string.statusManual);
+        if ("LOCALIZADO_FALTANTE".equals(status) || "FALTANTE".equals(status)) return getString(R.string.statusFaltante);
+        return getString(R.string.statusPendente);
     }
 
     /**

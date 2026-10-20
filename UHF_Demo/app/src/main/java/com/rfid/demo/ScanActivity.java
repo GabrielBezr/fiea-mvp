@@ -414,7 +414,7 @@ public class ScanActivity extends Activity implements OnClickListener {
                 // Sincroniza diretamente se não há cadastro prévio de bens
                 SyncManager.getInstance(ScanActivity.this).sincronizarVarredura(v.sessao, v, copiaLeituras, null, sucesso -> {
                     if (sucesso) {
-                        Toast.makeText(getApplicationContext(), "Varredura sincronizada com o computador via Wi-Fi!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), getString(R.string.msgVarreduraSincronizada), Toast.LENGTH_SHORT).show();
                     }
                 });
                 return;
@@ -436,7 +436,7 @@ public class ScanActivity extends Activity implements OnClickListener {
             if (finalPendentes > 0) {
                 // Alerta ao operador conforme RF09
                 new AlertDialog.Builder(ScanActivity.this)
-                        .setTitle("Varredura Encerrada")
+                        .setTitle(R.string.tituloVarreduraEncerrada)
                         .setMessage(getString(R.string.msgPendenciasDetectadas, finalLidos, finalPendentes, v.sala))
                         .setPositiveButton(R.string.btResolverAgora, (dialog, which) -> {
                             TagsSalaActivity.carregarParaConferencia(v.sessao, v, copiaLeituras, epcsLidos, v.sala);
@@ -451,7 +451,7 @@ public class ScanActivity extends Activity implements OnClickListener {
                         .setCancelable(false)
                         .show();
             } else {
-                Toast.makeText(getApplicationContext(), "Excelente! Todos os " + finalLidos + " bens da sala foram lidos via RFID.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), getString(R.string.msgTodosLidos, finalLidos), Toast.LENGTH_LONG).show();
                 SyncManager.getInstance(ScanActivity.this).sincronizarVarredura(v.sessao, v, copiaLeituras, null, null);
             }
         });
@@ -719,7 +719,7 @@ public class ScanActivity extends Activity implements OnClickListener {
             setViewEnabled(false);
         } else {
             Log.e(TAG, "startInventoryWithTimeout retornou erro: " + result);
-            Toast.makeText(getApplicationContext(), "Falha ao iniciar leitura: " + result, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.msgFalhaIniciarLeitura, result), Toast.LENGTH_LONG).show();
         }
     }
 

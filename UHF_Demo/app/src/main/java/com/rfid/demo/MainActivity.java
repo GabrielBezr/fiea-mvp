@@ -16,6 +16,7 @@ import android.app.AlertDialog;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.InputType;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TabHost;
@@ -27,6 +28,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.rfid.demo.utils.Dialogos;
 import com.ubx.usdk.RFIDSDKManager;
 
 public class MainActivity extends TabActivity   {
@@ -106,7 +108,7 @@ public class MainActivity extends TabActivity   {
 						.setMessage(R.string.msgReconexaoTexto)
 						.setPositiveButton(R.string.btSincronizarAgora, (dialog, which) -> {
 							com.rfid.demo.utils.SyncManager.getInstance(MainActivity.this).sincronizarFilaOffline(sucessos -> {
-								android.widget.Toast.makeText(MainActivity.this, "Sincronizados " + sucessos + " pacotes com sucesso ao PC!", android.widget.Toast.LENGTH_LONG).show();
+								android.widget.Toast.makeText(MainActivity.this, getString(R.string.msgFilaSincronizada, sucessos), android.widget.Toast.LENGTH_LONG).show();
 							});
 						})
 						.setNegativeButton(R.string.btResolverDepois, null)
@@ -262,13 +264,15 @@ public class MainActivity extends TabActivity   {
 		com.rfid.demo.utils.SyncManager sm = com.rfid.demo.utils.SyncManager.getInstance(this);
 		EditText input = new EditText(this);
 		input.setSingleLine(true);
+		input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
+		input.setHint(R.string.hintConfigServidor);
 		input.setText(sm.getServerUrl());
 
 		new AlertDialog.Builder(this)
-				.setTitle("Configurar Servidor Local")
-				.setMessage("Informe o endereço IP e porta do PC na rede Wi-Fi:\n(Ex: http://172.20.107.210:5000)")
-				.setView(input)
-				.setPositiveButton("Salvar e Testar", (dialog, which) -> {
+				.setTitle(R.string.tituloConfigServidor)
+				.setMessage(R.string.msgConfigServidor)
+				.setView(Dialogos.comMargem(this, input))
+				.setPositiveButton(R.string.btSalvarTestar, (dialog, which) -> {
 					String novaUrl = input.getText().toString().trim();
 					if (!novaUrl.isEmpty()) {
 						if (!novaUrl.startsWith("http://") && !novaUrl.startsWith("https://")) {
@@ -281,7 +285,7 @@ public class MainActivity extends TabActivity   {
 						verificarStatusServidor();
 					}
 				})
-				.setNegativeButton("Cancelar", null)
+				.setNegativeButton(R.string.btCancelar, null)
 				.show();
 	}
 

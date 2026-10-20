@@ -19,6 +19,39 @@
     <string name="devTituloBarra">Dev · %1$s</string>
     <string name="btCancelar">Cancelar</string>
 
+    <!-- Mensagens que antes estavam escritas direto no Java -->
+    <string name="msgFilaSincronizada">%1$d envios da fila chegaram ao PC</string>
+    <string name="tituloConfigServidor">Endereço do PC</string>
+    <string name="msgConfigServidor">Digite o endereço do computador na mesma rede Wi-Fi do coletor.</string>
+    <string name="hintConfigServidor">Ex.: 192.168.1.100:5000</string>
+    <string name="btSalvarTestar">Salvar e testar</string>
+    <string name="msgVarreduraSincronizada">Varredura enviada ao PC</string>
+    <string name="tituloVarreduraEncerrada">Varredura encerrada</string>
+    <string name="msgTodosLidos">Todos os %1$d bens da sala foram lidos por RFID.</string>
+    <string name="msgFalhaIniciarLeitura">Não foi possível iniciar a leitura (código %1$d). Tente de novo em alguns segundos; se continuar, feche e abra o app.</string>
+    <string name="qrPrompt">Aponte para o QR da etiqueta do bem %1$s</string>
+    <string name="manualTitulo">Conferência manual</string>
+    <string name="manualMensagem">Confira a plaqueta do bem e confirme o número de patrimônio:</string>
+    <string name="manualHint">Número de patrimônio</string>
+    <string name="btConfirmar">Confirmar</string>
+    <string name="resolvidoManual">Bem %1$s conferido manualmente.</string>
+    <string name="faltanteTitulo">Marcar como faltante?</string>
+    <string name="faltanteMensagem">Confirme que o bem %1$s (%2$s) foi procurado e não está na sala.</string>
+    <string name="btMarcarFaltante">Marcar faltante</string>
+    <string name="resolvidoFaltante">Bem %1$s marcado como faltante.</string>
+    <string name="resolvidoQr">Bem %1$s localizado pelo QR.</string>
+    <string name="msgQrLido">QR lido: %1$s</string>
+    <string name="msgQrCancelado">Leitura do QR cancelada</string>
+    <string name="msgEnviandoPc">Enviando ao PC…</string>
+    <string name="msgEnviadoPc">Varredura e resoluções enviadas ao PC.</string>
+    <string name="msgEnvioNaFila">Sem conexão com o PC. Os dados ficaram na fila e vão quando o Wi-Fi voltar.</string>
+    <string name="statusRfid">Localizado por RFID</string>
+    <string name="statusQr">Localizado pelo QR</string>
+    <string name="statusManual">Conferido manualmente</string>
+    <string name="statusFaltante">Faltante</string>
+    <string name="statusPendente">Pendente</string>
+    <string name="msgBancadaSemTag">Nenhuma tag perto do leitor. Encoste a etiqueta e toque em Transmitir de novo.</string>
+
     <string name="version">Version:</string>
     <string name="dmin">MinFre:</string>
     <string name="band">Band:</string>
@@ -121,7 +154,7 @@
     <string name="btEncerrarVarredura">Encerrar varredura</string>
     <string name="btTagReferencia">Tag de referência</string>
     <string name="btExportCsv">Reexportar última varredura (CSV)</string>
-    <string name="msgSessaoCamposVazios">Informe unidade e operador antes de iniciar a sessão</string>
+    <string name="msgSessaoCamposVazios">Preencha a unidade e o operador para iniciar a sessão.</string>
     <!-- %1$s (id da sessão) continua nos argumentos, mas não vai para a tela: é um
          carimbo de 17 dígitos, útil no CSV e não para o operador. -->
     <string name="sessaoInativa">Informe a unidade e o operador para começar.</string>
@@ -139,8 +172,8 @@
     <string name="rotuloRssi">RSSI</string>
     <string name="descMaisAcoes">Mais ações</string>
     <string name="refNaoCapturada">não capturada</string>
-    <string name="msgSemSessao">Inicie a sessão de inventário antes</string>
-    <string name="msgSemVarredura">Inicie a varredura antes de ler</string>
+    <string name="msgSemSessao">Inicie uma sessão antes de ler.</string>
+    <string name="msgSemVarredura">Abra a varredura da sala antes de ler.</string>
     <string name="msgVarreduraSemReferencia">Leia a tag de referência da sala antes de encerrar a varredura</string>
     <string name="msgRefJaCapturada">A tag de referência desta varredura já foi capturada</string>
     <string name="msgCapturandoRef">Aponte para a tag de referência da sala</string>
@@ -148,7 +181,7 @@
     <string name="msgNadaParaReexportar">Nenhuma varredura encerrada para reexportar</string>
     <string name="msgSessaoExportada">Sessão exportada em %1$s</string>
     <string name="msgCsvSucesso">CSV gravado em %1$s</string>
-    <string name="msgCsvFalha">Falha ao gravar CSV</string>
+    <string name="msgCsvFalha">Não foi possível gravar o CSV. Confira o espaço livre e a permissão de acesso a arquivos.</string>
 
     <!-- RF03: etiquetagem -->
     <string name="tab_etiquetagem">Etiquetagem</string>
@@ -169,9 +202,9 @@
     <string name="msgEtiqPatrimonioRepetido">Este patrimônio já foi vinculado nesta campanha</string>
     <string name="msgEtiqLeituraFalhou">Não foi possível iniciar a leitura</string>
     <string name="btTransmitirPc">Transmitir</string>
-    <string name="msgTagTransmitindo">Aproxime a tag do leitor (potência reduzida)...</string>
-    <string name="msgTagTransmitidaSucesso">Tag transmitida ao PC com sucesso: %1$s</string>
-    <string name="msgTagTransmitidaFalha">Tag lida (%1$s), mas falhou ao enviar para o PC</string>
+    <string name="msgTagTransmitindo">Encoste a etiqueta no leitor (potência reduzida)…</string>
+    <string name="msgTagTransmitidaSucesso">Tag %1$s enviada ao formulário do PC</string>
+    <string name="msgTagTransmitidaFalha">Tag %1$s lida, mas não chegou ao PC. Confira a conexão na barra superior.</string>
     <string name="tituloBancada">Cadastro no PC (bancada)</string>
     <string name="dicaBancada">Potência mínima: só a tag encostada no leitor vai para o formulário do PC.</string>
     <string name="btTransmitindo">Aproxime a tag…</string>
@@ -188,12 +221,12 @@
     <string name="hintServidor">http://192.168.1.100:5000</string>
     <string name="btConfigServidor">Configurar PC</string>
     <string name="tituloPendencias">Conferência de Pendências</string>
-    <string name="msgPendenciasDetectadas">Varredura encerrada! %1$d lidos via RFID e %2$d bens pendentes na sala %3$s. Deseja resolver as pendências agora?</string>
-    <string name="btResolverAgora">Resolver Pendências</string>
-    <string name="btResolverDepois">Mais Tarde</string>
-    <string name="msgReconexaoTitulo">Conexão Restabelecida</string>
-    <string name="msgReconexaoTexto">Conexão com o computador restabelecida! Foram detectados dados de coletas offline. Deseja sincronizar agora?</string>
-    <string name="btSincronizarAgora">Sincronizar Agora</string>
+    <string name="msgPendenciasDetectadas">Na sala %3$s, %1$d bens foram lidos por RFID e %2$d ficaram pendentes. Quer resolver as pendências agora?</string>
+    <string name="btResolverAgora">Resolver agora</string>
+    <string name="btResolverDepois">Depois</string>
+    <string name="msgReconexaoTitulo">Conexão restabelecida</string>
+    <string name="msgReconexaoTexto">O coletor voltou a falar com o PC e há coletas guardadas no aparelho. Sincronizar agora?</string>
+    <string name="btSincronizarAgora">Sincronizar agora</string>
     <!-- Tela de Pendências (RF09/RF10) -->
     <string name="pendSala">Sala %1$s</string>
     <string name="pendProgresso">%1$d de %2$d bens conferidos</string>

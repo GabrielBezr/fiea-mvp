@@ -130,7 +130,7 @@ public class SplashActivity extends AppCompatActivity {
                         }
 
 
-                        Toast.makeText(SplashActivity.this," " + (status ? getResources().getString(R.string.rfid_successful_initialization) : getResources().getString(R.string.rfid_initialization_failure)),
+                        Toast.makeText(SplashActivity.this, status ? R.string.rfid_successful_initialization : R.string.rfid_initialization_failure,
                                 Toast.LENGTH_SHORT).show();
                     }
                 });

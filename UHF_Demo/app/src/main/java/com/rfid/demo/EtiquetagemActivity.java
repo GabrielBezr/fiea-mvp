@@ -206,7 +206,7 @@ public class EtiquetagemActivity extends Activity implements OnClickListener {
         timeoutTransmitirPc = () -> {
             if (transmitindoAoPc.get()) {
                 pararLeitura();
-                Toast.makeText(getApplicationContext(), "Tempo esgotado. Nenhuma tag detectada.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), getString(R.string.msgBancadaSemTag), Toast.LENGTH_LONG).show();
             }
         };
         handler.postDelayed(timeoutTransmitirPc, 6000);
