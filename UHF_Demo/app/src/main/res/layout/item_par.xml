@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Linha da lista de vínculos da Etiquetagem. O ArrayAdapter exige um TextView na
+     raiz; o texto de duas linhas é montado em EtiquetagemActivity.salvarPar. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:lineSpacingExtra="2dp"
+    android:minHeight="52dp"
+    android:paddingStart="@dimen/espaco_16"
+    android:paddingTop="@dimen/espaco_8"
+    android:paddingEnd="@dimen/espaco_16"
+    android:paddingBottom="@dimen/espaco_8"
+    android:textAppearance="@style/TextAppearance.Fiea.Corpo" />

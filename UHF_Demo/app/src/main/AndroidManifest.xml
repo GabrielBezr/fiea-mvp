@@ -43,7 +43,7 @@
             android:exported="true"
             android:name="com.rfid.demo.SplashActivity"
             android:label="@string/app_name"
-            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:theme="@style/Theme.Fiea.Splash"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

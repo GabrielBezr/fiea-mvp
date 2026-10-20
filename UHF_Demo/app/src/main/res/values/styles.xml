@@ -33,6 +33,13 @@
         <item name="android:alertDialogTheme">@style/Theme.Fiea.Dialogo</item>
     </style>
 
+    <!-- Abertura: azul desde a janela inicial, para não piscar outra cor antes do layout.
+         No Android 12+ a versão em values-v31 pinta também a abertura do sistema. -->
+    <style name="Theme.Fiea.Splash" parent="AppTheme">
+        <item name="android:windowBackground">@color/fiea_azul</item>
+        <item name="android:statusBarColor">@color/fiea_azul</item>
+    </style>
+
     <style name="Theme.Fiea.Dialogo" parent="@android:style/Theme.Material.Light.Dialog.Alert">
         <item name="android:colorPrimary">@color/fiea_azul</item>
         <item name="android:colorAccent">@color/fiea_azul</item>
@@ -101,6 +108,14 @@
 
     <style name="Widget.Fiea.Botao.Perigo">
         <item name="backgroundTint">@color/selector_botao_perigo</item>
+    </style>
+
+    <!-- Botão sobre fundo azul (abertura): branco com texto azul. -->
+    <style name="Widget.Fiea.Botao.SobreAzul">
+        <item name="backgroundTint">@color/white</item>
+        <item name="android:textColor">@color/fiea_azul</item>
+        <item name="iconTint">@color/fiea_azul</item>
+        <item name="rippleColor">@color/fiea_azul_fundo</item>
     </style>
 
     <style name="Widget.Fiea.Botao.Secundario" parent="Widget.MaterialComponents.Button.OutlinedButton">

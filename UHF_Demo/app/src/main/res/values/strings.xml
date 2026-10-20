@@ -77,7 +77,7 @@
     <string name="str_lenght_odd_warning">Length of every data can not be odd!</string>
     <string name="set_success">Set Success</string>
     <string name="set_failed">Set Failed</string>
-    <string name="openport_failed">Connect Failed(Please ensure that the module is powered on.)</string>
+    <string name="openport_failed">Não foi possível conectar ao leitor RFID. Verifique se o módulo está ligado e tente de novo.</string>
     <string name="CardNum">etiquetas</string>
     <string name="CardCount">leituras</string>
     <string name="CardSpeed">Speed&#160;&#160;</string>
@@ -152,26 +152,34 @@
 
     <!-- RF03: etiquetagem -->
     <string name="tab_etiquetagem">Etiquetagem</string>
-    <string name="lblEpc">EPC:</string>
-    <string name="hintEpc">leia a tag ou o QR</string>
-    <string name="lblPatrimonio">Patrimonio:</string>
-    <string name="hintPatrimonio">numero do bem</string>
-    <string name="lblMetalico">Metalico</string>
+    <string name="lblEpc">1 · Etiqueta (EPC)</string>
+    <string name="hintEpc">Leia a tag ou o QR</string>
+    <string name="lblPatrimonio">2 · Patrimônio do bem</string>
+    <string name="hintPatrimonio">Número do bem</string>
+    <string name="lblMetalico">Metálico</string>
     <string name="btLerTag">Ler tag</string>
-    <string name="btSalvarPar">Salvar par</string>
+    <string name="btSalvarPar">Salvar vínculo</string>
     <string name="btLimparPar">Limpar</string>
-    <string name="dicaQr">Etiqueta sobre metal costuma nao responder ao radio: escaneie o QR dela, que carrega o mesmo EPC.</string>
-    <string name="etiqStatus">%1$d pares gravados</string>
+    <string name="dicaQr">Etiqueta sobre metal costuma não responder ao rádio: escaneie o QR dela, que carrega o mesmo EPC.</string>
+    <string name="etiqStatus">Vinculadas nesta campanha: %1$d</string>
     <string name="etiqArquivo">Arquivo: %1$s</string>
-    <string name="etiqSemArquivo">Nenhum par gravado ainda</string>
-    <string name="msgEtiqCamposVazios">Informe o EPC e o numero de patrimonio</string>
-    <string name="msgEtiqEpcRepetido">Esta etiqueta ja foi vinculada nesta campanha</string>
-    <string name="msgEtiqPatrimonioRepetido">Este patrimonio ja foi vinculado nesta campanha</string>
-    <string name="msgEtiqLeituraFalhou">Nao foi possivel iniciar a leitura</string>
-    <string name="btTransmitirPc">📡 Transmitir ao PC (Baixa Potência)</string>
+    <string name="etiqSemArquivo">Nenhuma etiqueta vinculada ainda</string>
+    <string name="msgEtiqCamposVazios">Informe o EPC e o número de patrimônio</string>
+    <string name="msgEtiqEpcRepetido">Esta etiqueta já foi vinculada nesta campanha</string>
+    <string name="msgEtiqPatrimonioRepetido">Este patrimônio já foi vinculado nesta campanha</string>
+    <string name="msgEtiqLeituraFalhou">Não foi possível iniciar a leitura</string>
+    <string name="btTransmitirPc">Transmitir</string>
     <string name="msgTagTransmitindo">Aproxime a tag do leitor (potência reduzida)...</string>
     <string name="msgTagTransmitidaSucesso">Tag transmitida ao PC com sucesso: %1$s</string>
     <string name="msgTagTransmitidaFalha">Tag lida (%1$s), mas falhou ao enviar para o PC</string>
+    <string name="tituloBancada">Cadastro no PC (bancada)</string>
+    <string name="dicaBancada">Potência mínima: só a tag encostada no leitor vai para o formulário do PC.</string>
+    <string name="btTransmitindo">Aproxime a tag…</string>
+    <string name="parLinha">Patrimônio %1$s\nEPC %2$s</string>
+    <!-- Entre aspas para o Android manter o espaço do início -->
+    <string name="parMetalico">" · metálico"</string>
+    <string name="parSemRadio">" · digitado/QR"</string>
+    <string name="paresVazio">As etiquetas vinculadas aparecem aqui.</string>
 
     <!-- RF01 / RF09 / RF10: Pendencias e Conferencia -->
     <string name="tab_tags_sala">Pendências</string>
@@ -474,9 +482,9 @@
     <string name="strselecttag">Select tag</string>
     <string name="strok">OK</string>
     <string name="strcancle">Cancle</string>
-    <string name="rfid_initialization">RFID initialization ...</string>
-    <string name="rfid_successful_initialization">RFID Successful initialization</string>
-    <string name="rfid_initialization_failure">RFID Initialization failure</string>
+    <string name="rfid_initialization">Iniciando o leitor RFID…</string>
+    <string name="rfid_successful_initialization">Leitor RFID pronto</string>
+    <string name="rfid_initialization_failure">Falha ao iniciar o leitor RFID</string>
     <string name="press_again_exit_app">Pressione voltar de novo para sair</string>
     <string name="app_need_read_all_file">This program requires your consent to allow access to all files!</string>
     <string name="tip">Tips</string>
@@ -553,7 +561,7 @@
     <string name="rfid_sn_">RFID SN: </string>
     <string name="device_sn"> Device SN: </string>
     <string name="scan_sn_"> Scanner SN: </string>
-    <string name="re_connect_init">Reconnect</string>
+    <string name="re_connect_init">Tentar novamente</string>
     <string name="change">Charging</string>
     <string name="change_not">Not charged</string>
     <string name="battery_level"> Battery power: </string>
