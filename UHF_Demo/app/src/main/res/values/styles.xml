@@ -132,6 +132,42 @@
         <item name="rippleColor">@color/erro_fundo</item>
     </style>
 
+    <!-- Ação com o ícone em cima do texto: três lado a lado cabem na largura do coletor. -->
+    <style name="Widget.Fiea.Botao.Acao" parent="Widget.Fiea.Botao.Secundario">
+        <item name="iconGravity">top</item>
+        <item name="iconPadding">@dimen/espaco_4</item>
+        <item name="android:paddingStart">@dimen/espaco_4</item>
+        <item name="android:paddingEnd">@dimen/espaco_4</item>
+        <item name="android:paddingTop">@dimen/espaco_8</item>
+        <item name="android:paddingBottom">@dimen/espaco_8</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:maxLines">1</item>
+    </style>
+
+    <style name="Widget.Fiea.Botao.Acao.Perigo">
+        <item name="android:textColor">@color/selector_texto_perigo</item>
+        <item name="iconTint">@color/selector_texto_perigo</item>
+        <item name="strokeColor">@color/selector_texto_perigo</item>
+        <item name="rippleColor">@color/erro_fundo</item>
+    </style>
+
+    <!-- Contagem por situação (Pendências): número em cima, rótulo embaixo. -->
+    <style name="Widget.Fiea.Contagem" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:text">0</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="Widget.Fiea.ContagemRotulo" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:textColor">@color/texto_secundario</item>
+    </style>
+
     <!-- Formulário: rótulo em cima, caixa com contorno embaixo. -->
     <style name="Widget.Fiea.Rotulo" parent="">
         <item name="android:layout_width">wrap_content</item>

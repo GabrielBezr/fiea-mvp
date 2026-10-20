@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Linha da lista de Pendências. A faixa lateral e o selo usam a cor da situação;
+     tudo é preenchido em TagsSalaActivity.BensAdapter. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="56dp"
+    android:orientation="horizontal">
+
+    <View
+        android:id="@+id/v_bem_faixa"
+        android:layout_width="4dp"
+        android:layout_height="match_parent"
+        android:background="@color/alerta" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/espaco_12"
+        android:paddingTop="@dimen/espaco_8"
+        android:paddingEnd="@dimen/espaco_8"
+        android:paddingBottom="@dimen/espaco_8">
+
+        <TextView
+            android:id="@+id/tv_bem_titulo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Fiea.Corpo" />
+
+        <TextView
+            android:id="@+id/tv_bem_detalhe"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Fiea.Legenda" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_bem_status"
+        style="@style/Widget.Fiea.Selo"
+        android:layout_gravity="center_vertical"
+        android:layout_marginEnd="@dimen/espaco_12" />
+
+</LinearLayout>

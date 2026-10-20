@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">FIEA Coleta</string>
+    <string name="app_name">FIEA</string>
 
     <!-- Casca: barra superior, navegação e área de desenvolvedor -->
     <string name="app_titulo">Coleta</string>
@@ -186,6 +186,32 @@
     <string name="msgReconexaoTitulo">Conexão Restabelecida</string>
     <string name="msgReconexaoTexto">Conexão com o computador restabelecida! Foram detectados dados de coletas offline. Deseja sincronizar agora?</string>
     <string name="btSincronizarAgora">Sincronizar Agora</string>
+    <!-- Tela de Pendências (RF09/RF10) -->
+    <string name="pendSala">Sala %1$s</string>
+    <string name="pendProgresso">%1$d de %2$d bens conferidos</string>
+    <string name="pendVaziaTitulo">Nenhuma varredura para conferir</string>
+    <string name="pendVaziaTexto">Encerre uma varredura no Inventário. Os bens da sala que o RFID não leu aparecem aqui para você resolver.</string>
+    <string name="btIrInventario">Ir para o Inventário</string>
+    <string name="situacaoRfid">RFID</string>
+    <string name="situacaoQr">QR</string>
+    <string name="situacaoManual">Manual</string>
+    <string name="situacaoFaltante">Faltante</string>
+    <string name="situacaoPendente">Pendente</string>
+    <string name="statFaltantes">Faltantes</string>
+    <string name="statPendentes">Pendentes</string>
+    <string name="itemNenhum">Toque em um bem da lista para resolvê-lo.</string>
+    <string name="itemSelecionado">%1$s · %2$s\nSituação: %3$s</string>
+    <string name="btResolverQr">Ler QR</string>
+    <string name="btResolverManual">Manual</string>
+    <string name="btResolverFaltante">Faltante</string>
+    <string name="btSincronizar">Sincronizar</string>
+    <string name="syncVerificando">Verificando o PC…</string>
+    <string name="syncOnline">PC conectado (%1$s)</string>
+    <string name="syncOffline">Sem conexão: os dados ficam salvos no aparelho</string>
+    <string name="bemTitulo">%1$s · %2$s</string>
+    <string name="bemEpc">EPC %1$s</string>
+    <string name="bemSemEpc">Sem EPC</string>
+    <string name="bemMetalico">%1$s · metálico</string>
     <string name="metodoQr">Ler QR Code (Câmera)</string>
     <string name="metodoManual">Conferência Manual</string>
     <string name="metodoFaltante">Item Faltante / Desaparecido</string>

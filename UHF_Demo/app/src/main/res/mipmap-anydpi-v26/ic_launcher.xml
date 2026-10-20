@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ícone do app. Sem PNGs por densidade: o minSdk é 26, então todo aparelho usa este. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/fiea_azul" />
+    <foreground android:drawable="@drawable/ic_launcher_frente" />
+</adaptive-icon>

@@ -1,154 +1,307 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/white"
-    android:padding="8dp">
+    android:background="@color/fundo"
+    android:orientation="vertical">
 
-    <!-- Cabeçalho: Sala e Configuração do Servidor -->
+    <!-- Sem varredura encerrada ainda: explica de onde vêm as pendências -->
     <LinearLayout
+        android:id="@+id/grupo_sem_varredura"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingBottom="4dp">
-
-        <TextView
-            android:id="@+id/tv_pend_sala"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Sala: (Nenhuma varredura selecionada)"
-            android:textColor="@color/black"
-            android:textSize="15sp"
-            android:textStyle="bold" />
-
-        <Button
-            android:id="@+id/btn_config_servidor"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:text="@string/btConfigServidor"
-            android:textSize="11sp"
-            android:textAllCaps="false"
-            android:background="@drawable/color_button_selector"
-            android:textColor="@color/white" />
-    </LinearLayout>
-
-    <!-- Resumo dos Contadores -->
-    <TextView
-        android:id="@+id/tv_pend_status"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Status: 0 bens esperados"
-        android:textSize="12sp"
-        android:textColor="@color/colorPrimary"
-        android:paddingBottom="6dp" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/gray1"
-        android:layout_marginBottom="8dp" />
-
-    <!-- Painel de Resolução (RF10: Dropbox com QR Code / Manual / Faltante) -->
-    <LinearLayout
-        android:id="@+id/layout_painel_resolucao"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center"
         android:orientation="vertical"
-        android:background="#F1F5F9"
-        android:padding="8dp"
-        android:layout_marginBottom="8dp">
+        android:padding="@dimen/espaco_32"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_pending_actions"
+            android:tint="@color/texto_dica" />
 
         <TextView
-            android:id="@+id/tv_item_selecionado"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Toque em um bem na lista abaixo para resolver:"
-            android:textSize="13sp"
-            android:textColor="@color/black"
-            android:textStyle="bold"
-            android:paddingBottom="4dp" />
+            android:layout_marginTop="@dimen/espaco_12"
+            android:gravity="center"
+            android:text="@string/pendVaziaTitulo"
+            android:textAppearance="@style/TextAppearance.Fiea.Subtitulo" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:layout_marginTop="@dimen/espaco_4"
+            android:gravity="center"
+            android:text="@string/pendVaziaTexto"
+            android:textAppearance="@style/TextAppearance.Fiea.Legenda" />
 
-            <!-- Dropbox de Seleção do Método -->
-            <Spinner
-                android:id="@+id/spinner_metodo_resolucao"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="1"
-                android:background="@android:drawable/btn_dropdown"
-                android:layout_marginRight="6dp" />
-
-            <Button
-                android:id="@+id/btn_executar_acao"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:text="Aplicar"
-                android:textSize="12sp"
-                android:textAllCaps="false"
-                android:background="@drawable/color_button_selector"
-                android:textColor="@color/white" />
-        </LinearLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/bt_ir_inventario"
+            style="@style/Widget.Fiea.Botao.Secundario"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espaco_16"
+            android:text="@string/btIrInventario"
+            app:icon="@drawable/ic_inventory_2" />
     </LinearLayout>
 
-    <!-- Título da Lista -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Bens da Sala (Toque para selecionar):"
-        android:textSize="12sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:paddingBottom="2dp" />
-
-    <!-- Lista de Bens / Pendências -->
-    <ListView
-        android:id="@+id/lv_pendencias"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:divider="@color/gray1"
-        android:dividerHeight="1dp" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/gray1"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="4dp" />
-
-    <!-- Barra Inferior: Sincronização com o Servidor -->
     <LinearLayout
+        android:id="@+id/grupo_conferencia"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tv_sync_status"
-            android:layout_width="0dp"
+        <!-- RF09: resumo da sala conferida -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.Fiea.Card"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Servidor: Verificando..."
-            android:textSize="11sp"
-            android:textColor="@color/gray2" />
+            android:layout_marginStart="@dimen/espaco_12"
+            android:layout_marginTop="@dimen/espaco_12"
+            android:layout_marginEnd="@dimen/espaco_12"
+            app:contentPadding="@dimen/espaco_12">
 
-        <Button
-            android:id="@+id/btn_sincronizar_servidor"
-            android:layout_width="wrap_content"
-            android:layout_height="38dp"
-            android:text="Sincronizar com PC"
-            android:textSize="11sp"
-            android:textAllCaps="false"
-            android:background="@drawable/color_button_selector"
-            android:textColor="@color/white" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_meeting_room"
+                        android:tint="@color/fiea_azul" />
+
+                    <TextView
+                        android:id="@+id/tv_pend_sala"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/espaco_8"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textAppearance="@style/TextAppearance.Fiea.Subtitulo" />
+
+                    <!-- Envia a varredura e as resoluções ao PC (ou guarda na fila) -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_sincronizar_servidor"
+                        style="@style/Widget.Fiea.Botao.Secundario"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="@dimen/espaco_12"
+                        android:paddingEnd="@dimen/espaco_12"
+                        android:text="@string/btSincronizar"
+                        app:icon="@drawable/ic_sync" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_pend_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/espaco_4"
+                    android:textAppearance="@style/TextAppearance.Fiea.Corpo" />
+
+                <TextView
+                    android:id="@+id/tv_sync_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="@string/syncVerificando"
+                    android:textAppearance="@style/TextAppearance.Fiea.Legenda" />
+
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/pb_pendencias"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/espaco_8"
+                    app:indicatorColor="@color/fiea_azul"
+                    app:trackColor="@color/contorno"
+                    app:trackCornerRadius="3dp"
+                    app:trackThickness="6dp" />
+
+                <!-- Contagem por situação; as cores casam com os selos da lista -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/espaco_8"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tv_cont_rfid"
+                            style="@style/Widget.Fiea.Contagem"
+                            android:textColor="@color/sucesso_texto" />
+
+                        <TextView
+                            style="@style/Widget.Fiea.ContagemRotulo"
+                            android:text="@string/situacaoRfid" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tv_cont_qr"
+                            style="@style/Widget.Fiea.Contagem"
+                            android:textColor="@color/info_texto" />
+
+                        <TextView
+                            style="@style/Widget.Fiea.ContagemRotulo"
+                            android:text="@string/situacaoQr" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tv_cont_manual"
+                            style="@style/Widget.Fiea.Contagem"
+                            android:textColor="@color/ciano_texto" />
+
+                        <TextView
+                            style="@style/Widget.Fiea.ContagemRotulo"
+                            android:text="@string/situacaoManual" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tv_cont_faltante"
+                            style="@style/Widget.Fiea.Contagem"
+                            android:textColor="@color/erro_texto" />
+
+                        <TextView
+                            style="@style/Widget.Fiea.ContagemRotulo"
+                            android:text="@string/statFaltantes" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tv_cont_pendente"
+                            style="@style/Widget.Fiea.Contagem"
+                            android:textColor="@color/alerta_texto" />
+
+                        <TextView
+                            style="@style/Widget.Fiea.ContagemRotulo"
+                            android:text="@string/statPendentes" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Bens da sala, pendentes primeiro -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.Fiea.Card"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginStart="@dimen/espaco_12"
+            android:layout_marginTop="@dimen/espaco_8"
+            android:layout_marginEnd="@dimen/espaco_12"
+            android:layout_weight="1"
+            app:contentPadding="0dp">
+
+            <ListView
+                android:id="@+id/lv_pendencias"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:divider="@color/contorno"
+                android:dividerHeight="1dp" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- RF10: resolver o bem selecionado. Embaixo, ao alcance do polegar. -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.Fiea.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/espaco_12"
+            app:contentPadding="@dimen/espaco_12">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_item_selecionado"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/itemNenhum"
+                    android:textAppearance="@style/TextAppearance.Fiea.Corpo" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/espaco_8"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/bt_resolver_qr"
+                        style="@style/Widget.Fiea.Botao.Acao"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/btResolverQr"
+                        app:icon="@drawable/ic_qr_code_scanner" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/bt_resolver_manual"
+                        style="@style/Widget.Fiea.Botao.Acao"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/espaco_8"
+                        android:layout_marginEnd="@dimen/espaco_8"
+                        android:layout_weight="1"
+                        android:text="@string/btResolverManual"
+                        app:icon="@drawable/ic_fact_check" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/bt_resolver_faltante"
+                        style="@style/Widget.Fiea.Botao.Acao.Perigo"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/btResolverFaltante"
+                        app:icon="@drawable/ic_search_off" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 
 </LinearLayout>
