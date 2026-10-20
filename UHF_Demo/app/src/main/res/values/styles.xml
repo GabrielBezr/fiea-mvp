@@ -80,6 +80,13 @@
         <item name="android:fontFamily">monospace</item>
     </style>
 
+    <!-- Rótulo da navegação inferior: mesmo tamanho ativo e inativo, para o texto
+         não pular ao trocar de aba. A cor vem de itemTextColor. -->
+    <style name="TextAppearance.Fiea.Navegacao" parent="TextAppearance.AppCompat">
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
     <!-- Botões (MaterialButton). Sem os insets de 6dp do Material, o alvo de
          48dp fica todo visível. -->
     <style name="Widget.Fiea.Botao" parent="Widget.MaterialComponents.Button.UnelevatedButton">

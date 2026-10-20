@@ -16,6 +16,20 @@
         <item>movel_ambiente</item>
     </string-array>
 
+    <!-- Área de desenvolvedor: na mesma ordem das abas 3 a 6 do TabHost (MainActivity) -->
+    <string-array name="devFerramentas">
+        <item>Localizar etiqueta (Find)</item>
+        <item>Ler e gravar etiqueta (R/W)</item>
+        <item>Máscara de leitura (MASK)</item>
+        <item>Parâmetros do rádio (PARAM)</item>
+    </string-array>
+    <string-array name="devNomesCurtos">
+        <item>Localizar</item>
+        <item>Ler/Gravar</item>
+        <item>Máscara</item>
+        <item>Parâmetros</item>
+    </string-array>
+
     <string-array name="spinner_mask_area">
         <item>EPC</item>
         <item>TID</item>

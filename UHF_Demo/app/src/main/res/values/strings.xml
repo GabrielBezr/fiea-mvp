@@ -1,6 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">FIEA Coleta</string>
+
+    <!-- Casca: barra superior, navegação e área de desenvolvedor -->
+    <string name="app_titulo">Coleta</string>
+    <string name="descLogo">FIEA</string>
+    <string name="nav_inventario">Inventário</string>
+    <string name="nav_pendencias">Pendências</string>
+    <string name="nav_etiquetagem">Etiquetagem</string>
+    <string name="conexaoVerificando">Verificando…</string>
+    <string name="conexaoOnline">Conectado</string>
+    <string name="conexaoOffline">Offline</string>
+    <string name="conexaoNaFila">%1$s · %2$d na fila</string>
+    <string name="descConexao">Conexão com o PC: %1$s. Toque para configurar o servidor.</string>
+    <string name="descConfigServidor">Configurar servidor</string>
+    <string name="descSairDev">Sair do modo desenvolvedor</string>
+    <string name="devTitulo">Ferramentas de desenvolvedor</string>
+    <string name="devTituloBarra">Dev · %1$s</string>
+    <string name="btCancelar">Cancelar</string>
+
     <string name="version">Version:</string>
     <string name="dmin">MinFre:</string>
     <string name="band">Band:</string>
@@ -412,7 +430,7 @@
     <string name="rfid_initialization">RFID initialization ...</string>
     <string name="rfid_successful_initialization">RFID Successful initialization</string>
     <string name="rfid_initialization_failure">RFID Initialization failure</string>
-    <string name="press_again_exit_app">Press again to exit the application</string>
+    <string name="press_again_exit_app">Pressione voltar de novo para sair</string>
     <string name="app_need_read_all_file">This program requires your consent to allow access to all files!</string>
     <string name="tip">Tips</string>
     <string name="please_choice_epc">Please select label EPC first</string>

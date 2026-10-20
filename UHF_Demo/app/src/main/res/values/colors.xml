@@ -17,6 +17,8 @@
     <color name="texto_dica">#64748B</color>
     <color name="botao_desabilitado">#94A3B8</color>
     <color name="ripple_claro">#3DFFFFFF</color>
+    <!-- Barra superior nas ferramentas de desenvolvedor: deixa claro que não é tela do operador -->
+    <color name="modo_dev">#1E293B</color>
 
     <!-- Situações, alinhadas ao relatório web. A cor base vai em ícones e barras;
          texto usa o par _texto sobre _fundo, porque a base sobre branco não chega

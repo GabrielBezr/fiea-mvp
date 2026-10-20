@@ -418,7 +418,7 @@ public class ScanActivity extends Activity implements OnClickListener {
                         .setPositiveButton(R.string.btResolverAgora, (dialog, which) -> {
                             TagsSalaActivity.carregarParaConferencia(v.sessao, v, copiaLeituras, epcsLidos, v.sala);
                             if (MainActivity.myTabHost != null) {
-                                MainActivity.myTabHost.setCurrentTab(1); // Abre a aba de Pendências
+                                MainActivity.myTabHost.setCurrentTab(MainActivity.ABA_PENDENCIAS);
                             }
                         })
                         .setNegativeButton(R.string.btResolverDepois, (dialog, which) -> {

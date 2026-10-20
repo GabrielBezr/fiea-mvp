@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Navegação inferior. A ordem e os ids casam com as abas 0, 1 e 2 do TabHost
+     (MainActivity.abaDoItem / itemDaAba). -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_inventario"
+        android:icon="@drawable/ic_inventory_2"
+        android:title="@string/nav_inventario" />
+    <item
+        android:id="@+id/nav_pendencias"
+        android:icon="@drawable/ic_pending_actions"
+        android:title="@string/nav_pendencias" />
+    <item
+        android:id="@+id/nav_etiquetagem"
+        android:icon="@drawable/ic_sell"
+        android:title="@string/nav_etiquetagem" />
+</menu>

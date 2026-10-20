@@ -52,9 +52,12 @@
             </intent-filter>
         </activity>
 
+        <!-- adjustPan: as abas são Activities dentro da Main, então o modo de teclado
+             que vale é este; sem ele a navegação inferior sobe junto com o teclado. -->
         <activity android:name="com.rfid.demo.MainActivity"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan"/>
         <activity android:name="com.rfid.demo.SettingActivity"
             android:screenOrientation="portrait"/>
         <activity android:name="com.rfid.demo.TagsSalaActivity"
