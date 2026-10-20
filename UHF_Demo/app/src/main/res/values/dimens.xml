@@ -22,4 +22,8 @@
     <dimen name="raio_card">12dp</dimen>
     <dimen name="raio_dialogo">16dp</dimen>
 
+    <dimen name="espessura_contorno">1dp</dimen>
+    <!-- Card com algo em andamento (leitura RFID) -->
+    <dimen name="espessura_contorno_destaque">2dp</dimen>
+
 </resources>

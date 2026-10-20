@@ -1,378 +1,470 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/fundo"
     android:descendantFocusability="beforeDescendants"
     android:focusableInTouchMode="true"
-    android:orientation="vertical" >
+    android:orientation="vertical">
 
-    <!-- RF04: sessão de inventário, uma por unidade -->
-    <LinearLayout
+    <!-- RF04: sessão de inventário, uma por unidade. O que aparece em cada estado
+         (campos, botões, selo) é decidido em ScanActivity.atualizarStatus. -->
+    <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.Fiea.Card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:paddingTop="5dp"
-        android:gravity="center_vertical">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/lblUnidade"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/et_unidade"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginLeft="5dp"
-            android:hint="@string/hintUnidade"
-            android:imeOptions="actionNext"
-            android:inputType="text"
-            android:maxLines="1"
-            android:singleLine="true"
-            android:textSize="14sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:text="@string/lblOperador"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/et_operador"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginLeft="5dp"
-            android:hint="@string/hintOperador"
-            android:imeOptions="actionDone"
-            android:inputType="text"
-            android:maxLines="1"
-            android:singleLine="true"
-            android:textSize="14sp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:paddingTop="3dp"
-        android:gravity="center_vertical">
-
-        <Button
-            android:id="@+id/BtIniciarSessao"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginRight="5dp"
-            android:textAllCaps="false"
-            android:textSize="13sp"
-            android:background="@drawable/color_button_selector"
-            android:text="@string/btIniciarSessao"
-            android:textColor="@color/white" />
-
-        <Button
-            android:id="@+id/BtEncerrarSessao"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textAllCaps="false"
-            android:textSize="13sp"
-            android:background="@drawable/color_button_selector"
-            android:text="@string/btEncerrarSessao"
-            android:textColor="@color/white" />
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/tv_sessao"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingLeft="15dp"
-        android:paddingRight="15dp"
-        android:paddingTop="2dp"
-        android:text="@string/sessaoInativa"
-        android:textColor="@color/black"
-        android:textSize="12sp" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1px"
-        android:layout_marginTop="3dp"
-        android:background="@color/gray1" />
-
-    <!-- RF05: varredura por sala -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:paddingTop="3dp"
-        android:gravity="center_vertical">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/lblSala"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-        <Spinner
-            android:id="@+id/spinner_sala"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginLeft="5dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:text="@string/lblTecnica"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-        <Spinner
-            android:id="@+id/spinner_tecnica"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginLeft="5dp"
-            android:entries="@array/spinner_tecnicas" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:paddingTop="3dp"
-        android:gravity="center_vertical">
-
-        <Button
-            android:id="@+id/BtIniciarVarredura"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginRight="5dp"
-            android:textAllCaps="false"
-            android:textSize="13sp"
-            android:background="@drawable/color_button_selector"
-            android:text="@string/btIniciarVarredura"
-            android:textColor="@color/white" />
-
-        <Button
-            android:id="@+id/BtEncerrarVarredura"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textAllCaps="false"
-            android:textSize="13sp"
-            android:background="@drawable/color_button_selector"
-            android:text="@string/btEncerrarVarredura"
-            android:textColor="@color/white" />
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/tv_varredura"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingLeft="15dp"
-        android:paddingRight="15dp"
-        android:paddingTop="2dp"
-        android:paddingBottom="3dp"
-        android:text="@string/varreduraInativa"
-        android:textColor="@color/black"
-        android:textSize="12sp" />
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:gravity="center_vertical" >
-
-        <!-- BLOCO DE BOTÕES: Iniciar Leitura e Exportar -->
-        <LinearLayout
-            android:id="@+id/llContinuous"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingBottom="5dp"
-            android:paddingTop="5dp" >
-
-            <Button
-                android:id="@+id/BtInventory"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:layout_weight="3"
-                android:textAllCaps="false"
-                android:background="@drawable/color_button_selector"
-                android:text="@string/btInventory"
-                android:textColor="@color/white" />
-
-            <Button
-                android:id="@+id/BtImport"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="5dp"
-                android:textAllCaps="false"
-                android:background="@drawable/color_button_selector"
-                android:textColor="@color/white"
-                android:text="@string/btImport" />
-
-            <Button
-                android:id="@+id/BtExportCsv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAllCaps="false"
-                android:background="@drawable/color_button_selector"
-                android:textColor="@color/white"
-                android:text="@string/btExportCsv" />
-        </LinearLayout>
+        android:layout_marginStart="@dimen/espaco_12"
+        android:layout_marginTop="@dimen/espaco_12"
+        android:layout_marginEnd="@dimen/espaco_12"
+        app:contentPadding="@dimen/espaco_12">
 
         <LinearLayout
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical" >
+            android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tv_tips"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:textAllCaps="false"
-                android:text=""
-                android:textColor="@color/black" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_person"
+                    android:tint="@color/fiea_azul" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/espaco_8"
+                    android:layout_weight="1"
+                    android:text="@string/tituloSessao"
+                    android:textAppearance="@style/TextAppearance.Fiea.Subtitulo" />
+
+                <TextView
+                    android:id="@+id/tv_chip_sessao"
+                    style="@style/Widget.Fiea.Selo"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_sessao"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espaco_4"
+                android:text="@string/sessaoInativa"
+                android:textAppearance="@style/TextAppearance.Fiea.Legenda" />
+
+            <LinearLayout
+                android:id="@+id/grupo_campos_sessao"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espaco_8"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/espaco_8"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/Widget.Fiea.Rotulo"
+                        android:labelFor="@+id/et_unidade"
+                        android:text="@string/lblUnidade" />
+
+                    <EditText
+                        android:id="@+id/et_unidade"
+                        style="@style/Widget.Fiea.Campo"
+                        android:hint="@string/hintUnidade"
+                        android:imeOptions="actionNext"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:singleLine="true" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/Widget.Fiea.Rotulo"
+                        android:labelFor="@+id/et_operador"
+                        android:text="@string/lblOperador" />
+
+                    <EditText
+                        android:id="@+id/et_operador"
+                        style="@style/Widget.Fiea.Campo"
+                        android:hint="@string/hintOperador"
+                        android:imeOptions="actionDone"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:singleLine="true" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/BtIniciarSessao"
+                style="@style/Widget.Fiea.Botao"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espaco_12"
+                android:text="@string/btIniciarSessao"
+                app:icon="@drawable/ic_play_arrow" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/BtEncerrarSessao"
+                style="@style/Widget.Fiea.Botao.Secundario.Perigo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espaco_8"
+                android:text="@string/btEncerrarSessao"
+                android:visibility="gone"
+                app:icon="@drawable/ic_stop" />
         </LinearLayout>
-    </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
-    <!-- BLOCO DE CONTADORES: Tags únicas, Total e Limpar -->
-    <LinearLayout
-        android:layout_width="fill_parent"
+    <!-- RF05: varredura por sala. A leitura (contadores, botão, dica) só aparece
+         com a varredura aberta, porque só nela as leituras são gravadas. -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_varredura"
+        style="@style/Widget.Fiea.Card"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="5dp" >
+        android:layout_marginStart="@dimen/espaco_12"
+        android:layout_marginTop="@dimen/espaco_8"
+        android:layout_marginEnd="@dimen/espaco_12"
+        app:contentPadding="@dimen/espaco_12">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/CardNum"
-            android:textSize="14sp" />
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tv_count"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="0"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/CardCount"
-            android:textSize="14sp" />
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_meeting_room"
+                    android:tint="@color/fiea_azul" />
 
-        <TextView
-            android:id="@+id/tv_alltag"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="0"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/espaco_8"
+                    android:layout_weight="1"
+                    android:text="@string/tituloVarredura"
+                    android:textAppearance="@style/TextAppearance.Fiea.Subtitulo" />
+
+                <TextView
+                    android:id="@+id/tv_chip_varredura"
+                    style="@style/Widget.Fiea.Selo"
+                    android:visibility="gone" />
+
+                <!-- Limpar, exportar .xls e reexportar (ScanActivity.abrirMaisAcoes) -->
+                <ImageButton
+                    android:id="@+id/bt_mais_acoes"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="@dimen/espaco_4"
+                    android:layout_marginTop="-8dp"
+                    android:layout_marginEnd="-8dp"
+                    android:layout_marginBottom="-8dp"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/descMaisAcoes"
+                    android:src="@drawable/ic_more_vert"
+                    android:tint="@color/texto_secundario" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_varredura"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espaco_4"
+                android:text="@string/varreduraSemSessao"
+                android:textAppearance="@style/TextAppearance.Fiea.Legenda" />
+
+            <!-- RF09: enquanto busca os bens da sala para apontar as pendências -->
+            <LinearLayout
+                android:id="@+id/grupo_conferindo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espaco_8"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <ProgressBar
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:indeterminateTint="@color/fiea_azul" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/espaco_8"
+                    android:text="@string/conferindoBens"
+                    android:textAppearance="@style/TextAppearance.Fiea.Legenda"
+                    android:textColor="@color/fiea_azul" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/grupo_campos_varredura"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espaco_8"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/espaco_8"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/Widget.Fiea.Rotulo"
+                        android:labelFor="@+id/spinner_sala"
+                        android:text="@string/lblSala" />
+
+                    <Spinner
+                        android:id="@+id/spinner_sala"
+                        style="@style/Widget.Fiea.Spinner" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/Widget.Fiea.Rotulo"
+                        android:labelFor="@+id/spinner_tecnica"
+                        android:text="@string/lblTecnica" />
+
+                    <!-- Itens e rótulos vêm de ScanActivity.criarAdapterTecnicas -->
+                    <Spinner
+                        android:id="@+id/spinner_tecnica"
+                        style="@style/Widget.Fiea.Spinner" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/BtIniciarVarredura"
+                style="@style/Widget.Fiea.Botao"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espaco_12"
+                android:text="@string/btIniciarVarredura"
+                android:visibility="gone"
+                app:icon="@drawable/ic_play_arrow" />
+
+            <LinearLayout
+                android:id="@+id/grupo_leitura"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/espaco_8"
+                    android:baselineAligned="true"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tv_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textAppearance="@style/TextAppearance.Fiea.Contador"
+                        android:textColor="@color/fiea_azul" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/espaco_4"
+                        android:text="@string/CardNum"
+                        android:textAppearance="@style/TextAppearance.Fiea.Legenda" />
+
+                    <TextView
+                        android:id="@+id/tv_alltag"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/espaco_24"
+                        android:text="0"
+                        android:textAppearance="@style/TextAppearance.Fiea.Contador"
+                        android:textColor="@color/texto_secundario" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/espaco_4"
+                        android:text="@string/CardCount"
+                        android:textAppearance="@style/TextAppearance.Fiea.Legenda" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/espaco_8"
+                    android:orientation="horizontal">
+
+                    <!-- Texto, ícone e cor trocam com a leitura (ScanActivity.mostrarEstadoLeitura) -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/BtInventory"
+                        style="@style/Widget.Fiea.Botao"
+                        android:layout_width="0dp"
+                        android:layout_height="56dp"
+                        android:layout_weight="1"
+                        android:maxLines="1"
+                        android:text="@string/btInventory"
+                        app:icon="@drawable/ic_contactless" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/BtEncerrarVarredura"
+                        style="@style/Widget.Fiea.Botao.Secundario"
+                        android:layout_width="wrap_content"
+                        android:layout_height="56dp"
+                        android:layout_marginStart="@dimen/espaco_8"
+                        android:contentDescription="@string/btEncerrarVarredura"
+                        android:maxLines="1"
+                        android:text="@string/btEncerrarVarreduraCurto" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_tips"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/espaco_8"
+                    android:text="@string/dicaGatilho"
+                    android:textAppearance="@style/TextAppearance.Fiea.Legenda" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Etiquetas lidas na varredura -->
+    <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.Fiea.Card"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="@dimen/espaco_12"
+        android:layout_marginTop="@dimen/espaco_8"
+        android:layout_marginEnd="@dimen/espaco_12"
+        android:layout_marginBottom="@dimen/espaco_12"
+        android:layout_weight="1"
+        app:contentPadding="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <!-- Mesmos pesos das colunas de listtag_items.xml -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/espaco_16"
+                android:paddingEnd="@dimen/espaco_16">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="5"
+                    android:text="@string/tvTagUii"
+                    android:textAppearance="@style/TextAppearance.Fiea.Legenda" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.6"
+                    android:gravity="center"
+                    android:text="@string/tvTagCount"
+                    android:textAppearance="@style/TextAppearance.Fiea.Legenda" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.6"
+                    android:gravity="center"
+                    android:text="@string/rotuloRssi"
+                    android:textAppearance="@style/TextAppearance.Fiea.Legenda" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/contorno" />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1">
+
+                <!-- transcriptMode: acompanha as etiquetas novas, que entram no fim da lista -->
+                <ListView
+                    android:id="@+id/LvTags"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:divider="@color/contorno"
+                    android:dividerHeight="1dp"
+                    android:transcriptMode="normal" />
+
+                <TextView
+                    android:id="@+id/tv_lista_vazia"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:padding="@dimen/espaco_24"
+                    android:text="@string/listaVazia"
+                    android:textAppearance="@style/TextAppearance.Fiea.Legenda" />
+            </FrameLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Estado das ações do menu "Mais ações". Os botões ficam ocultos: o
+         ScanActivity continua habilitando/desabilitando cada um, e o menu copia esse
+         estado e reaproveita o mesmo onClick. -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone">
 
         <Button
             android:id="@+id/BtClear"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/btClear"
-            android:textColor="@color/white"
-            android:background="@drawable/color_button_selector"
-            android:layout_marginRight="5dp" />
+            android:text="@string/btClear" />
+
+        <Button
+            android:id="@+id/BtImport"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btImport" />
+
+        <Button
+            android:id="@+id/BtExportCsv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btExportCsv" />
     </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="5dp"
-        android:background="@color/gray1" />
-
-    <!-- CABEÇALHO DA LISTA -->
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:background="@color/white"
-        android:paddingBottom="5dp"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:paddingTop="5dp" >
-
-        <TextView
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/tvTagUii"
-            android:textSize="15sp" />
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="4"
-            android:text=""
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/tvTagLen"
-            android:visibility="gone" />
-
-        <TextView
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="@string/tvTagCount"
-            android:textSize="15sp" />
-
-        <TextView
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="RSSI"
-            android:textSize="15sp"/>
-    </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1px"
-        android:background="@color/gray1" />
-
-    <ListView
-        android:id="@+id/LvTags"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent" />
 
 </LinearLayout>

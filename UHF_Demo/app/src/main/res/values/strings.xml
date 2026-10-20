@@ -78,45 +78,66 @@
     <string name="set_success">Set Success</string>
     <string name="set_failed">Set Failed</string>
     <string name="openport_failed">Connect Failed(Please ensure that the module is powered on.)</string>
-    <string name="CardNum">Number&#160;&#160;</string>
-    <string name="CardCount">Times&#160;&#160;</string>
+    <string name="CardNum">etiquetas</string>
+    <string name="CardCount">leituras</string>
     <string name="CardSpeed">Speed&#160;&#160;</string>
 
-    <string name="tvTagCount">Count</string>
-    <string name="btClear">Clear</string>
+    <string name="tvTagCount">Leituras</string>
+    <string name="btClear">Limpar lista</string>
     <string name="ReadTime">Time(sec):</string>
     <string name="tvTagUii">EPC</string>
     <string name="tvTagLen">Length</string>
     <string name="rbInventorySingle">Single</string>
     <string name="rbInventoryOnce">Once</string>
     <string name="rbInventoryLoop">Auto</string>
-    <string name="btInventory">Start Inventory</string>
-    <string name="title_stop_Inventory">Stop Inventory</string>
+    <string name="btInventory">Iniciar leitura</string>
+    <string name="title_stop_Inventory">Parar leitura</string>
     <string name="dwelltime">DwellTime:</string>
-    <string name="btImport">Export</string>
+    <string name="btImport">Exportar lista (.xls)</string>
 
     <!-- MVP: sessão de coleta e exportação CSV -->
-    <string name="lblUnidade">Unidade:</string>
-    <string name="hintUnidade">unidade</string>
-    <string name="lblOperador">Operador:</string>
-    <string name="hintOperador">operador</string>
-    <string name="lblSala">Sala:</string>
+    <string name="tituloSessao">Sessão de inventário</string>
+    <string name="tituloVarredura">Varredura da sala</string>
+    <string name="lblUnidade">Unidade</string>
+    <string name="hintUnidade">Ex.: Casa da Indústria</string>
+    <string name="lblOperador">Operador</string>
+    <string name="hintOperador">Seu nome</string>
+    <string name="lblSala">Sala</string>
     <string name="hintSala">nome da sala</string>
     <string name="msgSalaVazia">Informe a sala antes de iniciar a varredura</string>
-    <string name="lblTecnica">Técnica:</string>
+    <string name="lblTecnica">Técnica</string>
+    <string name="chipAtiva">Ativa</string>
+    <string name="chipEmAndamento">Em andamento</string>
+    <string name="chipEncerrada">Encerrada</string>
+    <string name="tituloEncerrarSessao">Encerrar a sessão?</string>
+    <string name="msgEncerrarSessao">A sessão de %1$s (varreduras: %2$d) será fechada e exportada. Ela não pode ser reaberta: para continuar o inventário depois, inicie uma sessão nova.</string>
+    <string name="btEncerrar">Encerrar</string>
+    <string name="duracaoSegundos">%1$d s</string>
+    <string name="duracaoMinutos">%1$d min %2$02d s</string>
+    <string name="duracaoHoras">%1$d h %2$02d min</string>
     <string name="btIniciarSessao">Iniciar sessão</string>
     <string name="btEncerrarSessao">Encerrar sessão</string>
     <string name="btIniciarVarredura">Iniciar varredura</string>
     <string name="btEncerrarVarredura">Encerrar varredura</string>
     <string name="btTagReferencia">Tag de referência</string>
-    <string name="btExportCsv">Reexportar</string>
+    <string name="btExportCsv">Reexportar última varredura (CSV)</string>
     <string name="msgSessaoCamposVazios">Informe unidade e operador antes de iniciar a sessão</string>
-    <string name="sessaoInativa">Sem sessão de inventário ativa</string>
-    <string name="sessaoAtiva">Sessão %1$s · unidade: %2$s · operador: %3$s · início: %4$s · varreduras: %5$d</string>
-    <string name="sessaoEncerrada">Sessão %1$s · unidade: %2$s · início: %3$s · fim: %4$s · %5$d varreduras · %6$d s</string>
-    <string name="varreduraInativa">Sem varredura ativa — leituras não serão gravadas</string>
-    <string name="varreduraAtiva">Varredura %1$d (%2$s) · %3$d dBm · leituras: %4$d</string>
-    <string name="varreduraEncerrada">Varredura %1$d (%2$s) encerrada · %3$d leituras · %4$d s</string>
+    <!-- %1$s (id da sessão) continua nos argumentos, mas não vai para a tela: é um
+         carimbo de 17 dígitos, útil no CSV e não para o operador. -->
+    <string name="sessaoInativa">Informe a unidade e o operador para começar.</string>
+    <string name="sessaoAtiva">%2$s · %3$s\nIniciada às %4$s · varreduras: %5$d</string>
+    <string name="sessaoEncerrada">%2$s · das %3$s às %4$s\nVarreduras: %5$d · duração: %6$s</string>
+    <string name="varreduraSemSessao">Inicie a sessão para varrer as salas.</string>
+    <string name="varreduraInativa">Escolha a sala e toque em Iniciar varredura.</string>
+    <string name="varreduraAtiva">Sala %2$s · nº %1$d · %3$d dBm</string>
+    <string name="varreduraEncerrada">Última: sala %2$s · nº %1$d\nLeituras: %3$d · duração: %4$s</string>
+    <!-- Leitura e lista do Inventário -->
+    <string name="btEncerrarVarreduraCurto">Encerrar</string>
+    <string name="dicaGatilho">Segure o gatilho para ler. Um toque rápido deixa a leitura contínua; outro toque para.</string>
+    <string name="conferindoBens">Conferindo os bens da sala…</string>
+    <string name="listaVazia">Nenhuma etiqueta lida ainda.\nAbra uma varredura e aperte o gatilho.</string>
+    <string name="rotuloRssi">RSSI</string>
+    <string name="descMaisAcoes">Mais ações</string>
     <string name="refNaoCapturada">não capturada</string>
     <string name="msgSemSessao">Inicie a sessão de inventário antes</string>
     <string name="msgSemVarredura">Inicie a varredura antes de ler</string>
@@ -388,9 +409,9 @@
         <item>Scan Off-line data</item>
     </string-array>
 
-    <string name="msgImportsuc">Export success</string>
-    <string name="msgImportfailed">Export failed</string>
-    <string name="msgNodata">No data to export</string>
+    <string name="msgImportsuc">Lista exportada em .xls</string>
+    <string name="msgImportfailed">Não foi possível exportar a lista .xls</string>
+    <string name="msgNodata">Não há etiquetas na lista para exportar</string>
 
     <string name="StrLED">LED ON</string>
     <string name="Optsuccess">Operation successed</string>
@@ -519,5 +540,5 @@
     <string name="inventory_area">Inventory Area</string>
     <string name="power_setting">Power setting</string>
     <string name="tips_inv">Continuous Inventory in Progress</string>
-    <string name="tips_inv_timeout">Inventory will auto stop after %s seconds</string>
+    <string name="tips_inv_timeout">Lendo… a leitura para sozinha em %s s</string>
 </resources>
