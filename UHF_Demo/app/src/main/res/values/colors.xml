@@ -1,6 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="main_color">#008C8C</color>
+    <!-- Identidade FIEA, cores tiradas da logo -->
+    <color name="fiea_azul">#004EA6</color>
+    <color name="fiea_azul_escuro">#003A7C</color>
+    <!-- Só decorativo: 2,9:1 sobre branco, não serve para texto nem para controles -->
+    <color name="fiea_azul_claro">#00A0E7</color>
+    <color name="fiea_azul_fundo">#E6EEF8</color>
+
+    <!-- Neutros, na mesma escala slate do relatório web -->
+    <color name="fundo">#F1F5F9</color>
+    <color name="superficie">#FFFFFF</color>
+    <color name="contorno">#E2E8F0</color>
+    <color name="contorno_forte">#CBD5E1</color>
+    <color name="texto_primario">#1E293B</color>
+    <color name="texto_secundario">#475569</color>
+    <color name="texto_dica">#64748B</color>
+    <color name="botao_desabilitado">#94A3B8</color>
+    <color name="ripple_claro">#3DFFFFFF</color>
+
+    <!-- Situações, alinhadas ao relatório web. A cor base vai em ícones e barras;
+         texto usa o par _texto sobre _fundo, porque a base sobre branco não chega
+         a 4,5:1 em letra pequena. -->
+    <color name="sucesso">#059669</color>
+    <color name="sucesso_fundo">#DCFCE7</color>
+    <color name="sucesso_texto">#166534</color>
+    <color name="alerta">#D97706</color>
+    <color name="alerta_fundo">#FEF3C7</color>
+    <color name="alerta_texto">#92400E</color>
+    <color name="erro">#DC2626</color>
+    <color name="erro_fundo">#FEE2E2</color>
+    <color name="erro_texto">#991B1B</color>
+    <color name="info">#0284C7</color>
+    <color name="info_fundo">#E0F2FE</color>
+    <color name="info_texto">#075985</color>
+    <color name="ciano">#0891B2</color>
+    <color name="ciano_fundo">#CFFAFE</color>
+    <color name="ciano_texto">#155E75</color>
+    <color name="neutro">#64748B</color>
+    <color name="neutro_fundo">#F1F5F9</color>
+    <color name="neutro_texto">#475569</color>
+
+    <!-- Nomes herdados do demo, ainda usados no código e nos layouts -->
+    <color name="main_color">@color/fiea_azul</color>
 
     <color name="transparent_background_tab">#00ffffff</color>
     <color name="white_title_status">#00FFFFFF</color>
@@ -8,14 +49,14 @@
     <color name="black">#000000</color>
     <color name="gray1">#dbdbdb</color>
     <color name="gray2">#64748B</color>
-    <color name="red">#FF0000</color>
+    <color name="red">@color/erro</color>
     <color name="red1">#db2627</color>
     <color name="blue1">#2095ac</color>
     <color name="grayslate">#708090</color>
 
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#008577</color>
-    <color name="colorAccent">#D81B60</color>
+    <color name="colorPrimary">@color/fiea_azul</color>
+    <color name="colorPrimaryDark">@color/fiea_azul_escuro</color>
+    <color name="colorAccent">@color/fiea_azul</color>
 
     <color name="colorWarn">#B22222</color>
     <color name="colorLimitrofe">#D97706</color>

@@ -5,7 +5,9 @@
         by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
     -->
 <!--    <style name="AppBaseTheme" parent="android:Theme.Light">-->
-    <style name="AppBaseTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <!-- Bridge: libera os componentes Material sem mudar a aparência dos widgets
+         atuais, porque herda de Theme.AppCompat.Light e só acrescenta atributos. -->
+    <style name="AppBaseTheme" parent="Theme.MaterialComponents.Light.NoActionBar.Bridge">
         <!--
             Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to
@@ -15,7 +17,114 @@
 
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">
-        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+        <!-- As telas são android.app.Activity: o AppCompat repassa colorPrimary e
+             colorAccent aos widgets nativos (campos, caixas de seleção, spinners). -->
+        <item name="colorPrimary">@color/fiea_azul</item>
+        <item name="colorPrimaryVariant">@color/fiea_azul_escuro</item>
+        <item name="colorPrimaryDark">@color/fiea_azul_escuro</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- O azul claro da logo não tem contraste para controles; fica só decorativo. -->
+        <item name="colorAccent">@color/fiea_azul</item>
+        <item name="colorSecondary">@color/fiea_azul</item>
+        <item name="colorSecondaryVariant">@color/fiea_azul_escuro</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorError">@color/erro</item>
+        <!-- O AppCompat não define este: sem ele os AlertDialog nativos ignoram o tema. -->
+        <item name="android:alertDialogTheme">@style/Theme.Fiea.Dialogo</item>
+    </style>
+
+    <style name="Theme.Fiea.Dialogo" parent="@android:style/Theme.Material.Light.Dialog.Alert">
+        <item name="android:colorPrimary">@color/fiea_azul</item>
+        <item name="android:colorAccent">@color/fiea_azul</item>
+        <item name="android:windowBackground">@drawable/fundo_dialogo</item>
+        <item name="android:buttonBarButtonStyle">@style/Widget.Fiea.Dialogo.Botao</item>
+    </style>
+
+    <style name="Widget.Fiea.Dialogo.Botao" parent="@android:style/Widget.Material.Button.Borderless.Colored">
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <!-- Tipografia -->
+    <style name="TextAppearance.Fiea" parent="TextAppearance.AppCompat">
+        <item name="android:textColor">@color/texto_primario</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="TextAppearance.Fiea.Corpo" />
+
+    <style name="TextAppearance.Fiea.Titulo">
+        <item name="android:textSize">20sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="TextAppearance.Fiea.Subtitulo">
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="TextAppearance.Fiea.Legenda">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/texto_secundario</item>
+    </style>
+
+    <!-- Contadores da leitura: lidos de longe, com o coletor na mão -->
+    <style name="TextAppearance.Fiea.Contador">
+        <item name="android:textSize">32sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- EPC: largura fixa para comparar caractere a caractere -->
+    <style name="TextAppearance.Fiea.Mono">
+        <item name="android:textSize">13sp</item>
+        <item name="android:fontFamily">monospace</item>
+    </style>
+
+    <!-- Botões (MaterialButton). Sem os insets de 6dp do Material, o alvo de
+         48dp fica todo visível. -->
+    <style name="Widget.Fiea.Botao" parent="Widget.MaterialComponents.Button.UnelevatedButton">
+        <item name="android:minHeight">@dimen/alvo_toque</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:letterSpacing">0.01</item>
+        <item name="cornerRadius">@dimen/raio_botao</item>
+    </style>
+
+    <style name="Widget.Fiea.Botao.Perigo">
+        <item name="backgroundTint">@color/selector_botao_perigo</item>
+    </style>
+
+    <style name="Widget.Fiea.Botao.Secundario" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:minHeight">@dimen/alvo_toque</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:letterSpacing">0.01</item>
+        <item name="cornerRadius">@dimen/raio_botao</item>
+        <item name="strokeColor">@color/selector_botao_contorno</item>
+    </style>
+
+    <style name="Widget.Fiea.Botao.Texto" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:minHeight">@dimen/alvo_toque</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:letterSpacing">0.01</item>
+        <item name="cornerRadius">@dimen/raio_botao</item>
+    </style>
+
+    <!-- Card plano com contorno: sombra em lista atualizada a cada leitura pesa. -->
+    <style name="Widget.Fiea.Card" parent="Widget.MaterialComponents.CardView">
+        <item name="cardBackgroundColor">@color/superficie</item>
+        <item name="cardCornerRadius">@dimen/raio_card</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeColor">@color/contorno</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="contentPadding">@dimen/espaco_16</item>
     </style>
 
     <style name="dialog" parent="@android:style/Theme.Dialog">
