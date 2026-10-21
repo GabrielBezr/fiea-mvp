@@ -109,6 +109,16 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         }
     }
 
+    /** Quantos bens desta varredura ainda faltam resolver aqui; 0 se ela não tem pendências. */
+    public static int pendentesDe(Varredura v) {
+        for (SalaConferida sala : salasConferidas) {
+            if (sala.varredura == v) {
+                return sala.pendentes;
+            }
+        }
+        return 0;
+    }
+
     // Métodos de resolução (RF10), um botão para cada
     private static final int ACAO_QR = 0;
     private static final int ACAO_MANUAL = 1;
@@ -297,7 +307,7 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         tvPendSala.setText(getString(R.string.pendSala, sala.varredura.sala));
 
         // Carrega bens da sala via SyncManager (rede ou cache offline)
-        syncManager.buscarBensDaSala(sala.varredura.sala, bens -> {
+        syncManager.buscarBensDaSala(sala.varredura.sala, sala.sessao != null ? sala.sessao.unidade : null, bens -> {
             if (sala != salaAberta) {
                 return; // o operador já saiu desta sala enquanto a busca corria
             }

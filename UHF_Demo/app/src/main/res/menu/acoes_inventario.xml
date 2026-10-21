@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Menu "Mais ações" do card de varredura (ScanActivity.abrirMaisAcoes). Cada item
-     reaproveita o onClick de um botão oculto em activity_scan.xml. -->
+<!-- Menu "Mais ações" do card de varredura e do card de salas (ScanActivity.abrirMaisAcoes,
+     que mostra os itens de cada tela). Os três primeiros reaproveitam o onClick de um
+     botão oculto em activity_scan.xml. -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/acao_limpar"
@@ -11,4 +12,7 @@
     <item
         android:id="@+id/acao_reexportar"
         android:title="@string/btExportCsv" />
+    <item
+        android:id="@+id/acao_atualizar_salas"
+        android:title="@string/acaoAtualizarSalas" />
 </menu>

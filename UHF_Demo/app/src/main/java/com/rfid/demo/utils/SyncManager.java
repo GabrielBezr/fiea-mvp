@@ -60,6 +60,17 @@ public class SyncManager {
         void onReconexaoDetectada(int pendenciasCount);
     }
 
+    /** Sala cadastrada no PC; a unidade separa salas de mesmo nome em prédios diferentes. */
+    public static class SalaCadastrada {
+        public final String nome;
+        public final String unidade;
+
+        public SalaCadastrada(String nome, String unidade) {
+            this.nome = nome;
+            this.unidade = unidade != null ? unidade : "";
+        }
+    }
+
     public static class BemEsperado {
         public String patrimonio;
         public String descricao;
@@ -193,16 +204,22 @@ public class SyncManager {
     }
 
     /**
-     * Busca a lista de bens da sala.
+     * Busca a lista de bens da sala, na unidade da sessão.
      * Tenta primeiro a API no PC; se falhar (offline), busca no cache local do aparelho.
      */
-    public void buscarBensDaSala(String sala, Callback<List<BemEsperado>> callback) {
+    public void buscarBensDaSala(String sala, String unidade, Callback<List<BemEsperado>> callback) {
         executor.execute(() -> {
             List<BemEsperado> bens = new ArrayList<>();
             boolean sucessoRede = false;
 
             try {
-                String endpoint = getServerUrl() + "/api/bens" + (sala != null && !sala.isEmpty() ? "?sala=" + java.net.URLEncoder.encode(sala, "UTF-8") : "");
+                String endpoint = getServerUrl() + "/api/bens";
+                if (sala != null && !sala.isEmpty()) {
+                    endpoint += "?sala=" + java.net.URLEncoder.encode(sala, "UTF-8");
+                    if (unidade != null && !unidade.isEmpty()) {
+                        endpoint += "&unidade=" + java.net.URLEncoder.encode(unidade, "UTF-8");
+                    }
+                }
                 URL url = new URL(endpoint);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setConnectTimeout(3000);
@@ -224,7 +241,7 @@ public class SyncManager {
                         bens.add(BemEsperado.fromJson(obj));
                     }
                     sucessoRede = true;
-                    salvarCacheBens(sala, bens);
+                    salvarCacheBens(sala, unidade, bens);
                 }
                 conn.disconnect();
             } catch (Exception e) {
@@ -232,7 +249,7 @@ public class SyncManager {
             }
 
             if (!sucessoRede) {
-                bens = carregarCacheBens(sala);
+                bens = carregarCacheBens(sala, unidade);
             }
 
             final List<BemEsperado> finalBens = bens;
@@ -243,12 +260,12 @@ public class SyncManager {
     }
 
     /**
-     * Busca os nomes das salas cadastradas.
+     * Busca as salas cadastradas, com a unidade de cada uma.
      * Tenta primeiro a API no PC; se falhar (offline), busca no cache local do aparelho.
      */
-    public void buscarSalasNomes(Callback<List<String>> callback) {
+    public void buscarSalas(Callback<List<SalaCadastrada>> callback) {
         executor.execute(() -> {
-            List<String> salas = new ArrayList<>();
+            List<SalaCadastrada> salas = new ArrayList<>();
             boolean sucessoRede = false;
 
             try {
@@ -270,10 +287,7 @@ public class SyncManager {
                     JSONArray arr = new JSONArray(sb.toString());
                     for (int i = 0; i < arr.length(); i++) {
                         JSONObject obj = arr.getJSONObject(i);
-                        String nome = obj.optString("nome", "").trim();
-                        if (!nome.isEmpty() && !salas.contains(nome)) {
-                            salas.add(nome);
-                        }
+                        adicionarSala(salas, obj.optString("nome", ""), obj.optString("unidade", ""));
                     }
                     sucessoRede = true;
                     salvarCacheSalas(salas);
@@ -287,19 +301,37 @@ public class SyncManager {
                 salas = carregarCacheSalas();
             }
 
-            final List<String> finalSalas = salas;
+            final List<SalaCadastrada> finalSalas = salas;
             if (callback != null) {
                 mainHandler.post(() -> callback.onResult(finalSalas));
             }
         });
     }
 
-    private void salvarCacheSalas(List<String> salas) {
+    /** Acrescenta a sala se ainda não houver uma com o mesmo nome na mesma unidade. */
+    private static void adicionarSala(List<SalaCadastrada> salas, String nome, String unidade) {
+        nome = nome != null ? nome.trim() : "";
+        unidade = unidade != null ? unidade.trim() : "";
+        if (nome.isEmpty()) {
+            return;
+        }
+        for (SalaCadastrada s : salas) {
+            if (s.nome.equals(nome) && s.unidade.equals(unidade)) {
+                return;
+            }
+        }
+        salas.add(new SalaCadastrada(nome, unidade));
+    }
+
+    private void salvarCacheSalas(List<SalaCadastrada> salas) {
         try {
             File cacheFile = new File(context.getFilesDir(), "cache_salas.json");
             JSONArray arr = new JSONArray();
-            for (String s : salas) {
-                arr.put(s);
+            for (SalaCadastrada s : salas) {
+                JSONObject obj = new JSONObject();
+                obj.put("nome", s.nome);
+                obj.put("unidade", s.unidade);
+                arr.put(obj);
             }
             salvarArquivo(cacheFile, arr.toString());
         } catch (Exception e) {
@@ -307,17 +339,20 @@ public class SyncManager {
         }
     }
 
-    private List<String> carregarCacheSalas() {
-        List<String> salas = new ArrayList<>();
+    private List<SalaCadastrada> carregarCacheSalas() {
+        List<SalaCadastrada> salas = new ArrayList<>();
         try {
             File cacheFile = new File(context.getFilesDir(), "cache_salas.json");
             if (cacheFile.exists()) {
                 String content = lerArquivo(cacheFile);
                 JSONArray arr = new JSONArray(content);
                 for (int i = 0; i < arr.length(); i++) {
-                    String s = arr.optString(i, "").trim();
-                    if (!s.isEmpty() && !salas.contains(s)) {
-                        salas.add(s);
+                    JSONObject obj = arr.optJSONObject(i);
+                    if (obj != null) {
+                        adicionarSala(salas, obj.optString("nome", ""), obj.optString("unidade", ""));
+                    } else {
+                        // Cache das versões anteriores: só o nome, sem unidade.
+                        adicionarSala(salas, arr.optString(i, ""), "");
                     }
                 }
             }
@@ -597,10 +632,21 @@ public class SyncManager {
         }
     }
 
-    private void salvarCacheBens(String sala, List<BemEsperado> bens) {
+    /**
+     * Arquivo do cache de bens. Com a unidade no nome, salas homônimas de unidades
+     * diferentes não se sobrescrevem; sem unidade, é o nome que as versões anteriores usavam.
+     */
+    private static String arquivoCacheBens(String sala, String unidade) {
+        String chaveSala = sala != null && !sala.isEmpty() ? sala.replaceAll("[^a-zA-Z0-9]", "_") : "todas";
+        if (unidade == null || unidade.isEmpty()) {
+            return "cache_bens_" + chaveSala + ".json";
+        }
+        return "cache_bens_" + unidade.replaceAll("[^a-zA-Z0-9]", "_") + "__" + chaveSala + ".json";
+    }
+
+    private void salvarCacheBens(String sala, String unidade, List<BemEsperado> bens) {
         try {
-            String nomeArquivo = "cache_bens_" + (sala != null && !sala.isEmpty() ? sala.replaceAll("[^a-zA-Z0-9]", "_") : "todas") + ".json";
-            File cacheFile = new File(context.getFilesDir(), nomeArquivo);
+            File cacheFile = new File(context.getFilesDir(), arquivoCacheBens(sala, unidade));
             JSONArray arr = new JSONArray();
             for (BemEsperado b : bens) {
                 arr.put(b.toJson());
@@ -611,11 +657,14 @@ public class SyncManager {
         }
     }
 
-    private List<BemEsperado> carregarCacheBens(String sala) {
+    private List<BemEsperado> carregarCacheBens(String sala, String unidade) {
         List<BemEsperado> bens = new ArrayList<>();
         try {
-            String nomeArquivo = "cache_bens_" + (sala != null && !sala.isEmpty() ? sala.replaceAll("[^a-zA-Z0-9]", "_") : "todas") + ".json";
-            File cacheFile = new File(context.getFilesDir(), nomeArquivo);
+            File cacheFile = new File(context.getFilesDir(), arquivoCacheBens(sala, unidade));
+            // Cache gravado antes da unidade entrar na chave: serve até a próxima ida ao PC.
+            if (!cacheFile.exists()) {
+                cacheFile = new File(context.getFilesDir(), arquivoCacheBens(sala, null));
+            }
             if (cacheFile.exists()) {
                 String content = lerArquivo(cacheFile);
                 JSONArray arr = new JSONArray(content);

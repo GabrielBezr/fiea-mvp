@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Linha da lista de salas com pendências. Mesmo desenho de item_bem.xml; tudo é
-     preenchido em TagsSalaActivity.SalasAdapter. -->
+<!-- Linha de uma lista de salas: as com pendências (TagsSalaActivity.SalasAdapter) e as
+     da unidade no Inventário (ScanActivity.SalasAdapter). Mesmo desenho de item_bem.xml;
+     tudo é preenchido no adapter. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"

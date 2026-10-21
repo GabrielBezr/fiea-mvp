@@ -70,6 +70,7 @@ flowchart TD
 * Em campo, sem o PC, a mesma aba grava cada vínculo EPC ↔ patrimônio em um arquivo `etiquetagem_*.csv` no coletor (**Salvar vínculo**).
 
 ### 3. Varredura Rápida de Campo (Inventário)
+* **Inventário por unidade:** a unidade é escolhida numa lista vinda do PC e a sessão mostra todas as salas dela, com quantas já foram varridas. O operador varre sala por sala até completar a unidade.
 * Operação com gatilho físico lendo dezenas de tags por segundo.
 * **Deduplicação Inteligente (RF06):** Consolida centenas de leituras brutas em registros únicos por etiqueta, gravando a contagem de respostas, a intensidade do sinal (**RSSI**) e as janelas de horário.
 
@@ -167,10 +168,11 @@ fiea-mvp/
 
 ### Passo 2: Varredura com o Coletor Urovo DT50
 1. Abra o app **FIEA** no coletor. Na primeira vez, toque na engrenagem da barra superior e informe o endereço do PC (ex: `192.168.1.100:5000`).
-2. Na aba **Inventário**, preencha **Unidade** e **Operador** e toque em **Iniciar sessão**.
-3. No card **Varredura da sala**, escolha a **Sala** e a **Técnica** e toque em **Iniciar varredura**.
+2. Na aba **Inventário**, escolha a **Unidade** na lista (ela vem das salas cadastradas no PC), preencha o **Operador** e toque em **Iniciar sessão**. Se o coletor nunca se conectou ao PC, a unidade é digitada, exatamente como está cadastrada.
+3. A tela passa a mostrar as **salas da unidade**, com as que faltam no topo e o progresso "X de Y salas varridas". Escolha a **Técnica** e toque na sala em que você está para abrir a varredura dela.
 4. Segure o **gatilho físico** e caminhe pela sala apontando o coletor para os bens. Um toque rápido no gatilho deixa a leitura contínua; outro toque para.
-5. Toque em **Encerrar**. O app confere os bens da sala e, se houver pendências, pergunta se você quer resolvê-las agora.
+5. Toque em **Encerrar**. O app confere os bens da sala, volta à lista de salas (a sala aparece como varrida) e, se houver pendências, pergunta se você quer resolvê-las agora. Repita os passos 3 a 5 em cada sala.
+6. Com as salas varridas, toque em **Encerrar sessão**. Se ainda faltar alguma, o app avisa antes: os bens dela aparecem no relatório como **Sem Cobertura**.
 
 ### Passo 3: Tratamento de Pendências (Opcional, em Campo)
 1. Toque em **Resolver agora** ou abra a aba **Pendências**. Os bens que não responderam ao RFID aparecem no topo da lista.

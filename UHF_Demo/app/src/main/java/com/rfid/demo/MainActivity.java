@@ -398,6 +398,10 @@ public class MainActivity extends TabActivity   {
 			if (atual instanceof TagsSalaActivity && ((TagsSalaActivity) atual).voltarParaSalas()) {
 				return true;
 			}
+			// No Inventário, com uma sala em leitura, voltar pergunta se encerra a varredura.
+			if (atual instanceof ScanActivity && ((ScanActivity) atual).voltar()) {
+				return true;
+			}
 			// Fora do Inventário, voltar leva a ele; só lá o voltar duplo fecha o app.
 			if (myTabHost.getCurrentTab() != ABA_INVENTARIO) {
 				myTabHost.setCurrentTab(ABA_INVENTARIO);
