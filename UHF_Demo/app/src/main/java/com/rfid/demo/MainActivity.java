@@ -45,6 +45,7 @@ public class MainActivity extends TabActivity   {
 	private static final int CONEXAO_OFFLINE = 2;
 
 	public static TabHost myTabHost;
+	private int abaAnterior = ABA_INVENTARIO;
 	private View layoutConexaoServidor, btConfigServidor;
 	private TextView tvStatusConexao;
 	private ImageView ivStatusConexao;
@@ -95,7 +96,17 @@ public class MainActivity extends TabActivity   {
 				if (current instanceof ScanActivity) {
 					((ScanActivity) current).registrarCallback();
 				}
-				atualizarCasca(myTabHost.getCurrentTab());
+				// Ao sair de Pendências, a aba volta para a lista de salas: na volta o
+				// operador escolhe a próxima sala, em vez de cair na última que resolveu.
+				int aba = myTabHost.getCurrentTab();
+				if (abaAnterior == ABA_PENDENCIAS && aba != ABA_PENDENCIAS) {
+					Activity pendencias = getLocalActivityManager().getActivity(getString(R.string.tab_pendencias));
+					if (pendencias instanceof TagsSalaActivity) {
+						((TagsSalaActivity) pendencias).voltarParaSalas();
+					}
+				}
+				abaAnterior = aba;
+				atualizarCasca(aba);
 			}
 		});
 
@@ -382,9 +393,9 @@ public class MainActivity extends TabActivity   {
 
 		long secondTime = System.currentTimeMillis();
 		if(event.getKeyCode() == KeyEvent.KEYCODE_BACK &&  event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0){
-			// Em Pendências com um bem escolhido, voltar primeiro devolve à lista.
+			// Em Pendências, dentro de uma sala, voltar primeiro devolve à lista de salas.
 			Activity atual = getCurrentActivity();
-			if (atual instanceof TagsSalaActivity && ((TagsSalaActivity) atual).voltarParaLista()) {
+			if (atual instanceof TagsSalaActivity && ((TagsSalaActivity) atual).voltarParaSalas()) {
 				return true;
 			}
 			// Fora do Inventário, voltar leva a ele; só lá o voltar duplo fecha o app.

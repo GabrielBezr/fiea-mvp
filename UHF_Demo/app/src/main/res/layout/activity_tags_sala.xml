@@ -49,13 +49,14 @@
             app:icon="@drawable/ic_inventory_2" />
     </LinearLayout>
 
+    <!-- Primeiro nível: as salas que ficaram com pendências (TagsSalaActivity.SalaConferida) -->
     <LinearLayout
-        android:id="@+id/grupo_conferencia"
+        android:id="@+id/grupo_salas"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:visibility="gone">
 
-        <!-- RF09: resumo da sala conferida -->
         <com.google.android.material.card.MaterialCardView
             style="@style/Widget.Fiea.Card"
             android:layout_width="match_parent"
@@ -80,7 +81,82 @@
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:importantForAccessibility="no"
-                        android:src="@drawable/ic_meeting_room"
+                        android:src="@drawable/ic_pending_actions"
+                        android:tint="@color/fiea_azul" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/espaco_8"
+                        android:layout_weight="1"
+                        android:text="@string/salasTitulo"
+                        android:textAppearance="@style/TextAppearance.Fiea.Subtitulo" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/espaco_4"
+                    android:text="@string/salasDica"
+                    android:textAppearance="@style/TextAppearance.Fiea.Legenda" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.Fiea.Card"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_margin="@dimen/espaco_12"
+            android:layout_weight="1"
+            app:contentPadding="0dp">
+
+            <ListView
+                android:id="@+id/lv_salas"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:divider="@color/contorno"
+                android:dividerHeight="1dp" />
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+
+    <!-- Segundo nível: os bens da sala aberta -->
+    <LinearLayout
+        android:id="@+id/grupo_conferencia"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <!-- RF09: resumo da sala conferida -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.Fiea.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/espaco_12"
+            android:layout_marginTop="@dimen/espaco_12"
+            android:layout_marginEnd="@dimen/espaco_12"
+            app:contentPadding="@dimen/espaco_12">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <!-- Volta à lista de salas; a tecla Voltar faz o mesmo -->
+                    <ImageButton
+                        android:id="@+id/bt_voltar_salas"
+                        android:layout_width="@dimen/alvo_toque"
+                        android:layout_height="@dimen/alvo_toque"
+                        android:layout_marginStart="-12dp"
+                        android:background="?android:attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/descVoltarSalas"
+                        android:src="@drawable/ic_arrow_back"
                         android:tint="@color/fiea_azul" />
 
                     <TextView
@@ -259,33 +335,14 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <LinearLayout
+                <!-- polite: o leitor de tela lê o resultado de cada resolução -->
+                <TextView
+                    android:id="@+id/tv_item_selecionado"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <!-- polite: o leitor de tela lê o resultado de cada resolução -->
-                    <TextView
-                        android:id="@+id/tv_item_selecionado"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:accessibilityLiveRegion="polite"
-                        android:text="@string/itemNenhum"
-                        android:textAppearance="@style/TextAppearance.Fiea.Corpo" />
-
-                    <!-- Só com um bem selecionado; a tecla Voltar faz o mesmo -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/bt_voltar_lista"
-                        style="@style/Widget.Fiea.Botao.Texto"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/espaco_8"
-                        android:text="@string/btVoltarLista"
-                        android:visibility="gone"
-                        app:icon="@drawable/ic_arrow_back" />
-                </LinearLayout>
+                    android:accessibilityLiveRegion="polite"
+                    android:text="@string/itemNenhum"
+                    android:textAppearance="@style/TextAppearance.Fiea.Corpo" />
 
                 <LinearLayout
                     android:layout_width="match_parent"

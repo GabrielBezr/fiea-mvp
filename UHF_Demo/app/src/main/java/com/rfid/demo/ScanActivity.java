@@ -412,10 +412,6 @@ public class ScanActivity extends Activity implements OnClickListener {
         grupoConferindo.setVisibility(View.VISIBLE);
         SyncManager.getInstance(this).buscarBensDaSala(v.sala, bens -> {
             grupoConferindo.setVisibility(View.GONE);
-            // A aba Pendências passa a mostrar esta sala qualquer que seja a escolha no
-            // aviso; antes só "Resolver agora" a carregava, e quem tocava em "Depois"
-            // encontrava a aba ainda com a sala anterior.
-            TagsSalaActivity.carregarParaConferencia(v.sessao, v, copiaLeituras, epcsLidos, v.sala);
             if (bens == null || bens.isEmpty()) {
                 // Sincroniza diretamente se não há cadastro prévio de bens
                 SyncManager.getInstance(ScanActivity.this).sincronizarVarredura(v.sessao, v, copiaLeituras, null, sucesso -> {
@@ -439,6 +435,12 @@ public class ScanActivity extends Activity implements OnClickListener {
             final int finalPendentes = pendentesCount;
             final int finalLidos = lidosCount;
 
+            // A sala entra na lista da aba Pendências qualquer que seja a escolha no
+            // aviso; antes só "Resolver agora" a levava, e quem tocava em "Depois" não
+            // a encontrava mais. Sem pendências, ela não entra.
+            TagsSalaActivity.carregarParaConferencia(v.sessao, v, copiaLeituras, epcsLidos,
+                    bens.size(), finalPendentes);
+
             if (finalPendentes > 0) {
                 // A varredura vai ao PC (ou à fila) já agora, nas duas escolhas; as
                 // resoluções seguem depois, no "Sincronizar" das Pendências.
@@ -448,6 +450,7 @@ public class ScanActivity extends Activity implements OnClickListener {
                         .setTitle(R.string.tituloVarreduraEncerrada)
                         .setMessage(getString(R.string.msgPendenciasDetectadas, finalLidos, finalPendentes, v.sala))
                         .setPositiveButton(R.string.btResolverAgora, (dialog, which) -> {
+                            TagsSalaActivity.abrirAoEntrar(v);
                             if (MainActivity.myTabHost != null) {
                                 MainActivity.myTabHost.setCurrentTab(MainActivity.ABA_PENDENCIAS);
                             }

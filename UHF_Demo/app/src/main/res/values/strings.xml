@@ -231,7 +231,7 @@
     <!-- Tela de Pendências (RF09/RF10) -->
     <string name="pendSala">Sala %1$s</string>
     <string name="pendProgresso">%1$d de %2$d bens conferidos</string>
-    <string name="pendVaziaTitulo">Nenhuma varredura para conferir</string>
+    <string name="pendVaziaTitulo">Nenhuma sala com pendências</string>
     <string name="pendVaziaTexto">Encerre uma varredura no Inventário. Os bens da sala que o RFID não leu aparecem aqui para você resolver.</string>
     <string name="btIrInventario">Ir para o Inventário</string>
     <string name="situacaoRfid">RFID</string>
@@ -247,9 +247,15 @@
     <string name="btResolverManual">Manual</string>
     <string name="btResolverFaltante">Faltante</string>
     <string name="btSincronizar">Sincronizar</string>
-    <string name="btVoltarLista">Voltar à lista</string>
-    <string name="msgResolucoesAnterioresEnviadas">Resoluções da sala %1$s enviadas ao PC</string>
-    <string name="msgResolucoesAnterioresNaFila">Resoluções da sala %1$s guardadas na fila para envio</string>
+    <string name="salasTitulo">Salas com pendências</string>
+    <string name="salasDica">Toque numa sala para resolver os bens que o RFID não leu. O que você resolver vai para o PC ao sair da sala.</string>
+    <string name="salaLinha">Varredura nº %1$d · %2$s</string>
+    <string name="seloResolvida">Resolvida</string>
+    <string name="descVoltarSalas">Voltar às salas</string>
+    <plurals name="seloPendentes">
+        <item quantity="one">%d pendente</item>
+        <item quantity="other">%d pendentes</item>
+    </plurals>
     <string name="syncVerificando">Verificando o PC…</string>
     <string name="syncOnline">PC conectado (%1$s)</string>
     <string name="syncOffline">Sem conexão: os dados ficam salvos no aparelho</string>
