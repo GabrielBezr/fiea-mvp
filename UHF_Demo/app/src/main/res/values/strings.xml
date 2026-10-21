@@ -171,6 +171,7 @@
     <string name="listaVazia">Nenhuma etiqueta lida ainda.\nAbra uma varredura e aperte o gatilho.</string>
     <string name="rotuloRssi">RSSI</string>
     <string name="descMaisAcoes">Mais ações</string>
+    <string name="descSinalFraco">RSSI %1$s, sinal fraco</string>
     <string name="refNaoCapturada">não capturada</string>
     <string name="msgSemSessao">Inicie uma sessão antes de ler.</string>
     <string name="msgSemVarredura">Abra a varredura da sala antes de ler.</string>
@@ -246,6 +247,9 @@
     <string name="btResolverManual">Manual</string>
     <string name="btResolverFaltante">Faltante</string>
     <string name="btSincronizar">Sincronizar</string>
+    <string name="btVoltarLista">Voltar à lista</string>
+    <string name="msgResolucoesAnterioresEnviadas">Resoluções da sala %1$s enviadas ao PC</string>
+    <string name="msgResolucoesAnterioresNaFila">Resoluções da sala %1$s guardadas na fila para envio</string>
     <string name="syncVerificando">Verificando o PC…</string>
     <string name="syncOnline">PC conectado (%1$s)</string>
     <string name="syncOffline">Sem conexão: os dados ficam salvos no aparelho</string>

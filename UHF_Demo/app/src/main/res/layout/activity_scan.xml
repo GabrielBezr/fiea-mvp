@@ -175,14 +175,15 @@
                     android:visibility="gone" />
 
                 <!-- Limpar, exportar .xls e reexportar (ScanActivity.abrirMaisAcoes) -->
+                <!-- 48dp de toque; as margens negativas mantêm a linha do título baixa -->
                 <ImageButton
                     android:id="@+id/bt_mais_acoes"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="@dimen/alvo_toque"
+                    android:layout_height="@dimen/alvo_toque"
                     android:layout_marginStart="@dimen/espaco_4"
-                    android:layout_marginTop="-8dp"
-                    android:layout_marginEnd="-8dp"
-                    android:layout_marginBottom="-8dp"
+                    android:layout_marginTop="-12dp"
+                    android:layout_marginEnd="-12dp"
+                    android:layout_marginBottom="-12dp"
                     android:background="?android:attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/descMaisAcoes"
                     android:src="@drawable/ic_more_vert"
@@ -201,6 +202,7 @@
             <LinearLayout
                 android:id="@+id/grupo_conferindo"
                 android:layout_width="match_parent"
+                android:accessibilityLiveRegion="polite"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/espaco_8"
                 android:gravity="center_vertical"
@@ -348,9 +350,11 @@
                         android:text="@string/btEncerrarVarreduraCurto" />
                 </LinearLayout>
 
+                <!-- polite: o leitor de tela avisa quando a leitura começa e para -->
                 <TextView
                     android:id="@+id/tv_tips"
                     android:layout_width="match_parent"
+                    android:accessibilityLiveRegion="polite"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/espaco_8"
                     android:text="@string/dicaGatilho"
@@ -379,7 +383,8 @@
             <!-- Mesmos pesos das colunas de listtag_items.xml -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="32dp"
+                android:layout_height="wrap_content"
+                android:minHeight="32dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:paddingStart="@dimen/espaco_16"

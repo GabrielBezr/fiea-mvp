@@ -60,13 +60,20 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
     private TextView tvContRfid, tvContQr, tvContManual, tvContFaltante, tvContPendente;
     private LinearProgressIndicator pbPendencias;
     private View grupoSemVarredura, grupoConferencia;
-    private Button btResolverQr, btResolverManual, btResolverFaltante;
+    private Button btResolverQr, btResolverManual, btResolverFaltante, btVoltarLista;
     private Button btnSincronizarServidor, btIrInventario;
     private ListView lvPendencias;
 
     private final List<SyncManager.BemEsperado> listaBens = new ArrayList<>();
     private final List<SyncManager.PendenciaResolvida> pendenciasResolvidas = new ArrayList<>();
     private SyncManager.BemEsperado bemSelecionado = null;
+
+    // Varredura em tela. As statics acima trocam quando chega outra sala; estas guardam
+    // a anterior, para que o que foi resolvido nela seja enviado com ela, e não com a nova.
+    private Sessao sessaoExibida = null;
+    private Varredura varreduraExibida = null;
+    private List<Leitura> leiturasExibidas = new ArrayList<>();
+    private boolean resolucoesNaoEnviadas = false;
     private BensAdapter adaptador;
     private SyncManager syncManager;
 
@@ -101,6 +108,7 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         btResolverQr = findViewById(R.id.bt_resolver_qr);
         btResolverManual = findViewById(R.id.bt_resolver_manual);
         btResolverFaltante = findViewById(R.id.bt_resolver_faltante);
+        btVoltarLista = findViewById(R.id.bt_voltar_lista);
         btnSincronizarServidor = findViewById(R.id.btn_sincronizar_servidor);
         btIrInventario = findViewById(R.id.bt_ir_inventario);
         lvPendencias = findViewById(R.id.lv_pendencias);
@@ -108,6 +116,7 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         btResolverQr.setOnClickListener(this);
         btResolverManual.setOnClickListener(this);
         btResolverFaltante.setOnClickListener(this);
+        btVoltarLista.setOnClickListener(this);
         btnSincronizarServidor.setOnClickListener(this);
         btIrInventario.setOnClickListener(this);
 
@@ -134,6 +143,59 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         btResolverQr.setEnabled(selecionado);
         btResolverManual.setEnabled(selecionado);
         btResolverFaltante.setEnabled(selecionado);
+        btVoltarLista.setVisibility(selecionado ? View.VISIBLE : View.GONE);
+    }
+
+    /** Botão "Voltar à lista" e tecla Voltar (MainActivity): solta o bem selecionado. */
+    public boolean voltarParaLista() {
+        if (bemSelecionado == null) {
+            return false;
+        }
+        soltarSelecao(true);
+        return true;
+    }
+
+    /**
+     * Solta a seleção e mostra a lista do começo, com os pendentes em cima. Depois de
+     * uma resolução a mensagem de confirmação fica no cartão (limparMensagem = false).
+     */
+    private void soltarSelecao(boolean limparMensagem) {
+        bemSelecionado = null;
+        if (limparMensagem) {
+            tvItemSelecionado.setText(R.string.itemNenhum);
+        }
+        mostrarSelecionado();
+        ordenarPendentesPrimeiro();
+        adaptador.notifyDataSetChanged();
+        lvPendencias.setSelection(0);
+    }
+
+    /**
+     * Chegou outra varredura (ScanActivity.carregarParaConferencia). As resoluções e a
+     * seleção eram da sala anterior: as que ainda não tinham ido ao PC seguem agora com
+     * a varredura delas (ou para a fila), e a lista recomeça vazia para a sala nova.
+     */
+    private void trocarDeVarredura() {
+        if (resolucoesNaoEnviadas && varreduraExibida != null) {
+            final String salaAnterior = varreduraExibida.sala;
+            syncManager.sincronizarVarredura(sessaoExibida, varreduraExibida, leiturasExibidas,
+                    new ArrayList<>(pendenciasResolvidas), sucesso -> Toast.makeText(this,
+                            getString(sucesso ? R.string.msgResolucoesAnterioresEnviadas
+                                    : R.string.msgResolucoesAnterioresNaFila, salaAnterior),
+                            Toast.LENGTH_LONG).show());
+        }
+        sessaoExibida = sessaoVarredura;
+        varreduraExibida = varreduraConcluida;
+        leiturasExibidas = leiturasVarredura;
+        pendenciasResolvidas.clear();
+        resolucoesNaoEnviadas = false;
+        soltarSelecao(true);
+    }
+
+    // Pendentes primeiro: é o que o operador ainda precisa resolver. A ordenação é
+    // estável, então dentro de cada grupo vale a ordem que veio do PC.
+    private void ordenarPendentesPrimeiro() {
+        Collections.sort(listaBens, (a, b) -> Boolean.compare(!estaPendente(a), !estaPendente(b)));
     }
 
     @Override
@@ -151,6 +213,9 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         grupoConferencia.setVisibility(semVarredura ? View.GONE : View.VISIBLE);
         if (semVarredura) {
             return;
+        }
+        if (varreduraConcluida != varreduraExibida) {
+            trocarDeVarredura();
         }
 
         tvPendSala.setText(getString(R.string.pendSala, sala));
@@ -174,9 +239,7 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
                     listaBens.add(b);
                 }
             }
-            // Pendentes primeiro: é o que o operador ainda precisa resolver. A ordenação
-            // é estável, então dentro de cada grupo vale a ordem que veio do PC.
-            Collections.sort(listaBens, (a, b) -> Boolean.compare(!estaPendente(a), !estaPendente(b)));
+            ordenarPendentesPrimeiro();
             // A lista é recriada a cada carga; a seleção passa para o objeto novo do
             // mesmo bem, senão as ações seguintes mexeriam num objeto fora da tela.
             if (bemSelecionado != null) {
@@ -248,6 +311,8 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
             executarAcao(ACAO_MANUAL);
         } else if (v == btResolverFaltante) {
             executarAcao(ACAO_FALTANTE);
+        } else if (v == btVoltarLista) {
+            voltarParaLista();
         } else if (v == btnSincronizarServidor) {
             sincronizarComServidor();
         } else if (v == btIrInventario && MainActivity.myTabHost != null) {
@@ -284,10 +349,12 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
                         if (!digitado.isEmpty()) {
                             bemSelecionado.status = "LOCALIZADO_MANUAL";
                             pendenciasResolvidas.add(new SyncManager.PendenciaResolvida(bemSelecionado.patrimonio, bemSelecionado.epc, "MANUAL"));
+                            resolucoesNaoEnviadas = true;
                             atualizarContadores();
                             adaptador.notifyDataSetChanged();
                             // O cartão já confirma; o toast que repetia a mesma frase saiu.
                             tvItemSelecionado.setText(getString(R.string.resolvidoManual, bemSelecionado.patrimonio));
+                            soltarSelecao(false);
                         }
                     })
                     .setNegativeButton(R.string.btCancelar, null)
@@ -301,9 +368,11 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
                     .setPositiveButton(R.string.btMarcarFaltante, (dialog, which) -> {
                         bemSelecionado.status = "LOCALIZADO_FALTANTE";
                         pendenciasResolvidas.add(new SyncManager.PendenciaResolvida(bemSelecionado.patrimonio, bemSelecionado.epc, "FALTANTE"));
+                        resolucoesNaoEnviadas = true;
                         atualizarContadores();
                         adaptador.notifyDataSetChanged();
                         tvItemSelecionado.setText(getString(R.string.resolvidoFaltante, bemSelecionado.patrimonio));
+                        soltarSelecao(false);
                     })
                     .setNegativeButton(R.string.btCancelar, null)
                     .show();
@@ -318,10 +387,12 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
                 String conteudoQr = result.getContents().trim();
                 bemSelecionado.status = "LOCALIZADO_QR";
                 pendenciasResolvidas.add(new SyncManager.PendenciaResolvida(bemSelecionado.patrimonio, conteudoQr, "QR"));
+                resolucoesNaoEnviadas = true;
                 atualizarContadores();
                 adaptador.notifyDataSetChanged();
                 tvItemSelecionado.setText(getString(R.string.resolvidoQr, bemSelecionado.patrimonio));
                 Toast.makeText(this, getString(R.string.msgQrLido, conteudoQr), Toast.LENGTH_LONG).show();
+                soltarSelecao(false);
             } else {
                 Toast.makeText(this, getString(R.string.msgQrCancelado), Toast.LENGTH_SHORT).show();
             }
@@ -332,6 +403,8 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
 
     private void sincronizarComServidor() {
         Toast.makeText(this, getString(R.string.msgEnviandoPc), Toast.LENGTH_SHORT).show();
+        // Enviado ou guardado na fila, o que foi resolvido até aqui já não se perde.
+        resolucoesNaoEnviadas = false;
         syncManager.sincronizarVarredura(sessaoVarredura, varreduraConcluida, leiturasVarredura, pendenciasResolvidas, sucesso -> {
             if (sucesso) {
                 Toast.makeText(this, getString(R.string.msgEnviadoPc), Toast.LENGTH_LONG).show();

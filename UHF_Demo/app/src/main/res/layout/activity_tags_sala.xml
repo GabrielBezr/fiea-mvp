@@ -108,6 +108,7 @@
                 <TextView
                     android:id="@+id/tv_pend_status"
                     android:layout_width="match_parent"
+                    android:accessibilityLiveRegion="polite"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/espaco_4"
                     android:textAppearance="@style/TextAppearance.Fiea.Corpo" />
@@ -258,12 +259,33 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/tv_item_selecionado"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/itemNenhum"
-                    android:textAppearance="@style/TextAppearance.Fiea.Corpo" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <!-- polite: o leitor de tela lê o resultado de cada resolução -->
+                    <TextView
+                        android:id="@+id/tv_item_selecionado"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:accessibilityLiveRegion="polite"
+                        android:text="@string/itemNenhum"
+                        android:textAppearance="@style/TextAppearance.Fiea.Corpo" />
+
+                    <!-- Só com um bem selecionado; a tecla Voltar faz o mesmo -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/bt_voltar_lista"
+                        style="@style/Widget.Fiea.Botao.Texto"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/espaco_8"
+                        android:text="@string/btVoltarLista"
+                        android:visibility="gone"
+                        app:icon="@drawable/ic_arrow_back" />
+                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"

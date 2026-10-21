@@ -20,7 +20,7 @@
                     android:layout_weight="2"
                     android:layout_width="0dip"
                     android:layout_gravity="center"
-                    android:textSize="20dp"
+                    android:textSize="20sp"
                     android:textColor="#cc0000"
                     android:gravity="center"
                     android:layout_height="@dimen/rm_6c_et_height"/>
@@ -49,7 +49,7 @@
             android:background="@color/grayslate"
             android:text="@string/regional_frequency_band"
             android:gravity="center"
-             android:textSize="15dp"
+             android:textSize="15sp"
              android:textStyle="bold"
              android:layout_height="30dp"/>
         
@@ -156,7 +156,7 @@
                 android:background="@color/grayslate"
                 android:text="@string/power_setting"
                 android:gravity="center"
-                android:textSize="15dp"
+                android:textSize="15sp"
                 android:textStyle="bold"
                 android:layout_height="30dp"/>
             <TextView
@@ -215,7 +215,7 @@
                 android:background="@color/grayslate"
                 android:text="@string/inventory_area"
                 android:gravity="center"
-                android:textSize="15dp"
+                android:textSize="15sp"
                 android:textStyle="bold"
                 android:layout_height="30dp"/>
 
@@ -355,7 +355,7 @@
                 android:background="@color/grayslate"
                 android:text="@string/mode_selection"
                 android:gravity="center"
-                android:textSize="15dp"
+                android:textSize="15sp"
                 android:textStyle="bold"
                 android:layout_height="30dp"/>
             <TextView
@@ -418,7 +418,7 @@
             android:background="@color/grayslate"
             android:text="@string/scanparam"
             android:gravity="center"
-                android:textSize="13dp"
+                android:textSize="13sp"
                 android:textStyle="bold"
                 android:layout_height="25dp"/>
             <TextView

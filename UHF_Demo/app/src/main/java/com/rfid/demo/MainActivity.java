@@ -382,6 +382,11 @@ public class MainActivity extends TabActivity   {
 
 		long secondTime = System.currentTimeMillis();
 		if(event.getKeyCode() == KeyEvent.KEYCODE_BACK &&  event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0){
+			// Em Pendências com um bem escolhido, voltar primeiro devolve à lista.
+			Activity atual = getCurrentActivity();
+			if (atual instanceof TagsSalaActivity && ((TagsSalaActivity) atual).voltarParaLista()) {
+				return true;
+			}
 			// Fora do Inventário, voltar leva a ele; só lá o voltar duplo fecha o app.
 			if (myTabHost.getCurrentTab() != ABA_INVENTARIO) {
 				myTabHost.setCurrentTab(ABA_INVENTARIO);

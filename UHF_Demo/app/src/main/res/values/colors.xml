@@ -54,7 +54,8 @@
     <color name="red">@color/erro</color>
     <color name="red1">#db2627</color>
     <color name="blue1">#2095ac</color>
-    <color name="grayslate">#708090</color>
+    <!-- Fundo dos títulos de seção das telas dev, com texto branco (7,6:1) -->
+    <color name="grayslate">@color/texto_secundario</color>
 
     <color name="colorPrimary">@color/fiea_azul</color>
     <color name="colorPrimaryDark">@color/fiea_azul_escuro</color>
