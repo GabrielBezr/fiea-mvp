@@ -119,6 +119,72 @@ class TestConferencia(unittest.TestCase):
             ],
         )
 
+    def _bem(self, patrimonio, sala, epc):
+        sala_id = self.conexao.execute(
+            "SELECT id FROM sala WHERE unidade = 'Unidade 1' AND nome = ?", (sala,)
+        ).fetchone()["id"]
+        self.conexao.execute(
+            "INSERT INTO bem (patrimonio, descricao, sala_esperada_id, epc, importado_em) "
+            "VALUES (?, 'Bem de teste', ?, ?, '2026-10-08T10:00:00')",
+            (patrimonio, sala_id, epc),
+        )
+
+    def _leitura(self, varredura, epc, metodo):
+        self.conexao.execute(
+            "INSERT INTO leitura (varredura_id, epc, metodo, leituras, primeira_leitura, "
+            "ultima_leitura) VALUES (?, ?, ?, 1, '2026-10-08 10:05:00.000', "
+            "'2026-10-08 10:05:00.000')",
+            (varredura, epc, metodo),
+        )
+
+    def test_resolucoes_de_pendencias_seguem_o_metodo(self):
+        # S1-v01 e a varredura do Lab A; S1-v02, a do Lab B.
+        self._bem("300", "Lab A", "ASSET_FALTANTE")
+        self._leitura("S1-v01", "ASSET_FALTANTE", "FALTANTE")
+        self._bem("301", "Lab A", None)
+        self._leitura("S1-v01", "PAT_301", "MANUAL")
+        self._bem("302", "Lab A", "ASSET_QR")
+        self._leitura("S1-v01", "ASSET_QR", "QR")
+        self._bem("303", "Lab A", "ASSET_FALTANTE_E_RADIO")
+        self._leitura("S1-v01", "ASSET_FALTANTE_E_RADIO", "RFID")
+        self._leitura("S1-v01", "ASSET_FALTANTE_E_RADIO", "FALTANTE")
+        self._bem("304", "Lab A", "ASSET_FALTANTE_NA_VIZINHA")
+        self._leitura("S1-v01", "ASSET_FALTANTE_NA_VIZINHA", "FALTANTE")
+        self._leitura("S1-v02", "ASSET_FALTANTE_NA_VIZINHA", "RFID")
+        self._bem("305", "Lab A", "ASSET_ACHADO_DEPOIS")
+        self._leitura("S1-v01", "ASSET_ACHADO_DEPOIS", "FALTANTE")
+        self._leitura("S1-v01", "ASSET_ACHADO_DEPOIS", "MANUAL")
+        self.conexao.commit()
+
+        relatorio = conferir_sessao(self.conexao, "S1")
+        bens = {bem.patrimonio: bem for bem in relatorio.bens}
+
+        # Faltante e o operador dizendo que procurou e nao achou: nao e localizado.
+        self.assertEqual(bens["300"].situacao, NAO_LOCALIZADO)
+        self.assertEqual(bens["300"].salas_lidas, [])
+        # Manual de bem sem EPC chega como PAT_<patrimonio> e casa pelo patrimonio.
+        self.assertEqual(bens["301"].situacao, LOCALIZADO)
+        self.assertEqual(bens["302"].situacao, LOCALIZADO)
+        # O faltante tira a sala onde foi marcado, mesmo com leitura do radio nela...
+        self.assertEqual(bens["303"].situacao, NAO_LOCALIZADO)
+        # ...mas nao a sala vizinha, onde o radio o leu.
+        self.assertEqual(bens["304"].situacao, FORA_DO_LOCAL)
+        self.assertEqual(bens["304"].salas_lidas, ["Lab B"])
+        # Achado depois na mesma sala: a confirmacao vale mais que o faltante.
+        self.assertEqual(bens["305"].situacao, LOCALIZADO)
+
+    def test_resolucoes_nao_entram_como_epc_nao_cadastrado(self):
+        self._leitura("S1-v01", "PAT_999", "MANUAL")
+        self._leitura("S1-v01", "HTTPS://BEONTAG.EXEMPLO/QR", "QR")
+        self.conexao.commit()
+
+        relatorio = conferir_sessao(self.conexao, "S1")
+
+        self.assertEqual(
+            [epc.epc for epc in relatorio.epcs_nao_cadastrados],
+            ["UNREGISTERED_EPC", "UNREGISTERED_NO_ROOM"],
+        )
+
     def test_sessao_inexistente_e_informada(self):
         with self.assertRaises(SessaoNaoEncontrada):
             conferir_sessao(self.conexao, "inexistente")

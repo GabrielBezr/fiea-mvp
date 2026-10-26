@@ -1902,7 +1902,8 @@ def ver_relatorio():
         sessao_atual = con.execute("SELECT * FROM sessao WHERE id = ?", (sessao_id,)).fetchone()
         varreduras = con.execute(
             "SELECT v.numero, v.inicio, v.fim, v.duracao_s, v.linhas_brutas, s.nome AS sala, "
-            "       COUNT(l.epc) AS total_etiquetas "
+            # Etiquetas lidas pelo rádio; as resoluções de Pendências não são leituras.
+            "       COUNT(CASE WHEN l.metodo = 'RFID' THEN 1 END) AS total_etiquetas "
             "FROM varredura v "
             "LEFT JOIN sala s ON s.id = v.sala_id "
             "LEFT JOIN leitura l ON l.varredura_id = v.id "

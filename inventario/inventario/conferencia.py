@@ -9,6 +9,14 @@ FORA_DO_LOCAL = "fora do local"
 SEM_COBERTURA = "sem cobertura"
 NAO_CADASTRADO = "nao cadastrado"
 
+# leitura.metodo: alem do radio (RFID), as resolucoes de Pendencias que o coletor
+# envia. QR e manual sao o operador confirmando o bem na sala; faltante e o operador
+# dizendo que procurou ali e nao achou.
+METODOS_CONFIRMACAO = {"QR", "MANUAL"}
+METODO_FALTANTE = "FALTANTE"
+# Resolucao manual de bem sem EPC: o servidor grava "PAT_<patrimonio>" no lugar do EPC.
+PREFIXO_SEM_EPC = "PAT_"
+
 
 class SessaoNaoEncontrada(Exception):
     """A sessao solicitada nao existe no banco."""
@@ -54,16 +62,30 @@ def conferir_sessao(conexao, sessao_id):
     ).fetchall()
     salas_varridas = {v["sala_id"] for v in varreduras if v["sala_id"] is not None}
     leituras_por_epc = {}
+    confirmados = {}  # QR ou manual: chave do bem -> salas onde o operador o achou
+    faltantes = {}    # chave do bem -> salas onde o operador procurou e nao achou
     epcs_lidos = set()
     epcs_em_sala_nao_identificada = set()
     for varredura in varreduras:
         epcs = conexao.execute(
-            "SELECT DISTINCT epc FROM leitura WHERE varredura_id = ?",
+            "SELECT DISTINCT epc, metodo FROM leitura WHERE varredura_id = ?",
             (varredura["id"],),
         )
         for leitura in epcs:
             epc = leitura["epc"].strip().upper()
             if not epc:
+                continue
+            metodo = (leitura["metodo"] or "RFID").strip().upper()
+            # Resolucao sem sala conhecida nao diz nada sobre onde o bem esta.
+            if metodo == METODO_FALTANTE:
+                if varredura["sala_id"] is not None:
+                    faltantes.setdefault(epc, set()).add(varredura["sala_id"])
+                continue
+            if metodo in METODOS_CONFIRMACAO:
+                if varredura["sala_id"] is not None:
+                    confirmados.setdefault(epc, set()).add(
+                        (varredura["sala_id"], varredura["sala"])
+                    )
                 continue
             epcs_lidos.add(epc)
             if varredura["sala_id"] is None:
@@ -85,7 +107,18 @@ def conferir_sessao(conexao, sessao_id):
 
     for bem in bens:
         epc = (bem["epc"] or "").strip().upper()
-        locais = sorted(leituras_por_epc.get(epc, set()), key=lambda local: local[1])
+        # A resolucao pode ter sido gravada pelo EPC ou, para bem que ainda nao tinha
+        # EPC quando foi resolvido, por "PAT_<patrimonio>".
+        chaves = {f"{PREFIXO_SEM_EPC}{bem['patrimonio']}".upper()}
+        if epc:
+            chaves.add(epc)
+        excluidas = set().union(*(faltantes.get(c, set()) for c in chaves))
+        locais = {
+            local for local in leituras_por_epc.get(epc, set()) if local[0] not in excluidas
+        } if epc else set()
+        # A confirmacao do operador vale mais que o faltante marcado na mesma sala.
+        locais |= set().union(*(confirmados.get(c, set()) for c in chaves))
+        locais = sorted(locais, key=lambda local: local[1])
         ids_locais = {local[0] for local in locais}
         sala_esperada_id = bem["sala_esperada_id"]
 

@@ -335,7 +335,8 @@ def _resumo(conexao):
         print(f"\nSessao {s['id']} | {s['unidade']} | {s['operador']} | {duracao}")
         for v in conexao.execute(
             "SELECT v.numero, v.duracao_s, v.linhas_brutas, s.nome AS sala, "
-            "COUNT(l.epc) AS etiquetas "
+            # So o radio: resolucoes de Pendencias nao sao etiquetas lidas.
+            "COUNT(CASE WHEN l.metodo = 'RFID' THEN 1 END) AS etiquetas "
             "FROM varredura v LEFT JOIN leitura l ON l.varredura_id = v.id "
             "LEFT JOIN sala s ON s.id = v.sala_id "
             "WHERE v.sessao_id = ? GROUP BY v.id ORDER BY v.numero",
