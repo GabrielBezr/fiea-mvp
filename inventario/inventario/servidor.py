@@ -66,6 +66,289 @@ import base64
 FAVICON_ICO_BYTES = base64.b64decode("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")
 FAVICON_PNG_BYTES = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACy0lEQVR42u1X7UtTYRS/JVgL+lIfoj4U1Mc+9Af0oaToBXpHShalIBlUWF8KelMpi0KpoKiMQiOxZbJJmJVvm+415wtJbbaZuc1pbZPNuTXny073nMu9LPdSH5q3YAcO9z7P+e2c3/O757l3D8PwlpG5hFm78wyzsaid2VMDKXHMjTWw1i8mWb6aySozpazwXMdaWFNY+XwWjyZBSqAk812cd6yd0mf+Jz0hWnHe0wTSBP5JAvuvd4CsYwgM/W7QmV3Q2OWEI7d0wEgVwJR+4PxwPWFzyjTwUmMjrJ71N91O2HVFJeTKva2DBuMw6M1uqFZ9hWXSuuQEdpQoIRKJwFw78aATmNPtwFSNAlPeD0yOHA7eVMdgcZx/10C5Nl9oEeL89Vrtx+QEFHo7Ab2BMBTcew/HWMfrqjwFR+B4E2y93AoLWGy9wUFYpydIGB6/Jp9Tp07L5TI7fGB3Bej+/mtLcgKB0BQBUa7F2S/IFx2QUSz7hho+2XygMbkgk53z/+Cw+AgkLE4ShV1xVA4ToWmKl9T0QffAGN1XvLUmJoAJoiXj/fPwOK3Y4Q5S7HHTAKw/2RAXa7R4KNepCqMwtzJXDkarh7APkxHYdL457vPHgusKXgnjYnZFWRdb4mJROcxlHfHT2MZKv/uqCixO/+8VOFfVK6xoQ2GjIGvGvufU7fyKthW1wdnKnoRYHMdTB+1p62BiAsgO7bs3RJJHxwofdQkJlx6qpW2KNjsbgbw7epCWa8lxmz1hFUMLTk5DW9838vEg1y9ynT0xgXc9IwQyWsdi3g2VLV8oFgrP0LiU3U7RW4/3LZdawTsRpnl8fyAWF8P3QHPvaGICWra7TXYflMlNMQRwy2HsmZKTEFVAxVCtyakZ2radbANuL24jHDr2Cf97mXqI5qqVg3//Vbxwb/pjlCbwXxMQ/W+56AcT0Y9moh9ORT6e/wQsXsMsZqQz6gAAAABJRU5ErkJggg==")
 
+HTML_HOME_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIEA Inventário RFID — Painel de Controle</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACy0lEQVR42u1X7UtTYRS/JVgL+lIfoj4U1Mc+9Af0oaToBXpHShalIBlUWF8KelMpi0KpoKiMQiOxZbJJmJVvm+415wtJbbaZuc1pbZPNuTXny073nMu9LPdSH5q3YAcO9z7P+e2c3/O757l3D8PwlpG5hFm78wyzsaid2VMDKXHMjTWw1i8mWb6aySozpazwXMdaWFNY+XwWjyZBSqAk812cd6yd0mf+Jz0hWnHe0wTSBP5JAvuvd4CsYwgM/W7QmV3Q2OWEI7d0wEgVwJR+4PxwPWFzyjTwUmMjrJ71N91O2HVFJeTKva2DBuMw6M1uqFZ9hWXSuuQEdpQoIRKJwFw78aATmNPtwFSNAlPeD0yOHA7eVMdgcZx/10C5Nl9oEeL89Vrtx+QEFHo7Ab2BMBTcew/HWMfrqjwFR+B4E2y93AoLWGy9wUFYpydIGB6/Jp9Tp07L5TI7fGB3Bej+/mtLcgKB0BQBUa7F2S/IFx2QUSz7hho+2XygMbkgk53z/+Cw+AgkLE4ShV1xVA4ToWmKl9T0QffAGN1XvLUmJoAJoiXj/fPwOK3Y4Q5S7HHTAKw/2RAXa7R4KNepCqMwtzJXDkarh7APkxHYdL457vPHgusKXgnjYnZFWRdb4mJROcxlHfHT2MZKv/uqCixO/+8VOFfVK6xoQ2GjIGvGvufU7fyKthW1wdnKnoRYHMdTB+1p62BiAsgO7bs3RJJHxwofdQkJlx6qpW2KNjsbgbw7epCWa8lxmz1hFUMLTk5DW9838vEg1y9ynT0xgXc9IwQyWsdi3g2VLV8oFgrP0LiU3U7RW4/3LZdawTsRpnl8fyAWF8P3QHPvaGICWra7TXYflMlNMQRwy2HsmZKTEFVAxVCtyakZ2radbANuL24jHDr2Cf97mXqI5qqVg3//Vbxwb/pjlCbwXxMQ/W+56AcT0Y9moh9ORT6e/wQsXsMsZqQz6gAAAABJRU5ErkJggg==">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=fiea">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=fiea">
+    <link rel="shortcut icon" href="/favicon.ico?v=fiea">
+    <link rel="apple-touch-icon" href="/favicon.png?v=fiea">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --fiea-azul: #004EA6;
+            --fiea-azul-escuro: #003A7C;
+            --fiea-azul-claro: #00A0E7;
+            --fiea-azul-fundo: #E6EEF8;
+            --fundo: #F1F5F9;
+            --superficie: #FFFFFF;
+            --contorno: #E2E8F0;
+            --contorno-forte: #CBD5E1;
+            --texto-primario: #1E293B;
+            --texto-secundario: #475569;
+            --texto-dica: #94A3B8;
+            --sucesso: #059669;
+            --sucesso-fundo: #DCFCE7;
+            --sucesso-texto: #166534;
+            --alerta: #D97706;
+            --alerta-fundo: #FEF3C7;
+            --alerta-texto: #92400E;
+            --erro: #DC2626;
+            --erro-fundo: #FEE2E2;
+            --erro-texto: #991B1B;
+            --info: #0284C7;
+            --info-fundo: #E0F2FE;
+            --info-texto: #075985;
+            --ciano: #0891B2;
+            --ciano-fundo: #CFFAFE;
+            --ciano-texto: #155E75;
+        }
+        body {
+            background-color: var(--fundo);
+            color: var(--texto-primario);
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+        }
+        .navbar-fiea {
+            background-color: var(--fiea-azul);
+            padding: 12px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        }
+        .navbar-brand {
+            font-weight: 700;
+            color: #FFFFFF !important;
+            font-size: 1.15rem;
+            letter-spacing: -0.2px;
+        }
+        .nav-pill-btn {
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+        .nav-pill-btn.active {
+            background-color: #FFFFFF;
+            color: var(--fiea-azul) !important;
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .nav-pill-btn:not(.active) {
+            background-color: rgba(255, 255, 255, 0.12);
+            color: #FFFFFF !important;
+        }
+        .nav-pill-btn:not(.active):hover {
+            background-color: rgba(255, 255, 255, 0.22);
+        }
+        .card {
+            border-radius: 12px;
+            border: 1px solid var(--contorno);
+            background-color: var(--superficie);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .status-dot.online {
+            background-color: var(--sucesso);
+            box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
+        }
+        .status-dot.offline {
+            background-color: var(--texto-dica);
+        }
+        .btn-primary {
+            background-color: var(--fiea-azul);
+            border-color: var(--fiea-azul);
+            font-weight: 500;
+        }
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: var(--fiea-azul-escuro);
+            border-color: var(--fiea-azul-escuro);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-fiea mb-4">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                    <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                    <path d="M7 15h.01"></path>
+                    <path d="M10 15h7"></path>
+                    <path d="M7 10h10"></path>
+                </svg>
+                FIEA Coleta RFID — Servidor Local
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <a href="/" class="nav-pill-btn active">Início</a>
+                <a href="/bens" class="nav-pill-btn">Bens Cadastrados</a>
+                <a href="/salas" class="nav-pill-btn">Gerenciar Salas</a>
+                <a href="/relatorio" class="nav-pill-btn">Relatório de Inventário</a>
+                <span class="badge bg-white text-dark ms-2 fw-semibold">Servidor Ativo</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container px-4 py-2" style="max-width: 1140px;">
+        <!-- Seção 1: Conexão com o Leitor Urovo DT50 (Hero Card) -->
+        <div class="card mb-4 border-primary border-opacity-25 shadow-sm" style="background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);">
+            <div class="card-body p-4 text-center">
+                <div class="d-flex justify-content-center align-items-center gap-2 mb-2">
+                    <span id="badgeColetor" class="badge bg-light text-secondary border p-2 d-flex align-items-center gap-2" style="font-size: 0.85rem;">
+                        <span id="dotColetor" class="status-dot offline"></span>
+                        <span id="textoColetor">Coletor: Aguardando Conexão Wi-Fi</span>
+                    </span>
+                </div>
+                <h5 class="fw-bold text-primary mb-1">Endereço do Servidor para o Leitor Urovo DT50</h5>
+                <p class="text-muted small mb-3">
+                    Certifique-se de que o leitor e este computador estejam na <strong>mesma rede Wi-Fi</strong>. Digite o endereço abaixo no aplicativo:
+                </p>
+
+                <!-- IP com fonte grande e nítida para digitação no Urovo -->
+                <div class="d-inline-block py-2 px-4 bg-white rounded-3 border border-primary border-opacity-50 shadow-sm mb-3">
+                    <span class="display-6 font-monospace fw-bold text-primary" style="letter-spacing: 2px;">
+                        http://{{ ip_local }}:5000
+                    </span>
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-md-9 text-start">
+                        <div class="p-3 bg-light rounded border small">
+                            <strong class="d-block mb-1 text-dark">Como configurar no leitor Urovo DT50:</strong>
+                            <ol class="mb-0 ps-3 text-secondary">
+                                <li>No aplicativo do Urovo, abra o menu lateral e toque em <strong>Configurações</strong>.</li>
+                                <li>No campo <strong>Servidor / IP</strong>, digite exatamente o endereço acima: <code>http://{{ ip_local }}:5000</code>.</li>
+                                <li>Toque no botão <strong>Testar Conexão</strong>. Ao confirmar o sucesso, o leitor já estará pronto para coletar e sincronizar.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção 2: Métricas Rápidas do Sistema (3 Cards) -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card h-100 p-3 text-center border-0 shadow-sm bg-white">
+                    <div class="text-muted small text-uppercase fw-semibold mb-1">Conferência &amp; Auditoria</div>
+                    <div class="display-6 fw-bold text-success mb-1">{{ total_sessoes }}</div>
+                    <div class="small text-muted mb-3">Sessões de inventário registradas</div>
+                    <a href="/relatorio" class="btn btn-sm btn-outline-success mt-auto fw-semibold">
+                        Acessar Relatório de Inventário &rarr;
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 p-3 text-center border-0 shadow-sm bg-white">
+                    <div class="text-muted small text-uppercase fw-semibold mb-1">Base Patrimonial</div>
+                    <div class="display-6 fw-bold text-primary mb-1">{{ total_bens }}</div>
+                    <div class="small text-muted mb-3">Bens cadastrados no sistema</div>
+                    <a href="/bens" class="btn btn-sm btn-outline-primary mt-auto fw-semibold">
+                        Consultar Bens Cadastrados &rarr;
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 p-3 text-center border-0 shadow-sm bg-white">
+                    <div class="text-muted small text-uppercase fw-semibold mb-1">Estrutura Física</div>
+                    <div class="display-6 fw-bold text-primary mb-1">{{ total_salas }}</div>
+                    <div class="small text-muted mb-3">Salas e ambientes mapeados</div>
+                    <a href="/salas" class="btn btn-sm btn-outline-primary mt-auto fw-semibold">
+                        Gerenciar Salas &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção 3: Orientação Didática: Rotina vs Manutenção -->
+        <div class="row g-4 mb-4">
+            <!-- Rotina Operacional -->
+            <div class="col-md-7">
+                <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid var(--sucesso) !important;">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-success-subtle text-success fw-bold text-uppercase" style="font-size: 0.72rem;">Dia a Dia</span>
+                            <h6 class="fw-bold mb-0 text-dark">Rotina Padrão do Inventário RFID</h6>
+                        </div>
+                        <p class="text-muted small mb-3">
+                            Para fazer o inventário de rotina, <strong>não é necessário recadastrar itens nem salas</strong>. O processo é direto no leitor Urovo:
+                        </p>
+                        <ol class="small text-secondary ps-3 mb-3" style="line-height: 1.7;">
+                            <li><strong>Início no Urovo:</strong> Abra o aplicativo no leitor portátil e selecione a sala que vai auditar.</li>
+                            <li><strong>Varredura com Gatilho:</strong> Acione o gatilho RFID e percorra o ambiente até bipar todas as etiquetas.</li>
+                            <li><strong>Finalização e Sincronismo:</strong> Encerre a varredura e toque em <em>Sincronizar</em> (ou os dados entram automaticamente pelo Wi-Fi).</li>
+                            <li><strong>Auditoria no Computador:</strong> Abra a aba <a href="/relatorio" class="fw-semibold text-success text-decoration-none">Relatório de Inventário</a> para conferir itens localizados, fora de local ou pendências.</li>
+                        </ol>
+                        <a href="/relatorio" class="btn btn-success btn-sm px-3 fw-semibold">Abrir Relatório de Inventário</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manutenção Cadastral -->
+            <div class="col-md-5">
+                <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid var(--fiea-azul) !important;">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-primary-subtle text-primary fw-bold text-uppercase" style="font-size: 0.72rem;">Eventual</span>
+                            <h6 class="fw-bold mb-0 text-dark">Manutenção de Cadastro</h6>
+                        </div>
+                        <p class="text-muted small mb-3">
+                            Utilize estas opções apenas quando houver alterações patrimoniais ou novos ambientes:
+                        </p>
+                        <ul class="small text-secondary ps-3 mb-4" style="line-height: 1.7;">
+                            <li><a href="/salas" class="text-primary fw-semibold text-decoration-none">Gerenciar Salas:</a> Crie ou edite ambientes físicos (ex: novas salas, laboratórios ou almoxarifado).</li>
+                            <li><a href="/bens" class="text-primary fw-semibold text-decoration-none">Bens Cadastrados:</a> Adicione novos equipamentos que chegaram ou vincule novas tags RFID (EPC).</li>
+                        </ul>
+                        <div class="alert alert-light border small text-muted mb-0 py-2">
+                            <strong>Dica:</strong> Uma vez cadastradas, as salas e os bens ficam salvos permanentemente no banco de dados.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function atualizarStatusColetor() {
+            fetch('/api/status-coletor')
+                .then(r => r.json())
+                .then(data => {
+                    const badge = document.getElementById('badgeColetor');
+                    const dot = document.getElementById('dotColetor');
+                    const texto = document.getElementById('textoColetor');
+                    if (!badge) return;
+
+                    if (data && data.conectado) {
+                        badge.className = 'badge bg-success-subtle text-success border border-success p-2 d-flex align-items-center gap-2';
+                        dot.className = 'status-dot online';
+                        texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'} · há ${data.segundos_atras}s)`;
+                    } else {
+                        badge.className = 'badge bg-light text-secondary border p-2 d-flex align-items-center gap-2';
+                        dot.className = 'status-dot offline';
+                        texto.innerText = 'Coletor: Aguardando Conexão Wi-Fi';
+                    }
+                })
+                .catch(() => {});
+        }
+        setInterval(atualizarStatusColetor, 3000);
+        atualizarStatusColetor();
+    </script>
+</body>
+</html>
+"""
+
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -214,6 +497,12 @@ HTML_TEMPLATE = """
             border: 1px solid #A5F3FC;
             font-weight: 600;
         }
+        .badge-pendente {
+            background-color: #FEF3C7;
+            color: #92400E;
+            border: 1px solid #FCD34D;
+            font-weight: 600;
+        }
         .badge-metal {
             background-color: var(--info-fundo);
             color: var(--info-texto);
@@ -236,7 +525,8 @@ HTML_TEMPLATE = """
                 FIEA Coleta RFID — Servidor Local
             </a>
             <div class="d-flex align-items-center gap-2">
-                <a href="/" class="nav-pill-btn active">Bens Cadastrados</a>
+                <a href="/" class="nav-pill-btn">Início</a>
+                <a href="/bens" class="nav-pill-btn active">Bens Cadastrados</a>
                 <a href="/salas" class="nav-pill-btn">Gerenciar Salas</a>
                 <a href="/relatorio" class="nav-pill-btn">Relatório de Inventário</a>
                 <span class="badge bg-white text-dark ms-2 fw-semibold">Servidor Ativo</span>
@@ -245,12 +535,17 @@ HTML_TEMPLATE = """
     </nav>
 
     <div class="container-fluid px-4">
-        <!-- Banner de Conexão com o Urovo -->
-        <div class="ip-box mb-4 d-flex justify-content-between align-items-center">
+        <!-- Topo da Tela de Bens: Identificação e Conexão Limpa -->
+        <div class="ip-box mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div>
-                <h6 class="text-primary mb-1 fw-bold">Conexão com o Coletor Urovo DT50 (Mesma Rede Wi-Fi)</h6>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h6 class="text-primary mb-0 fw-bold">Cadastro e Associação de Bens Patrimoniais</h6>
+                    <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 fw-medium" style="font-size: 0.76rem;" data-bs-toggle="modal" data-bs-target="#modalComoConectarBens">
+                        Como Conectar o Leitor?
+                    </button>
+                </div>
                 <p class="mb-0 text-muted small">
-                    Endereço para configurar no coletor: 
+                    Endereço configurado no leitor: 
                     <strong class="text-dark fs-6 font-monospace px-2 py-1 bg-white rounded border">http://{{ ip_local }}:5000</strong>
                 </p>
             </div>
@@ -262,6 +557,54 @@ HTML_TEMPLATE = """
                 <div class="text-end">
                     <span class="badge bg-light text-primary border">Total de Bens: {{ bens|length }}</span>
                     <span class="badge bg-light text-primary border">Salas: {{ salas|length }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Didático: Como Conectar o Leitor Urovo DT50 (Bens) -->
+        <div class="modal fade" id="modalComoConectarBens" tabindex="-1" aria-labelledby="modalComoConectarBensLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-light">
+                        <h6 class="modal-title fw-bold text-primary" id="modalComoConectarBensLabel">
+                            Como Conectar o Leitor Urovo DT50 ao Servidor
+                        </h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <ol class="list-group list-group-numbered list-group-flush mb-3">
+                            <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">Conecte o Leitor na Mesma Rede Wi-Fi</div>
+                                    <span class="text-muted small">O leitor Urovo DT50 e este computador precisam estar na mesma rede.</span>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">Abra as Configurações no App do Leitor</div>
+                                    <span class="text-muted small">No menu lateral do aplicativo Urovo, toque em <strong>Configurações</strong>.</span>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">Digite o Endereço IP do Servidor</div>
+                                    <span class="text-muted small">No campo <em>Servidor / IP</em>, digite no teclado do leitor:</span>
+                                    <div class="mt-2 p-2 bg-white rounded border font-monospace fw-bold text-primary text-center fs-5">
+                                        http://{{ ip_local }}:5000
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">Toque em "Testar Conexão"</div>
+                                    <span class="text-muted small">Ao confirmar a mensagem de sucesso, os dados serão sincronizados e você poderá capturar tags diretamente no formulário.</span>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                    <div class="modal-footer bg-light py-2">
+                        <button type="button" class="btn btn-primary btn-sm px-4" data-bs-dismiss="modal">Entendi</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -385,8 +728,16 @@ HTML_TEMPLATE = """
                                     </tr>
                                     {% else %}
                                     <tr>
-                                        <td colspan="6" class="text-center py-4 text-muted">
-                                            Nenhum bem cadastrado ainda. Preencha o formulário ao lado ou importe sua planilha via terminal.
+                                        <td colspan="6" class="text-center py-5">
+                                            <div class="text-muted mb-2">
+                                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-50">
+                                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                                                </svg>
+                                            </div>
+                                            <h6 class="fw-bold mb-1">Nenhum bem cadastrado ainda</h6>
+                                            <p class="text-muted small mb-0">Utilize o formulário ao lado para cadastrar o primeiro bem do patrimônio.</p>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -476,7 +827,22 @@ HTML_TEMPLATE = """
         }
         setInterval(atualizarStatusColetor, 3000);
         atualizarStatusColetor();
+
+        function copiarIpServidor() {
+            const texto = 'http://{{ ip_local }}:5000';
+            navigator.clipboard.writeText(texto).then(() => {
+                const label = document.getElementById('labelCopiarIp');
+                if (label) {
+                    const original = label.innerText;
+                    label.innerText = 'Copiado!';
+                    setTimeout(() => { label.innerText = original; }, 2000);
+                }
+            }).catch(() => {
+                prompt('Copie o endereço do servidor:', texto);
+            });
+        }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 """
@@ -652,7 +1018,8 @@ HTML_SALAS_TEMPLATE = """
                 FIEA Coleta RFID — Servidor Local
             </a>
             <div class="d-flex align-items-center gap-2">
-                <a href="/" class="nav-pill-btn">Bens Cadastrados</a>
+                <a href="/" class="nav-pill-btn">Início</a>
+                <a href="/bens" class="nav-pill-btn">Bens Cadastrados</a>
                 <a href="/salas" class="nav-pill-btn active">Gerenciar Salas</a>
                 <a href="/relatorio" class="nav-pill-btn">Relatório de Inventário</a>
                 <span class="badge bg-white text-dark ms-2 fw-semibold">Servidor Ativo</span>
@@ -662,11 +1029,17 @@ HTML_SALAS_TEMPLATE = """
 
     <div class="container-fluid px-4">
         <!-- Banner de Conexão com o Urovo -->
-        <div class="ip-box mb-4 d-flex justify-content-between align-items-center">
+        <div class="ip-box mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div>
-                <h6 class="text-primary mb-1 fw-bold">Cadastro e Gestão de Salas</h6>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h6 class="text-primary mb-0 fw-bold">Cadastro e Gestão de Salas Físicas</h6>
+                    <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 fw-medium" style="font-size: 0.76rem;" data-bs-toggle="modal" data-bs-target="#modalComoConectarSalas">
+                        Como Conectar o Leitor?
+                    </button>
+                </div>
                 <p class="mb-0 text-muted small">
-                    As salas cadastradas aqui alimentam o coletor Urovo DT50 e o menu de seleção no cadastro de bens.
+                    Endereço configurado no leitor: 
+                    <strong class="text-dark fs-6 font-monospace px-2 py-1 bg-white rounded border">http://{{ ip_local }}:5000</strong>
                 </p>
             </div>
             <div class="d-flex align-items-center gap-3">
@@ -676,6 +1049,54 @@ HTML_SALAS_TEMPLATE = """
                 </div>
                 <div class="text-end">
                     <span class="badge bg-light text-primary border">Total de Salas: {{ salas|length }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Didático: Como Conectar o Leitor Urovo DT50 (Salas) -->
+        <div class="modal fade" id="modalComoConectarSalas" tabindex="-1" aria-labelledby="modalComoConectarSalasLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-light">
+                        <h6 class="modal-title fw-bold text-primary" id="modalComoConectarSalasLabel">
+                            Como Conectar o Leitor Urovo DT50 ao Servidor
+                        </h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <ol class="list-group list-group-numbered list-group-flush mb-3">
+                            <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">Conecte o Leitor na Mesma Rede Wi-Fi</div>
+                                    <span class="text-muted small">O leitor Urovo DT50 e este computador precisam estar na mesma rede.</span>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">Abra as Configurações no App do Leitor</div>
+                                    <span class="text-muted small">No menu lateral do aplicativo Urovo, toque em <strong>Configurações</strong>.</span>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">Digite o Endereço IP do Servidor</div>
+                                    <span class="text-muted small">No campo <em>Servidor / IP</em>, digite no teclado do leitor:</span>
+                                    <div class="mt-2 p-2 bg-white rounded border font-monospace fw-bold text-primary text-center fs-5">
+                                        http://{{ ip_local }}:5000
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">Toque em "Testar Conexão"</div>
+                                    <span class="text-muted small">As salas cadastradas nesta página aparecem imediatamente na lista de seleção do leitor Urovo.</span>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                    <div class="modal-footer bg-light py-2">
+                        <button type="button" class="btn btn-primary btn-sm px-4" data-bs-dismiss="modal">Entendi</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -706,7 +1127,7 @@ HTML_SALAS_TEMPLATE = """
                                 <input type="text" name="unidade" class="form-control" value="UFAL" placeholder="Ex: UFAL" required>
                             </div>
                             <button type="submit" class="btn btn-primary w-100 py-2">Salvar Sala</button>
-                            <a href="/" class="btn btn-link w-100 text-center text-muted small mt-2 text-decoration-none">Voltar para Cadastro de Bens</a>
+                            <a href="/bens" class="btn btn-link w-100 text-center text-muted small mt-2 text-decoration-none">Voltar para Cadastro de Bens</a>
                         </form>
                     </div>
                 </div>
@@ -717,7 +1138,7 @@ HTML_SALAS_TEMPLATE = """
                 <div class="card h-100">
                     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                         <h6 class="mb-0 fw-bold">Salas Cadastradas</h6>
-                        <span class="badge bg-light text-primary border">{{ salas|length }} salas</span>
+                        <span class="badge bg-light text-primary border">{{ salas|length }} {% if salas|length == 1 %}sala{% else %}salas{% endif %}</span>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive" style="max-height: 520px; overflow-y: auto;">
@@ -737,7 +1158,7 @@ HTML_SALAS_TEMPLATE = """
                                         <td><span class="badge bg-light text-dark border">{{ s.unidade }}</span></td>
                                         <td>
                                             {% if s.total_bens > 0 %}
-                                                <span class="badge bg-primary-subtle text-primary border border-primary">{{ s.total_bens }} bem(ns)</span>
+                                                <span class="badge bg-primary-subtle text-primary border border-primary">{{ s.total_bens }} {% if s.total_bens == 1 %}bem{% else %}bens{% endif %}</span>
                                             {% else %}
                                                 <span class="text-muted small">Nenhum</span>
                                             {% endif %}
@@ -755,8 +1176,15 @@ HTML_SALAS_TEMPLATE = """
                                     </tr>
                                     {% else %}
                                     <tr>
-                                        <td colspan="4" class="text-center py-4 text-muted">
-                                            Nenhuma sala cadastrada ainda. Utilize o formulário ao lado.
+                                        <td colspan="4" class="text-center py-5">
+                                            <div class="text-muted mb-2">
+                                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-50">
+                                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                                </svg>
+                                            </div>
+                                            <h6 class="fw-bold mb-1">Nenhuma sala cadastrada ainda</h6>
+                                            <p class="text-muted small mb-0">Cadastre a primeira sala ao lado (ex: Laboratório, Almoxarifado) para que o leitor Urovo possa listá-la.</p>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -1050,7 +1478,8 @@ HTML_RELATORIO_TEMPLATE = """
                 FIEA Coleta RFID — Servidor Local
             </a>
             <div class="d-flex align-items-center gap-2">
-                <a href="/" class="nav-pill-btn">Bens Cadastrados</a>
+                <a href="/" class="nav-pill-btn">Início</a>
+                <a href="/bens" class="nav-pill-btn">Bens Cadastrados</a>
                 <a href="/salas" class="nav-pill-btn">Gerenciar Salas</a>
                 <a href="/relatorio" class="nav-pill-btn active">Relatório de Inventário</a>
                 <span class="badge bg-white text-dark ms-2 fw-semibold">Servidor Ativo</span>
@@ -1074,18 +1503,24 @@ HTML_RELATORIO_TEMPLATE = """
             <div class="col-6 text-end">
                 <strong>Data da Auditoria:</strong> {{ sessao_atual.inicio if sessao_atual and sessao_atual.inicio else 'Em aberto' }}<br>
                 <strong>Data de Emissão do Relatório:</strong> <span class="data-emissao-print"></span><br>
-                <strong>Total de Varreduras:</strong> {{ varreduras|length }} sala(s) auditada(s)
+                <strong>Total de Varreduras:</strong> {{ varreduras|length }} {% if varreduras|length == 1 %}sala auditada{% else %}salas auditadas{% endif %}
             </div>
         </div>
     </div>
 
     <div class="container-fluid px-4">
         <!-- Banner de Conexão com o Urovo (No-print) -->
-        <div class="ip-box mb-4 d-flex justify-content-between align-items-center no-print">
+        <div class="ip-box mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3 no-print">
             <div>
-                <h6 class="text-primary mb-1 fw-bold">Relatório de Conferência e Auditoria Patrimonial</h6>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h6 class="text-primary mb-0 fw-bold">Relatório de Conferência e Auditoria Patrimonial</h6>
+                    <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 fw-medium" style="font-size: 0.76rem;" data-bs-toggle="modal" data-bs-target="#modalComoConectarRelatorio">
+                        Como Conectar o Leitor?
+                    </button>
+                </div>
                 <p class="mb-0 text-muted small">
-                    Confronto automático entre o cadastro mestre de bens e as leituras de campo realizadas pelo coletor Urovo DT50.
+                    Endereço para sincronizar sessões: 
+                    <strong class="text-dark fs-6 font-monospace px-2 py-1 bg-white rounded border">http://{{ ip_local }}:5000</strong>
                 </p>
             </div>
             <div class="d-flex align-items-center gap-3">
@@ -1095,6 +1530,97 @@ HTML_RELATORIO_TEMPLATE = """
                 </div>
                 <div class="text-end">
                     <span class="badge bg-light text-primary border">Sessões: {{ sessoes|length }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legenda Didática de Auditoria e Divergências (No-print) -->
+        <div class="card mb-4 no-print border-0 shadow-sm" style="background-color: #F8FAFC;">
+            <div class="card-body py-3 px-4">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="small text-uppercase fw-bold text-secondary" style="letter-spacing: 0.5px;">
+                        Legenda de Situações do Inventário (Como Interpretar os Resultados)
+                    </span>
+                </div>
+                <div class="row g-2 small">
+                    <div class="col-md-4 col-lg">
+                        <div class="p-2 bg-white rounded border h-100">
+                            <span class="badge badge-localizado mb-1">Localizado</span>
+                            <p class="text-muted mb-0" style="font-size: 0.76rem;">Etiqueta RFID lida com sucesso na sala cadastrada esperada.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-lg">
+                        <div class="p-2 bg-white rounded border h-100">
+                            <span class="badge badge-fora-local mb-1">Fora do Local</span>
+                            <p class="text-muted mb-0" style="font-size: 0.76rem;">Etiqueta lida nesta sala, mas o cadastro indicava outra sala (bem deslocado).</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-lg">
+                        <div class="p-2 bg-white rounded border h-100">
+                            <span class="badge badge-nao-localizado mb-1">Não Localizado</span>
+                            <p class="text-muted mb-0" style="font-size: 0.76rem;">Bem cadastrado nesta sala, porém a antena RFID não detectou o sinal da tag.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg">
+                        <div class="p-2 bg-white rounded border h-100">
+                            <span class="badge badge-sem-cobertura mb-1">Sem Cobertura</span>
+                            <p class="text-muted mb-0" style="font-size: 0.76rem;">A sala ainda não teve varredura RFID executada ou finalizada nesta sessão.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg">
+                        <div class="p-2 bg-white rounded border h-100">
+                            <span class="badge badge-sobras mb-1">Tag Não Cadastrada</span>
+                            <p class="text-muted mb-0" style="font-size: 0.76rem;">Etiqueta RFID física detectada que não consta na base de bens (sobra).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Didático: Como Conectar o Leitor Urovo DT50 (Relatório) -->
+        <div class="modal fade" id="modalComoConectarRelatorio" tabindex="-1" aria-labelledby="modalComoConectarRelatorioLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-light">
+                        <h6 class="modal-title fw-bold text-primary" id="modalComoConectarRelatorioLabel">
+                            Como Conectar o Leitor Urovo DT50 ao Servidor
+                        </h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <ol class="list-group list-group-numbered list-group-flush mb-3">
+                            <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">Conecte o Leitor na Mesma Rede Wi-Fi</div>
+                                    <span class="text-muted small">O leitor Urovo DT50 e este computador precisam estar na mesma rede.</span>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">Abra as Configurações no App do Leitor</div>
+                                    <span class="text-muted small">No aplicativo do Urovo, abra o menu lateral e toque em <strong>Configurações</strong>.</span>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">Digite o Endereço IP do Servidor</div>
+                                    <span class="text-muted small">No campo <em>Servidor / IP</em>, digite exatamente:</span>
+                                    <div class="mt-2 p-2 bg-white rounded border font-monospace fw-bold text-primary text-center fs-5">
+                                        http://{{ ip_local }}:5000
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">Sincronize pelo Coletor</div>
+                                    <span class="text-muted small">Ao concluir uma varredura no leitor, toque em "Sincronizar" para enviar os dados instantaneamente para esta página.</span>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                    <div class="modal-footer bg-light py-2">
+                        <button type="button" class="btn btn-primary btn-sm px-4" data-bs-dismiss="modal">Entendi</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1481,7 +2007,7 @@ HTML_RELATORIO_TEMPLATE = """
                         <small class="text-muted">Etiquetas lidas pelo coletor que não possuem correspondência patrimonial no cadastro</small>
                     </div>
                 </div>
-                <span class="badge badge-sobras">{{ relatorio.epcs_nao_cadastrados|length }} tag(s)</span>
+                <span class="badge badge-sobras">{{ relatorio.epcs_nao_cadastrados|length }} {% if relatorio.epcs_nao_cadastrados|length == 1 %}tag{% else %}tags{% endif %}</span>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive" id="containerTabelaSobras" style="max-height: 380px; overflow-y: auto;">
@@ -1561,6 +2087,20 @@ HTML_RELATORIO_TEMPLATE = """
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Toggle da área de importação
+        function copiarIpServidor() {
+            const texto = 'http://{{ ip_local }}:5000';
+            navigator.clipboard.writeText(texto).then(() => {
+                const label = document.getElementById('labelCopiarIpRelatorio');
+                if (label) {
+                    const original = label.innerText;
+                    label.innerText = 'Copiado!';
+                    setTimeout(() => { label.innerText = original; }, 2000);
+                }
+            }).catch(() => {
+                prompt('Copie o endereço do servidor:', texto);
+            });
+        }
+
         function toggleAreaImportacao() {
             const card = document.getElementById('cardImportacao');
             if (card) {
@@ -1743,6 +2283,24 @@ def favicon_png():
 
 @app.route("/")
 def index():
+    """Painel Inicial / Dashboard de Boas-Vindas e Conexão com o Urovo."""
+    con = get_db()
+    total_bens = con.execute("SELECT COUNT(*) FROM bem").fetchone()[0]
+    total_salas = con.execute("SELECT COUNT(*) FROM sala").fetchone()[0]
+    total_sessoes = con.execute("SELECT COUNT(*) FROM sessao").fetchone()[0]
+    ip_local = obter_ip_local()
+    return render_template_string(
+        HTML_HOME_TEMPLATE,
+        total_bens=total_bens,
+        total_salas=total_salas,
+        total_sessoes=total_sessoes,
+        ip_local=ip_local,
+    )
+
+
+@app.route("/bens")
+def gerenciar_bens():
+    """Gestão da Relação Patrimonial de Bens e Vínculo de Tags RFID."""
     con = get_db()
     bens = con.execute(
         "SELECT b.patrimonio, b.descricao, b.epc, b.metalico, s.nome AS sala "
@@ -1767,7 +2325,7 @@ def cadastrar_bem():
     metalico = 1 if request.form.get("metalico") else 0
 
     if not patrimonio or not descricao or not sala_escolhida:
-        return redirect(url_for("index", msg="Patrimônio, descrição e sala são obrigatórios.", tipo="danger"))
+        return redirect(url_for("gerenciar_bens", msg="Patrimônio, descrição e sala são obrigatórios.", tipo="danger"))
 
     con = get_db()
     # O formulário manda o id da sala: o nome sozinho é ambíguo quando duas unidades
@@ -1782,7 +2340,7 @@ def cadastrar_bem():
             (sala_escolhida,),
         ).fetchone()
     if not sala:
-        return redirect(url_for("index", msg=f"A sala '{sala_escolhida}' não foi encontrada.", tipo="danger"))
+        return redirect(url_for("gerenciar_bens", msg=f"A sala '{sala_escolhida}' não foi encontrada.", tipo="danger"))
 
     sala_id = sala["id"]
 
@@ -1807,9 +2365,9 @@ def cadastrar_bem():
         )
         con.commit()
     except sqlite3.IntegrityError as e:
-        return redirect(url_for("index", msg=f"Erro ao salvar: {e}", tipo="danger"))
+        return redirect(url_for("gerenciar_bens", msg=f"Erro ao salvar: {e}", tipo="danger"))
 
-    return redirect(url_for("index", msg=f"Bem {patrimonio} salvo com sucesso!", tipo="success"))
+    return redirect(url_for("gerenciar_bens", msg=f"Bem {patrimonio} salvo com sucesso!", tipo="success"))
 
 
 @app.route("/excluir/<patrimonio>", methods=["POST"])
@@ -1817,7 +2375,7 @@ def excluir_bem(patrimonio):
     con = get_db()
     con.execute("DELETE FROM bem WHERE patrimonio = ?", (patrimonio,))
     con.commit()
-    return redirect(url_for("index", msg=f"Bem {patrimonio} excluído.", tipo="warning"))
+    return redirect(url_for("gerenciar_bens", msg=f"Bem {patrimonio} excluído.", tipo="warning"))
 
 
 @app.route("/salas")
