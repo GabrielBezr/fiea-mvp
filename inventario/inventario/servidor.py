@@ -1824,11 +1824,17 @@ def api_sincronizar():
 
 
 def iniciar_servidor(porta=5000):
+    import sys
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
     ip = obter_ip_local()
     print("=" * 65)
-    print("🚀 SERVIDOR LOCAL DE INVENTÁRIO INICIADO COM SUCESSO!")
-    print(f"👉 Interface Web no PC: http://localhost:{porta}")
-    print(f"👉 Conexão Wi-Fi (Urovo DT50): http://{ip}:{porta}")
+    print("SERVIDOR LOCAL DE INVENTARIO INICIADO COM SUCESSO!")
+    print(f"Interface Web no PC: http://localhost:{porta}")
+    print(f"Conexao Wi-Fi (Urovo DT50): http://{ip}:{porta}")
     print("=" * 65)
     app.run(host="0.0.0.0", port=porta, debug=False)
 
