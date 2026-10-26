@@ -400,7 +400,6 @@ public class ScanActivity extends Activity implements OnClickListener {
         if (varreduraAtual != null) {
             encerrarVarredura();
         }
-        TagsSalaActivity.sincronizarTodasPendentes(this);
         s.fim = System.currentTimeMillis();
         sessaoAtual = null;
         sessaoAtualStatic = null;
@@ -528,15 +527,10 @@ public class ScanActivity extends Activity implements OnClickListener {
                         .setTitle(R.string.tituloVarreduraEncerrada)
                         .setMessage(getString(R.string.msgPendenciasDetectadas, finalLidos, finalPendentes, v.sala))
                         .setPositiveButton(R.string.btResolverAgora, (dialog, which) -> {
-                            TagsSalaActivity.salvarParaConferencia(ScanActivity.this, v.sessao, v, copiaLeituras, epcsLidos, v.sala);
                             TagsSalaActivity.abrirAoEntrar(v);
                             if (MainActivity.myTabHost != null) {
                                 MainActivity.myTabHost.setCurrentTab(MainActivity.ABA_PENDENCIAS);
                             }
-                        })
-                        .setNegativeButton(R.string.btResolverDepois, (dialog, which) -> {
-                            TagsSalaActivity.salvarParaConferencia(ScanActivity.this, v.sessao, v, copiaLeituras, epcsLidos, v.sala);
-                            Toast.makeText(ScanActivity.this, R.string.msgPendenciaSalvaDepois, Toast.LENGTH_LONG).show();
                         })
                         .setNegativeButton(R.string.btResolverDepois, null)
                         .setCancelable(false)
@@ -955,9 +949,17 @@ public class ScanActivity extends Activity implements OnClickListener {
     protected void onResume() {
         super.onResume();
         registrarCallback();
-        carregarSalasNoSpinner();
-        if (sessaoAtual == null && unidadeSugerida != null && !unidadeSugerida.isEmpty() && etUnidade != null) {
-            etUnidade.setText(unidadeSugerida);
+        if (sessaoAtual == null && unidadeSugerida != null && !unidadeSugerida.isEmpty()) {
+            if (spinnerUnidade != null && spinnerUnidade.getVisibility() == View.VISIBLE) {
+                for (int i = 0; i < spinnerUnidade.getCount(); i++) {
+                    if (unidadeSugerida.equalsIgnoreCase(String.valueOf(spinnerUnidade.getItemAtPosition(i)))) {
+                        spinnerUnidade.setSelection(i);
+                        break;
+                    }
+                }
+            } else if (etUnidade != null) {
+                etUnidade.setText(unidadeSugerida);
+            }
             unidadeSugerida = null;
         }
         // Na volta de Pendências, o selo de cada sala já mostra o que foi resolvido lá.

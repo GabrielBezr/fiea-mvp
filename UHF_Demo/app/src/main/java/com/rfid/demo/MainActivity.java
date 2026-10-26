@@ -398,9 +398,6 @@ public class MainActivity extends TabActivity   {
 
 		long secondTime = System.currentTimeMillis();
 		if(event.getKeyCode() == KeyEvent.KEYCODE_BACK &&  event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0){
-			// Fora do Painel, voltar leva a ele; só nele o voltar duplo fecha o app.
-			if (myTabHost.getCurrentTab() != ABA_PAINEL) {
-				myTabHost.setCurrentTab(ABA_PAINEL);
 			// Em Pendências, dentro de uma sala, voltar primeiro devolve à lista de salas.
 			Activity atual = getCurrentActivity();
 			if (atual instanceof TagsSalaActivity && ((TagsSalaActivity) atual).voltarParaSalas()) {
@@ -410,9 +407,9 @@ public class MainActivity extends TabActivity   {
 			if (atual instanceof ScanActivity && ((ScanActivity) atual).voltar()) {
 				return true;
 			}
-			// Fora do Inventário, voltar leva a ele; só lá o voltar duplo fecha o app.
-			if (myTabHost.getCurrentTab() != ABA_INVENTARIO) {
-				myTabHost.setCurrentTab(ABA_INVENTARIO);
+			// Fora do Painel, voltar leva a ele; só nele o voltar duplo fecha o app.
+			if (myTabHost.getCurrentTab() != ABA_PAINEL) {
+				myTabHost.setCurrentTab(ABA_PAINEL);
 				return true;
 			}
 			if (secondTime - firstTime < 2000) {
