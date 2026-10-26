@@ -96,7 +96,9 @@ flowchart TD
   * 🟡 **Fora do Local:** Bens encontrados em sala diferente da esperada (transferência indevida).
   * 🔴 **Não Localizados:** Bens esperados na sala que não responderam ao inventário.
   * ⚪ **Sem Cobertura:** Bens de salas que ainda não foram varridas.
+  * 🔷 **Sala Indeterminada:** Bens lidos em mais de uma sala sem como decidir em qual estão; o operador precisa procurá-los.
   * 🔵 **Tags Sobrando:** Etiquetas lidas no ambiente que não possuem cadastro patrimonial.
+* **Sala Provável (salas vizinhas):** quando a mesma etiqueta é lida em mais de uma sala, vale, nesta ordem: a confirmação em campo (QR ou manual); o sinal claramente mais forte, comparado só entre salas varridas com a mesma técnica e potência; e, no empate, a sala do cadastro. Um bem lido só fora da sala dele, com a sala dele ainda sem varredura, fica como Sala Indeterminada. A tabela mostra o RSSI de cada sala e a sala provável; o CSV traz as colunas `Sala_Provavel`, `Criterio` e `Sinal_Por_Sala`.
 * **Filtros Dinâmicos e Busca Instantânea:** Localize itens em segundos por patrimônio, descrição ou sala.
 
 ### 8. Exportações Oficiais
@@ -169,7 +171,7 @@ fiea-mvp/
 ### Passo 2: Varredura com o Coletor Urovo DT50
 1. Abra o app **FIEA** no coletor. Na primeira vez, toque na engrenagem da barra superior e informe o endereço do PC (ex: `192.168.1.100:5000`).
 2. Na aba **Inventário**, escolha a **Unidade** na lista (ela vem das salas cadastradas no PC), preencha o **Operador** e toque em **Iniciar sessão**. Se o coletor nunca se conectou ao PC, a unidade é digitada, exatamente como está cadastrada.
-3. A tela passa a mostrar as **salas da unidade**, com as que faltam no topo e o progresso "X de Y salas varridas". Escolha a **Técnica** e toque na sala em que você está para abrir a varredura dela.
+3. A tela passa a mostrar as **salas da unidade**, com as que faltam no topo e o progresso "X de Y salas varridas". Escolha a **Técnica** e toque na sala em que você está para abrir a varredura dela. Use a mesma técnica e a mesma potência em todas as salas da sessão: é o que permite ao PC comparar o sinal de uma etiqueta lida em duas salas vizinhas.
 4. Segure o **gatilho físico** e caminhe pela sala apontando o coletor para os bens. Um toque rápido no gatilho deixa a leitura contínua; outro toque para.
 5. Toque em **Encerrar**. O app confere os bens da sala, volta à lista de salas (a sala aparece como varrida) e, se houver pendências, pergunta se você quer resolvê-las agora. Repita os passos 3 a 5 em cada sala.
 6. Com as salas varridas, toque em **Encerrar sessão**. Se ainda faltar alguma, o app avisa antes: os bens dela aparecem no relatório como **Sem Cobertura**.
@@ -215,3 +217,5 @@ Durante os ensaios práticos de bancada e campo para homologação do Marco 2, f
 * **Vínculos gravados em campo:** os `etiquetagem_*.csv` gerados por **Salvar vínculo** ainda não são aceitos na importação da página `/relatorio` nem enviados pelo Wi-Fi. Hoje eles entram pela linha de comando, dentro da pasta `inventario`: `python -m inventario etiquetagem <arquivo>`. Próximo passo: aceitá-los na importação web ou enviá-los na hora, com fila offline.
 * **Checagem dos vínculos:** o coletor só barra EPC ou patrimônio repetido dentro da mesma campanha. A conferência contra a base inteira (patrimônio fora da relação, EPC já usado em outro bem) acontece na importação.
 * **Conferência manual:** o app aceita o número digitado sem compará-lo com o patrimônio do bem selecionado. Próximo passo: validar essa digitação.
+* **Salas vizinhas:** a margem de sinal (6) e a métrica (pico do RSSI) são valores iniciais, a calibrar na bancada com duas salas vizinhas (constantes no topo de `inventario/inventario/conferencia.py`). Um bem levado para o outro lado da divisória e encostado nela fica com a sala do cadastro. Sessões sincronizadas pelo Wi-Fi antes desta versão não guardaram o sinal; reimportar os CSVs delas recupera.
+* **QR com URL:** etiquetas cujo QR traz uma URL em vez do EPC (caso da Beontag) não confirmam o bem no relatório. Próximo passo: o servidor usar o patrimônio que o coletor envia junto com a resolução.

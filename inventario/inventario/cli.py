@@ -282,16 +282,19 @@ def _conferir(args, conexao):
         f"{contagens[NAO_LOCALIZADO]} nao localizados, "
         f"{contagens[FORA_DO_LOCAL]} fora do local, "
         f"{contagens[SEM_COBERTURA]} sem cobertura, "
-        f"{contagens[INDETERMINADO]} sem sala definida"
+        f"{contagens[INDETERMINADO]} com sala indeterminada"
     )
     print("\nDetalhe dos bens:")
     for bem in relatorio.bens:
         sala_esperada = bem.sala_esperada or "sem sala esperada"
         salas_lidas = ", ".join(bem.salas_lidas) or "nenhuma"
         observacao = ""
-        if bem.situacao == LOCALIZADO and any(
-                sala != bem.sala_esperada for sala in bem.salas_lidas):
-            observacao = " (tambem lido em outra sala)"
+        # Lido em mais de uma sala: diz qual ficou e por que (conferencia.CRITERIO_*).
+        if len(bem.salas_lidas) > 1 or bem.situacao == INDETERMINADO:
+            if bem.sala_provavel:
+                observacao = f" (provavel: {bem.sala_provavel}; criterio: {bem.criterio})"
+            else:
+                observacao = f" (criterio: {bem.criterio})"
         elif bem.situacao == SEM_COBERTURA:
             observacao = " (sala esperada sem varredura)"
         elif bem.situacao == NAO_LOCALIZADO and not bem.epc:
