@@ -15,8 +15,8 @@ from .cadastro import (
     bens_sem_sala, importar_bens, importar_salas, salas_com_poucas_tags,
 )
 from .conferencia import (
-    FORA_DO_LOCAL, LOCALIZADO, NAO_CADASTRADO, NAO_LOCALIZADO, SEM_COBERTURA,
-    SessaoNaoEncontrada, conferir_sessao,
+    FORA_DO_LOCAL, INDETERMINADO, LOCALIZADO, NAO_CADASTRADO, NAO_LOCALIZADO,
+    SEM_COBERTURA, SessaoNaoEncontrada, conferir_sessao,
 )
 from .etiquetagem import (
     EtiquetagemInvalida, bens_sem_etiqueta, importar_etiquetagem, progresso,
@@ -272,6 +272,7 @@ def _conferir(args, conexao):
         NAO_LOCALIZADO: 0,
         FORA_DO_LOCAL: 0,
         SEM_COBERTURA: 0,
+        INDETERMINADO: 0,
     }
     for bem in relatorio.bens:
         contagens[bem.situacao] += 1
@@ -280,7 +281,8 @@ def _conferir(args, conexao):
         f"Bens: {contagens[LOCALIZADO]} localizados, "
         f"{contagens[NAO_LOCALIZADO]} nao localizados, "
         f"{contagens[FORA_DO_LOCAL]} fora do local, "
-        f"{contagens[SEM_COBERTURA]} sem cobertura"
+        f"{contagens[SEM_COBERTURA]} sem cobertura, "
+        f"{contagens[INDETERMINADO]} sem sala definida"
     )
     print("\nDetalhe dos bens:")
     for bem in relatorio.bens:
