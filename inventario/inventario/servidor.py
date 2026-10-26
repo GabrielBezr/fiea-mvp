@@ -2198,6 +2198,68 @@ def api_bens():
     ])
 
 
+def _numero(valor, padrao):
+    try:
+        return float(valor)
+    except (TypeError, ValueError):
+        return padrao
+
+
+def agregar_leituras(leituras):
+    """Uma linha por EPC e método, como o leitor_csv faz com o CSV da varredura.
+
+    O coletor manda um evento por leitura ({"epc", "rssi", "primeira_leitura", ...}).
+    Gravados um a um, cada evento sobrescrevia o anterior e sobravam 1 leitura e RSSI 0,
+    justamente o que a conferência precisa para saber em que sala o sinal foi mais forte.
+    Itens já agregados (com "leituras" e "rssi_min/medio/max") também são aceitos.
+    """
+    agregadas = {}
+    for l in leituras:
+        epc = (l.get("epc") or "").strip().upper()
+        if not epc:
+            continue
+        metodo = (l.get("metodo") or "RFID").strip().upper()
+        quantidade = max(1, int(_numero(l.get("leituras", 1), 1)))
+        if any(chave in l for chave in ("rssi_min", "rssi_medio", "rssi_max")):
+            rssi_min = _numero(l.get("rssi_min"), 0)
+            rssi_max = _numero(l.get("rssi_max"), 0)
+            rssi_medio = _numero(l.get("rssi_medio"), (rssi_min + rssi_max) / 2)
+        else:
+            rssi_min = rssi_max = rssi_medio = _numero(l.get("rssi"), 0)
+        primeira = l.get("primeira_leitura") or datetime.now().strftime("%Y-%m-%d %H:%M:%S.000")
+        ultima = l.get("ultima_leitura") or primeira
+
+        atual = agregadas.get((epc, metodo))
+        if atual is None:
+            agregadas[(epc, metodo)] = {
+                "epc": epc, "metodo": metodo, "leituras": quantidade,
+                "soma": rssi_medio * quantidade, "rssi_min": rssi_min, "rssi_max": rssi_max,
+                "primeira_leitura": primeira, "ultima_leitura": ultima,
+            }
+        else:
+            atual["leituras"] += quantidade
+            atual["soma"] += rssi_medio * quantidade
+            atual["rssi_min"] = min(atual["rssi_min"], rssi_min)
+            atual["rssi_max"] = max(atual["rssi_max"], rssi_max)
+            # Mesmo formato de data do coletor, então a ordem do texto é a ordem do tempo.
+            atual["primeira_leitura"] = min(atual["primeira_leitura"], primeira)
+            atual["ultima_leitura"] = max(atual["ultima_leitura"], ultima)
+
+    resultado = []
+    for a in agregadas.values():
+        resultado.append({
+            "epc": a["epc"],
+            "metodo": a["metodo"],
+            "leituras": a["leituras"],
+            "rssi_min": int(a["rssi_min"]),
+            "rssi_medio": round(a["soma"] / a["leituras"], 2),
+            "rssi_max": int(a["rssi_max"]),
+            "primeira_leitura": a["primeira_leitura"],
+            "ultima_leitura": a["ultima_leitura"],
+        })
+    return resultado
+
+
 @app.route("/api/sincronizar", methods=["POST"])
 def api_sincronizar():
     """Recebe do Urovo uma varredura concluída com suas leituras e pendências resolvidas.
@@ -2298,31 +2360,37 @@ def api_sincronizar():
     )
 
     # 4. Grava Leituras RFID (deduplicadas)
-    con.execute("DELETE FROM leitura WHERE varredura_id = ?", (varredura_id,))
-    for l in leituras:
-        epc = l.get("epc", "").strip().upper()
-        if not epc:
-            continue
+    # Só as leituras do rádio são substituídas. As resoluções de Pendências ficam: um
+    # envio antigo da fila offline, só com leituras, pode chegar depois do que levou as
+    # resoluções, e antes as apagava.
+    con.execute(
+        "DELETE FROM leitura WHERE varredura_id = ? AND metodo = 'RFID'", (varredura_id,)
+    )
+    do_radio = [item for item in leituras if (item.get("metodo") or "RFID").upper() == "RFID"]
+    for l in agregar_leituras(do_radio):
         con.execute(
             "INSERT INTO leitura (varredura_id, epc, metodo, leituras, rssi_min, "
             "rssi_medio, rssi_max, primeira_leitura, ultima_leitura) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) "
-            "ON CONFLICT(varredura_id, epc, metodo) DO UPDATE SET "
-            "  leituras = excluded.leituras, rssi_medio = excluded.rssi_medio",
+            "VALUES (?, ?, 'RFID', ?, ?, ?, ?, ?, ?)",
             (
                 varredura_id,
-                epc,
-                l.get("metodo", "RFID"),
-                l.get("leituras", 1),
-                l.get("rssi_min", 0),
-                l.get("rssi_medio", 0.0),
-                l.get("rssi_max", 0),
-                l.get("primeira_leitura", datetime.now().isoformat()),
-                l.get("ultima_leitura", datetime.now().isoformat()),
+                l["epc"],
+                l["leituras"],
+                l["rssi_min"],
+                l["rssi_medio"],
+                l["rssi_max"],
+                l["primeira_leitura"],
+                l["ultima_leitura"],
             ),
         )
 
     # 5. Grava Resolução de Pendências (QR Code, Manual ou Faltante - RF10)
+    # O coletor manda a lista inteira de resoluções da varredura a cada envio; uma
+    # lista nova substitui a anterior, e um envio sem resoluções não mexe nelas.
+    if pendencias:
+        con.execute(
+            "DELETE FROM leitura WHERE varredura_id = ? AND metodo != 'RFID'", (varredura_id,)
+        )
     for p in pendencias:
         metodo = p.get("metodo", "MANUAL").upper()
         epc = p.get("epc", "").strip().upper()

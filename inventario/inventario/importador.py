@@ -135,7 +135,12 @@ def _importar_varredura(caminho, conexao):
 
     # Reimportar substitui: o estado final e o mesmo tendo o arquivo entrado
     # uma ou cinco vezes, e uma reexportacao corrigida sobrepoe a anterior.
-    conexao.execute("DELETE FROM leitura WHERE varredura_id = ?", (arquivo.varredura_id,))
+    # So as leituras do radio: o CSV nao traz as resolucoes de Pendencias (QR,
+    # manual, faltante), que chegam pelo Wi-Fi e se perdiam aqui.
+    conexao.execute(
+        "DELETE FROM leitura WHERE varredura_id = ? AND metodo = 'RFID'",
+        (arquivo.varredura_id,),
+    )
     conexao.executemany(
         "INSERT INTO leitura (varredura_id, epc, metodo, leituras, rssi_min, "
         "rssi_medio, rssi_max, primeira_leitura, ultima_leitura) "
