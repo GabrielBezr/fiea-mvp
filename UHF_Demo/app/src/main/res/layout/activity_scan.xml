@@ -8,9 +8,14 @@
     android:focusableInTouchMode="true"
     android:orientation="vertical">
 
-    <!-- RF04: sessão de inventário, uma por unidade. O que aparece em cada estado
-         (campos, botões, selo) é decidido em ScanActivity.atualizarStatus. -->
+    <!-- O Inventário tem três telas, escolhidas só pelo estado em ScanActivity.atualizarStatus:
+         sem sessão, a sessão (este card com os campos); com sessão, a sessão resumida e as
+         salas da unidade (card_salas); com uma varredura aberta, a leitura (card_varredura
+         e card_lista). -->
+
+    <!-- RF04: sessão de inventário, uma por unidade -->
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_sessao"
         style="@style/Widget.Fiea.Card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -49,6 +54,22 @@
                     android:id="@+id/tv_chip_sessao"
                     style="@style/Widget.Fiea.Selo"
                     android:visibility="gone" />
+
+                <!-- Só sem sessão: reexportar e exportar .xls a última sala depois de encerrar,
+                     e atualizar a lista do PC (ScanActivity.abrirMaisAcoes) -->
+                <ImageButton
+                    android:id="@+id/bt_mais_acoes_sessao"
+                    android:layout_width="@dimen/alvo_toque"
+                    android:layout_height="@dimen/alvo_toque"
+                    android:layout_marginStart="@dimen/espaco_4"
+                    android:layout_marginTop="-12dp"
+                    android:layout_marginEnd="-12dp"
+                    android:layout_marginBottom="-12dp"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/descMaisAcoes"
+                    android:src="@drawable/ic_more_vert"
+                    android:tint="@color/texto_secundario"
+                    android:visibility="gone" />
             </LinearLayout>
 
             <TextView
@@ -75,8 +96,15 @@
 
                     <TextView
                         style="@style/Widget.Fiea.Rotulo"
-                        android:labelFor="@+id/et_unidade"
+                        android:labelFor="@+id/spinner_unidade"
                         android:text="@string/lblUnidade" />
+
+                    <!-- Unidades do cadastro do PC (ScanActivity.preencherUnidades). O campo
+                         de texto abaixo só aparece quando o coletor ainda não tem essa lista. -->
+                    <Spinner
+                        android:id="@+id/spinner_unidade"
+                        style="@style/Widget.Fiea.Spinner"
+                        android:visibility="gone" />
 
                     <EditText
                         android:id="@+id/et_unidade"
@@ -86,6 +114,16 @@
                         android:inputType="text"
                         android:maxLines="1"
                         android:singleLine="true" />
+
+                    <TextView
+                        android:id="@+id/tv_unidade_aviso"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/espaco_4"
+                        android:text="@string/unidadeSemLista"
+                        android:textAppearance="@style/TextAppearance.Fiea.Legenda"
+                        android:textColor="@color/alerta_texto"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -119,6 +157,45 @@
                 android:text="@string/btIniciarSessao"
                 app:icon="@drawable/ic_play_arrow" />
 
+            <!-- Com a sessão ativa: quanto da unidade já foi varrido e a técnica da próxima sala -->
+            <LinearLayout
+                android:id="@+id/grupo_progresso_salas"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espaco_8"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tv_progresso_salas"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:accessibilityLiveRegion="polite"
+                    android:fontFamily="sans-serif-medium"
+                    android:textAppearance="@style/TextAppearance.Fiea.Corpo" />
+
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/pb_salas"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/espaco_4"
+                    app:indicatorColor="@color/fiea_azul"
+                    app:trackColor="@color/contorno"
+                    app:trackCornerRadius="3dp"
+                    app:trackThickness="6dp" />
+
+                <TextView
+                    style="@style/Widget.Fiea.Rotulo"
+                    android:layout_marginTop="@dimen/espaco_12"
+                    android:labelFor="@+id/spinner_tecnica"
+                    android:text="@string/lblTecnica" />
+
+                <!-- Itens e rótulos vêm de ScanActivity.criarAdapterTecnicas -->
+                <Spinner
+                    android:id="@+id/spinner_tecnica"
+                    style="@style/Widget.Fiea.Spinner" />
+            </LinearLayout>
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/BtEncerrarSessao"
                 style="@style/Widget.Fiea.Botao.Secundario.Perigo"
@@ -131,16 +208,154 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- RF05: varredura por sala. A leitura (contadores, botão, dica) só aparece
-         com a varredura aberta, porque só nela as leituras são gravadas. -->
+    <!-- RF05: as salas da unidade e o andamento de cada uma nesta sessão. Tocar numa sala
+         abre a varredura dela (ScanActivity.escolherSala). -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_salas"
+        style="@style/Widget.Fiea.Card"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="@dimen/espaco_12"
+        android:layout_weight="1"
+        android:visibility="gone"
+        app:contentPadding="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/espaco_12"
+                android:paddingTop="@dimen/espaco_12"
+                android:paddingEnd="@dimen/espaco_12">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_meeting_room"
+                    android:tint="@color/fiea_azul" />
+
+                <TextView
+                    android:id="@+id/tv_titulo_salas"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/espaco_8"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textAppearance="@style/TextAppearance.Fiea.Subtitulo" />
+
+                <!-- Atualizar a lista de salas e reexportar (ScanActivity.abrirMaisAcoes) -->
+                <ImageButton
+                    android:id="@+id/bt_mais_acoes_salas"
+                    android:layout_width="@dimen/alvo_toque"
+                    android:layout_height="@dimen/alvo_toque"
+                    android:layout_marginTop="-12dp"
+                    android:layout_marginEnd="-12dp"
+                    android:layout_marginBottom="-12dp"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/descMaisAcoes"
+                    android:src="@drawable/ic_more_vert"
+                    android:tint="@color/texto_secundario" />
+            </LinearLayout>
+
+            <!-- RF09: enquanto busca os bens da sala que acabou de ser varrida -->
+            <LinearLayout
+                android:id="@+id/grupo_conferindo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espaco_8"
+                android:accessibilityLiveRegion="polite"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/espaco_12"
+                android:paddingEnd="@dimen/espaco_12"
+                android:visibility="gone">
+
+                <ProgressBar
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:indeterminateTint="@color/fiea_azul" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/espaco_8"
+                    android:text="@string/conferindoBens"
+                    android:textAppearance="@style/TextAppearance.Fiea.Legenda"
+                    android:textColor="@color/fiea_azul" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="@dimen/espaco_12"
+                android:background="@color/contorno" />
+
+            <ListView
+                android:id="@+id/lv_salas_varredura"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:divider="@color/contorno"
+                android:dividerHeight="1dp" />
+
+            <!-- Sem salas do PC para a unidade: o operador digita o nome da sala -->
+            <LinearLayout
+                android:id="@+id/grupo_sala_manual"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/espaco_12"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tv_sala_manual_aviso"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:labelFor="@+id/et_sala_manual"
+                    android:textAppearance="@style/TextAppearance.Fiea.Legenda"
+                    android:textColor="@color/alerta_texto" />
+
+                <EditText
+                    android:id="@+id/et_sala_manual"
+                    style="@style/Widget.Fiea.Campo"
+                    android:layout_marginTop="@dimen/espaco_8"
+                    android:hint="@string/hintSalaManual"
+                    android:imeOptions="actionDone"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:singleLine="true" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/bt_varrer_sala"
+                    style="@style/Widget.Fiea.Botao"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/espaco_8"
+                    android:text="@string/btVarrerSala"
+                    app:icon="@drawable/ic_play_arrow" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- A varredura aberta: contadores, botão de leitura e dica do gatilho. Para sair
+         daqui só encerrando a varredura, para nenhuma leitura cair em outra sala. -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_varredura"
         style="@style/Widget.Fiea.Card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/espaco_12"
-        android:layout_marginTop="@dimen/espaco_8"
+        android:layout_marginTop="@dimen/espaco_12"
         android:layout_marginEnd="@dimen/espaco_12"
+        android:visibility="gone"
         app:contentPadding="@dimen/espaco_12">
 
         <LinearLayout
@@ -174,15 +389,16 @@
                     style="@style/Widget.Fiea.Selo"
                     android:visibility="gone" />
 
-                <!-- Limpar, exportar .xls e reexportar (ScanActivity.abrirMaisAcoes) -->
+                <!-- Limpar e exportar .xls a lista desta sala (ScanActivity.abrirMaisAcoes) -->
+                <!-- 48dp de toque; as margens negativas mantêm a linha do título baixa -->
                 <ImageButton
                     android:id="@+id/bt_mais_acoes"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="@dimen/alvo_toque"
+                    android:layout_height="@dimen/alvo_toque"
                     android:layout_marginStart="@dimen/espaco_4"
-                    android:layout_marginTop="-8dp"
-                    android:layout_marginEnd="-8dp"
-                    android:layout_marginBottom="-8dp"
+                    android:layout_marginTop="-12dp"
+                    android:layout_marginEnd="-12dp"
+                    android:layout_marginBottom="-12dp"
                     android:background="?android:attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/descMaisAcoes"
                     android:src="@drawable/ic_more_vert"
@@ -196,83 +412,6 @@
                 android:layout_marginTop="@dimen/espaco_4"
                 android:text="@string/varreduraSemSessao"
                 android:textAppearance="@style/TextAppearance.Fiea.Legenda" />
-
-            <!-- RF09: enquanto busca os bens da sala para apontar as pendências -->
-            <LinearLayout
-                android:id="@+id/grupo_conferindo"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/espaco_8"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:visibility="gone">
-
-                <ProgressBar
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:indeterminateTint="@color/fiea_azul" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/espaco_8"
-                    android:text="@string/conferindoBens"
-                    android:textAppearance="@style/TextAppearance.Fiea.Legenda"
-                    android:textColor="@color/fiea_azul" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/grupo_campos_varredura"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/espaco_8"
-                android:orientation="horizontal"
-                android:visibility="gone">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="@dimen/espaco_8"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        style="@style/Widget.Fiea.Rotulo"
-                        android:labelFor="@+id/spinner_sala"
-                        android:text="@string/lblSala" />
-
-                    <Spinner
-                        android:id="@+id/spinner_sala"
-                        style="@style/Widget.Fiea.Spinner" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        style="@style/Widget.Fiea.Rotulo"
-                        android:labelFor="@+id/spinner_tecnica"
-                        android:text="@string/lblTecnica" />
-
-                    <!-- Itens e rótulos vêm de ScanActivity.criarAdapterTecnicas -->
-                    <Spinner
-                        android:id="@+id/spinner_tecnica"
-                        style="@style/Widget.Fiea.Spinner" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/BtIniciarVarredura"
-                style="@style/Widget.Fiea.Botao"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/espaco_12"
-                android:text="@string/btIniciarVarredura"
-                android:visibility="gone"
-                app:icon="@drawable/ic_play_arrow" />
 
             <LinearLayout
                 android:id="@+id/grupo_leitura"
@@ -348,9 +487,11 @@
                         android:text="@string/btEncerrarVarreduraCurto" />
                 </LinearLayout>
 
+                <!-- polite: o leitor de tela avisa quando a leitura começa e para -->
                 <TextView
                     android:id="@+id/tv_tips"
                     android:layout_width="match_parent"
+                    android:accessibilityLiveRegion="polite"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/espaco_8"
                     android:text="@string/dicaGatilho"
@@ -361,7 +502,9 @@
 
     <!-- Etiquetas lidas na varredura -->
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_lista"
         style="@style/Widget.Fiea.Card"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginStart="@dimen/espaco_12"
@@ -379,7 +522,8 @@
             <!-- Mesmos pesos das colunas de listtag_items.xml -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="32dp"
+                android:layout_height="wrap_content"
+                android:minHeight="32dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:paddingStart="@dimen/espaco_16"

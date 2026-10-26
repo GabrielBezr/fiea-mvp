@@ -156,7 +156,7 @@ HTML_TEMPLATE = """
                                 <select name="sala" class="form-select" required>
                                     <option value="" disabled selected>Selecione uma sala...</option>
                                     {% for s in salas %}
-                                    <option value="{{ s.nome }}">{{ s.nome }} ({{ s.unidade }})</option>
+                                    <option value="{{ s.id }}">{{ s.nome }} ({{ s.unidade }})</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -1232,19 +1232,26 @@ def cadastrar_bem():
     patrimonio = request.form.get("patrimonio", "").strip()
     descricao = request.form.get("descricao", "").strip()
     epc = request.form.get("epc", "").strip().upper() or None
-    sala_nome = request.form.get("sala", "").strip()
+    sala_escolhida = request.form.get("sala", "").strip()
     metalico = 1 if request.form.get("metalico") else 0
 
-    if not patrimonio or not descricao or not sala_nome:
+    if not patrimonio or not descricao or not sala_escolhida:
         return redirect(url_for("index", msg="Patrimônio, descrição e sala são obrigatórios.", tipo="danger"))
 
     con = get_db()
-    sala = con.execute(
-        "SELECT id, unidade FROM sala WHERE LOWER(nome) = LOWER(?)",
-        (sala_nome,),
-    ).fetchone()
+    # O formulário manda o id da sala: o nome sozinho é ambíguo quando duas unidades
+    # têm uma sala com o mesmo nome. O nome continua aceito para página aberta antes.
+    if sala_escolhida.isdigit():
+        sala = con.execute(
+            "SELECT id, unidade FROM sala WHERE id = ?", (int(sala_escolhida),)
+        ).fetchone()
+    else:
+        sala = con.execute(
+            "SELECT id, unidade FROM sala WHERE LOWER(nome) = LOWER(?)",
+            (sala_escolhida,),
+        ).fetchone()
     if not sala:
-        return redirect(url_for("index", msg=f"A sala '{sala_nome}' não foi encontrada.", tipo="danger"))
+        return redirect(url_for("index", msg=f"A sala '{sala_escolhida}' não foi encontrada.", tipo="danger"))
 
     sala_id = sala["id"]
 
@@ -1613,11 +1620,26 @@ def api_salas():
 
 @app.route("/api/bens", methods=["GET"])
 def api_bens():
-    """Retorna os bens esperados. Pode ser filtrado por ?sala=EASY."""
+    """Retorna os bens esperados. Pode ser filtrado por ?sala=EASY e ?unidade=UFAL."""
     registrar_contato_coletor("consulta-bens")
     sala_filtro = request.args.get("sala", "").strip()
+    unidade_filtro = request.args.get("unidade", "").strip()
     con = get_db()
-    if sala_filtro:
+    # Com uma unidade cadastrada, só as salas dela: duas unidades podem ter uma sala
+    # "Almoxarifado". Unidade desconhecida (digitada no coletor) cai no filtro antigo,
+    # só pelo nome, para o coletor não ficar sem lista de bens.
+    unidade_conhecida = bool(unidade_filtro) and con.execute(
+        "SELECT 1 FROM sala WHERE unidade = ? LIMIT 1", (unidade_filtro,)
+    ).fetchone() is not None
+    if sala_filtro and unidade_conhecida:
+        bens = con.execute(
+            "SELECT b.patrimonio, b.descricao, b.epc, b.metalico, s.nome AS sala, s.unidade "
+            "FROM bem b JOIN sala s ON s.id = b.sala_esperada_id "
+            "WHERE LOWER(s.nome) = LOWER(?) AND s.unidade = ? "
+            "ORDER BY b.patrimonio",
+            (sala_filtro, unidade_filtro),
+        ).fetchall()
+    elif sala_filtro:
         bens = con.execute(
             "SELECT b.patrimonio, b.descricao, b.epc, b.metalico, s.nome AS sala, s.unidade "
             "FROM bem b JOIN sala s ON s.id = b.sala_esperada_id "

@@ -46,6 +46,7 @@ public class MainActivity extends TabActivity   {
 	private static final int CONEXAO_OFFLINE = 2;
 
 	public static TabHost myTabHost;
+	private int abaAnterior = ABA_INVENTARIO;
 	private View layoutConexaoServidor, btConfigServidor;
 	private TextView tvStatusConexao;
 	private ImageView ivStatusConexao;
@@ -98,7 +99,17 @@ public class MainActivity extends TabActivity   {
 				if (current instanceof ScanActivity) {
 					((ScanActivity) current).registrarCallback();
 				}
-				atualizarCasca(myTabHost.getCurrentTab());
+				// Ao sair de Pendências, a aba volta para a lista de salas: na volta o
+				// operador escolhe a próxima sala, em vez de cair na última que resolveu.
+				int aba = myTabHost.getCurrentTab();
+				if (abaAnterior == ABA_PENDENCIAS && aba != ABA_PENDENCIAS) {
+					Activity pendencias = getLocalActivityManager().getActivity(getString(R.string.tab_pendencias));
+					if (pendencias instanceof TagsSalaActivity) {
+						((TagsSalaActivity) pendencias).voltarParaSalas();
+					}
+				}
+				abaAnterior = aba;
+				atualizarCasca(aba);
 			}
 		});
 
@@ -390,6 +401,18 @@ public class MainActivity extends TabActivity   {
 			// Fora do Painel, voltar leva a ele; só nele o voltar duplo fecha o app.
 			if (myTabHost.getCurrentTab() != ABA_PAINEL) {
 				myTabHost.setCurrentTab(ABA_PAINEL);
+			// Em Pendências, dentro de uma sala, voltar primeiro devolve à lista de salas.
+			Activity atual = getCurrentActivity();
+			if (atual instanceof TagsSalaActivity && ((TagsSalaActivity) atual).voltarParaSalas()) {
+				return true;
+			}
+			// No Inventário, com uma sala em leitura, voltar pergunta se encerra a varredura.
+			if (atual instanceof ScanActivity && ((ScanActivity) atual).voltar()) {
+				return true;
+			}
+			// Fora do Inventário, voltar leva a ele; só lá o voltar duplo fecha o app.
+			if (myTabHost.getCurrentTab() != ABA_INVENTARIO) {
+				myTabHost.setCurrentTab(ABA_INVENTARIO);
 				return true;
 			}
 			if (secondTime - firstTime < 2000) {

@@ -31,6 +31,7 @@
     <string name="tituloVarreduraEncerrada">Varredura encerrada</string>
     <string name="msgTodosLidos">Todos os %1$d bens da sala foram lidos por RFID.</string>
     <string name="msgFalhaIniciarLeitura">Não foi possível iniciar a leitura (código %1$d). Tente de novo em alguns segundos; se continuar, feche e abra o app.</string>
+    <string name="msgFalhaMontarTela">Erro ao abrir o Inventário (%1$s). Feche e abra o app; se continuar, avise o suporte.</string>
     <string name="qrPrompt">Aponte para o QR da etiqueta do bem %1$s</string>
     <string name="manualTitulo">Conferência manual</string>
     <string name="manualMensagem">Confira a plaqueta do bem e confirme o número de patrimônio:</string>
@@ -171,10 +172,9 @@
     <string name="tituloVarredura">Varredura da sala</string>
     <string name="lblUnidade">Unidade</string>
     <string name="hintUnidade">Ex.: Casa da Indústria</string>
+    <string name="unidadeSemLista">Sem a lista do PC: digite a unidade exatamente como está cadastrada lá.</string>
     <string name="lblOperador">Operador</string>
     <string name="hintOperador">Seu nome</string>
-    <string name="lblSala">Sala</string>
-    <string name="hintSala">nome da sala</string>
     <string name="msgSalaVazia">Informe a sala antes de iniciar a varredura</string>
     <string name="lblTecnica">Técnica</string>
     <string name="chipInativa">Inativa</string>
@@ -189,7 +189,6 @@
     <string name="duracaoHoras">%1$d h %2$02d min</string>
     <string name="btIniciarSessao">Iniciar sessão</string>
     <string name="btEncerrarSessao">Encerrar sessão</string>
-    <string name="btIniciarVarredura">Iniciar varredura</string>
     <string name="btEncerrarVarredura">Encerrar varredura</string>
     <string name="btTagReferencia">Tag de referência</string>
     <string name="btExportCsv">Reexportar última varredura (CSV)</string>
@@ -200,9 +199,35 @@
     <string name="sessaoAtiva">%2$s · %3$s\nIniciada às %4$s · varreduras: %5$d</string>
     <string name="sessaoEncerrada">%2$s · das %3$s às %4$s\nVarreduras: %5$d · duração: %6$s</string>
     <string name="varreduraSemSessao">Inicie a sessão para varrer as salas.</string>
-    <string name="varreduraInativa">Escolha a sala e toque em Iniciar varredura.</string>
+    <string name="varreduraInativa">Toque numa sala da lista para começar a varredura.</string>
     <string name="varreduraAtiva">Sala %2$s · nº %1$d · %3$d dBm</string>
     <string name="varreduraEncerrada">Última: sala %2$s · nº %1$d\nLeituras: %3$d · duração: %4$s</string>
+    <!-- Inventário por unidade: salas da sessão e varredura de cada uma -->
+    <string name="tituloSalasUnidade">Salas de %1$s</string>
+    <plurals name="progressoSalas">
+        <item quantity="one">%1$d de %2$d sala varrida</item>
+        <item quantity="other">%1$d de %2$d salas varridas</item>
+    </plurals>
+    <string name="salaAindaNaoVarrida">Ainda não varrida</string>
+    <string name="salaVarridaResumo">Varrida às %1$s · etiquetas lidas: %2$d</string>
+    <string name="seloVarrida">Varrida</string>
+    <string name="seloVarridaVezes">Varrida %1$d×</string>
+    <string name="tituloRevarrer">Varrer a sala de novo?</string>
+    <string name="msgRevarrer">A sala %1$s já foi varrida às %2$s. Uma nova varredura soma as leituras às da anterior; nada do que já foi lido se perde.</string>
+    <string name="btVarrerDeNovo">Varrer de novo</string>
+    <string name="tituloEncerrarVarredura">Encerrar a varredura?</string>
+    <string name="msgEncerrarVarreduraVoltar">Para voltar às salas, a varredura da sala %1$s precisa ser encerrada. Ela é exportada e conferida com os bens da sala.</string>
+    <string name="btContinuarLendo">Continuar lendo</string>
+    <plurals name="salasFaltando">
+        <item quantity="one">Ainda há %d sala da unidade sem varredura: os bens dela vão aparecer no relatório como “sem cobertura”.</item>
+        <item quantity="other">Ainda há %d salas da unidade sem varredura: os bens delas vão aparecer no relatório como “sem cobertura”.</item>
+    </plurals>
+    <string name="salasManualAviso">Sem a lista de salas do PC: digite o nome da sala exatamente como está cadastrado lá.</string>
+    <string name="hintSalaManual">Ex.: Sala 101</string>
+    <string name="btVarrerSala">Varrer esta sala</string>
+    <string name="acaoAtualizarSalas">Atualizar salas</string>
+    <string name="acaoExportarXlsUltima">Exportar última sala (.xls)</string>
+    <string name="msgAtualizandoSalas">Buscando as salas no PC…</string>
     <!-- Leitura e lista do Inventário -->
     <string name="btEncerrarVarreduraCurto">Encerrar</string>
     <string name="dicaGatilho">Segure o gatilho para ler. Um toque rápido deixa a leitura contínua; outro toque para.</string>
@@ -210,9 +235,10 @@
     <string name="listaVazia">Nenhuma etiqueta lida ainda.\nAbra uma varredura e aperte o gatilho.</string>
     <string name="rotuloRssi">RSSI</string>
     <string name="descMaisAcoes">Mais ações</string>
+    <string name="descSinalFraco">RSSI %1$s, sinal fraco</string>
     <string name="refNaoCapturada">não capturada</string>
     <string name="msgSemSessao">Inicie uma sessão antes de ler.</string>
-    <string name="msgSemVarredura">Abra a varredura da sala antes de ler.</string>
+    <string name="msgSemVarredura">Toque numa sala da lista para começar a varredura.</string>
     <string name="msgVarreduraSemReferencia">Leia a tag de referência da sala antes de encerrar a varredura</string>
     <string name="msgRefJaCapturada">A tag de referência desta varredura já foi capturada</string>
     <string name="msgCapturandoRef">Aponte para a tag de referência da sala</string>
@@ -269,7 +295,7 @@
     <!-- Tela de Pendências (RF09/RF10) -->
     <string name="pendSala">Sala %1$s</string>
     <string name="pendProgresso">%1$d de %2$d bens conferidos</string>
-    <string name="pendVaziaTitulo">Nenhuma varredura para conferir</string>
+    <string name="pendVaziaTitulo">Nenhuma sala com pendências</string>
     <string name="pendVaziaTexto">Encerre uma varredura no Inventário. Os bens da sala que o RFID não leu aparecem aqui para você resolver.</string>
     <string name="btIrInventario">Ir para o Inventário</string>
     <string name="situacaoRfid">RFID</string>
@@ -285,6 +311,15 @@
     <string name="btResolverManual">Manual</string>
     <string name="btResolverFaltante">Faltante</string>
     <string name="btSincronizar">Sincronizar</string>
+    <string name="salasTitulo">Salas com pendências</string>
+    <string name="salasDica">Toque numa sala para resolver os bens que o RFID não leu. O que você resolver vai para o PC ao sair da sala.</string>
+    <string name="salaLinha">Varredura nº %1$d · %2$s</string>
+    <string name="seloResolvida">Resolvida</string>
+    <string name="descVoltarSalas">Voltar às salas</string>
+    <plurals name="seloPendentes">
+        <item quantity="one">%d pendente</item>
+        <item quantity="other">%d pendentes</item>
+    </plurals>
     <string name="syncVerificando">Verificando o PC…</string>
     <string name="syncOnline">PC conectado (%1$s)</string>
     <string name="syncOffline">Sem conexão: os dados ficam salvos no aparelho</string>

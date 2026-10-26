@@ -68,7 +68,10 @@
             <LinearLayout
                 android:id="@+id/layout_conexao_servidor"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_height="wrap_content"
+                android:minHeight="32dp"
+                android:paddingTop="@dimen/espaco_4"
+                android:paddingBottom="@dimen/espaco_4"
                 android:background="@drawable/fundo_chip"
                 android:backgroundTint="@color/alerta_fundo"
                 android:gravity="center_vertical"
@@ -87,6 +90,7 @@
                 <TextView
                     android:id="@+id/tv_status_conexao"
                     android:layout_width="wrap_content"
+                    android:accessibilityLiveRegion="polite"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/espaco_4"
                     android:ellipsize="end"

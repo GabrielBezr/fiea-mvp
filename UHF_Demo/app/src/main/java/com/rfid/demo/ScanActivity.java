@@ -10,9 +10,13 @@ import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,6 +31,7 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.rfid.demo.utils.CsvExport;
 import com.rfid.demo.utils.FileImport;
 import com.rfid.demo.utils.Leitura;
@@ -57,15 +62,46 @@ public class ScanActivity extends Activity implements OnClickListener {
     Button BtClear, Btimport;
     MaterialButton BtInventory;
     Button BtIniciarSessao, BtEncerrarSessao, BtExportCsv;
-    Button BtIniciarVarredura, BtEncerrarVarredura;
+    Button BtEncerrarVarredura;
     TextView tv_count, tv_alltag, tv_tips, tv_sessao, tv_varredura;
     TextView tvChipSessao, tvChipVarredura;
-    View grupoCamposSessao, grupoCamposVarredura, grupoLeitura, grupoConferindo;
+    View grupoCamposSessao, grupoLeitura, grupoConferindo;
     MaterialCardView cardVarredura;
+    // Telas do Inventário (ver atualizarStatus): sessão, salas da unidade, varredura aberta.
+    View cardSessao, cardSalas, cardLista, grupoProgressoSalas, grupoSalaManual, btMaisAcoesSessao;
+    TextView tvTituloSalas, tvProgressoSalas, tvSalaManualAviso;
+    LinearProgressIndicator pbSalas;
+    ListView lvSalasVarredura;
+    EditText etSalaManual;
+    Button btVarrerSala;
+
+    /** Andamento de uma sala da unidade nesta sessão, para a lista da tela de salas. */
+    private static class SalaDaSessao {
+        final String nome;
+        int varreduras = 0;
+        int etiquetas = 0;          // EPCs distintos lidos na última varredura
+        Varredura ultima = null;
+
+        SalaDaSessao(String nome) {
+            this.nome = nome;
+        }
+    }
+
+    private final List<SalaDaSessao> salasDaSessao = new ArrayList<>();
+    // A lista é da unidade cadastrada no PC; com unidade digitada ela mostra todas as salas
+    // e o progresso some, porque "de Y salas" não teria a unidade como referência.
+    private boolean salasSaoDaUnidade = false;
+    // Sem nenhuma sala do PC (nem no cache), o operador digita o nome da sala.
+    private boolean semSalasDoPc = false;
+    private SalasAdapter adaptadorSalas;
     private ColorStateList corBotaoLeitura;
     ListView LvTags;
     EditText etUnidade, etOperador;
-    Spinner spinnerTecnica, spinnerSala;
+    Spinner spinnerTecnica, spinnerUnidade;
+    TextView tvUnidadeAviso;
+    // Salas do PC (ou do cache), com a unidade de cada uma. Alimentam a lista de unidades
+    // e a de salas da sessão.
+    private final List<SyncManager.SalaCadastrada> salasCadastradas = new ArrayList<>();
 
     // Sessão de inventário por unidade (RF04) com uma varredura por sala (RF05).
     // Paralelo a tagList, que segue alimentando a tela. onInventoryTag roda em
@@ -126,18 +162,36 @@ public class ScanActivity extends Activity implements OnClickListener {
             findViewById(R.id.bt_mais_acoes).setOnClickListener(this::abrirMaisAcoes);
             etUnidade = findViewById(R.id.et_unidade);
             etOperador = findViewById(R.id.et_operador);
-            spinnerSala = findViewById(R.id.spinner_sala);
-            carregarSalasNoSpinner();
+            spinnerUnidade = findViewById(R.id.spinner_unidade);
+            tvUnidadeAviso = findViewById(R.id.tv_unidade_aviso);
             spinnerTecnica = findViewById(R.id.spinner_tecnica);
             spinnerTecnica.setAdapter(criarAdapterTecnicas());
             tvChipSessao = findViewById(R.id.tv_chip_sessao);
             tvChipVarredura = findViewById(R.id.tv_chip_varredura);
             grupoCamposSessao = findViewById(R.id.grupo_campos_sessao);
-            grupoCamposVarredura = findViewById(R.id.grupo_campos_varredura);
             BtIniciarSessao = findViewById(R.id.BtIniciarSessao);
             BtEncerrarSessao = findViewById(R.id.BtEncerrarSessao);
-            BtIniciarVarredura = findViewById(R.id.BtIniciarVarredura);
             BtEncerrarVarredura = findViewById(R.id.BtEncerrarVarredura);
+            cardSessao = findViewById(R.id.card_sessao);
+            cardSalas = findViewById(R.id.card_salas);
+            cardLista = findViewById(R.id.card_lista);
+            grupoProgressoSalas = findViewById(R.id.grupo_progresso_salas);
+            tvProgressoSalas = findViewById(R.id.tv_progresso_salas);
+            pbSalas = findViewById(R.id.pb_salas);
+            tvTituloSalas = findViewById(R.id.tv_titulo_salas);
+            findViewById(R.id.bt_mais_acoes_salas).setOnClickListener(this::abrirMaisAcoes);
+            btMaisAcoesSessao = findViewById(R.id.bt_mais_acoes_sessao);
+            btMaisAcoesSessao.setOnClickListener(this::abrirMaisAcoes);
+            grupoSalaManual = findViewById(R.id.grupo_sala_manual);
+            tvSalaManualAviso = findViewById(R.id.tv_sala_manual_aviso);
+            etSalaManual = findViewById(R.id.et_sala_manual);
+            btVarrerSala = findViewById(R.id.bt_varrer_sala);
+            lvSalasVarredura = findViewById(R.id.lv_salas_varredura);
+            adaptadorSalas = new SalasAdapter();
+            lvSalasVarredura.setAdapter(adaptadorSalas);
+            lvSalasVarredura.setOnItemClickListener((parent, view, position, id) ->
+                    escolherSala(adaptadorSalas.getItem(position)));
+            carregarSalas();
             BtExportCsv = findViewById(R.id.BtExportCsv);
             tv_sessao = findViewById(R.id.tv_sessao);
             tv_varredura = findViewById(R.id.tv_varredura);
@@ -169,6 +223,8 @@ public class ScanActivity extends Activity implements OnClickListener {
                             limitrofe ? R.color.alerta_texto : R.color.texto_secundario));
                     TvTagRssi.setCompoundDrawablesRelativeWithIntrinsicBounds(
                             limitrofe ? R.drawable.ic_alerta_sinal : 0, 0, 0, 0);
+                    // O ícone não tem texto; o leitor de tela precisa ouvir o alerta.
+                    TvTagRssi.setContentDescription(limitrofe ? getString(R.string.descSinalFraco, rssiStr) : null);
 
                     // Devolve a mesma view: chamar super.getView de novo refazia o bind e
                     // apagava o destaque acima.
@@ -181,7 +237,7 @@ public class ScanActivity extends Activity implements OnClickListener {
             BtInventory.setOnClickListener(this);
             BtIniciarSessao.setOnClickListener(this);
             BtEncerrarSessao.setOnClickListener(this);
-            BtIniciarVarredura.setOnClickListener(this);
+            btVarrerSala.setOnClickListener(this);
             BtEncerrarVarredura.setOnClickListener(this);
             BtExportCsv.setOnClickListener(this);
             atualizarStatus();
@@ -216,11 +272,18 @@ public class ScanActivity extends Activity implements OnClickListener {
                                 break;
                         }
                     } catch (Exception ex) {
-                        ex.toString();
+                        Log.e(TAG, "Falha ao atualizar a lista de leituras", ex);
                     }
                 }
             };
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            // Antes o erro sumia e a tela abria pela metade: botões sem ação e, sem o
+            // handler, o app caía na primeira etiqueta lida. Agora ele aparece na hora.
+            Log.e(TAG, "Falha ao montar a tela de Inventário", e);
+            Toast.makeText(getApplicationContext(),
+                    getString(R.string.msgFalhaMontarTela, e.getClass().getSimpleName()),
+                    Toast.LENGTH_LONG).show();
+        }
 
         RFIDSDKManager.getInstance().getRfidManager().setBeepEnable(true);
     }
@@ -310,7 +373,7 @@ public class ScanActivity extends Activity implements OnClickListener {
         if (sessaoAtual != null) {
             return;
         }
-        String unidade = etUnidade.getText().toString().trim();
+        String unidade = unidadeEscolhida();
         String operador = etOperador.getText().toString().trim();
         if (unidade.isEmpty() || operador.isEmpty()) {
             avisar(R.string.msgSessaoCamposVazios);
@@ -348,7 +411,7 @@ public class ScanActivity extends Activity implements OnClickListener {
         exportarSessao(s, true);
     }
 
-    private void iniciarVarredura() {
+    private void iniciarVarredura(String nomeSala) {
         Sessao s = sessaoAtual;
         if (s == null) {
             avisar(R.string.msgSemSessao);
@@ -357,8 +420,7 @@ public class ScanActivity extends Activity implements OnClickListener {
         if (varreduraAtual != null) {
             return;
         }
-        Object itemSala = spinnerSala != null ? spinnerSala.getSelectedItem() : null;
-        String sala = itemSala != null ? itemSala.toString().trim() : "";
+        String sala = nomeSala != null ? nomeSala.trim() : "";
         if (sala.isEmpty()) {
             avisar(R.string.msgSalaVazia);
             return;
@@ -376,13 +438,10 @@ public class ScanActivity extends Activity implements OnClickListener {
         varreduraAtual = new Varredura(s, s.proximoNumero(), sala, tecnica, potencia,
                 System.currentTimeMillis());
         spinnerTecnica.setEnabled(false);
-        if (spinnerSala != null) {
-            spinnerSala.setEnabled(false);
-        }
         atualizarStatus();
 
         // Pré-carrega bens da sala se online
-        SyncManager.getInstance(this).buscarBensDaSala(sala, null);
+        SyncManager.getInstance(this).buscarBensDaSala(sala, s.unidade, null);
     }
 
     private void encerrarVarredura() {
@@ -395,9 +454,6 @@ public class ScanActivity extends Activity implements OnClickListener {
         varreduraAtual = null;
         ultimaVarreduraEncerrada = v;
         spinnerTecnica.setEnabled(true);
-        if (spinnerSala != null) {
-            spinnerSala.setEnabled(true);
-        }
         atualizarStatus();
         exportarVarredura(v);
 
@@ -419,11 +475,18 @@ public class ScanActivity extends Activity implements OnClickListener {
             }
         }
 
+        // A sala passa a contar como varrida já agora, mesmo sem rede para conferir os bens.
+        SalaDaSessao andamento = salaDaSessao(v.sala);
+        andamento.varreduras++;
+        andamento.etiquetas = epcsLidos.size();
+        andamento.ultima = v;
+        atualizarListaSalas();
+
         // Sem rede a busca espera o timeout antes de cair no cache; o aviso mostra
         // que o app está trabalhando e não travou.
         SyncManager.getInstance(this).registrarUltimaVarredura(v.sala, copiaLeituras.size(), System.currentTimeMillis());
         grupoConferindo.setVisibility(View.VISIBLE);
-        SyncManager.getInstance(this).buscarBensDaSala(v.sala, bens -> {
+        SyncManager.getInstance(this).buscarBensDaSala(v.sala, v.sessao.unidade, bens -> {
             grupoConferindo.setVisibility(View.GONE);
             if (bens == null || bens.isEmpty()) {
                 // Sincroniza diretamente se não há cadastro prévio de bens
@@ -448,13 +511,25 @@ public class ScanActivity extends Activity implements OnClickListener {
             final int finalPendentes = pendentesCount;
             final int finalLidos = lidosCount;
 
+            // A sala entra na lista da aba Pendências qualquer que seja a escolha no
+            // aviso; antes só "Resolver agora" a levava, e quem tocava em "Depois" não
+            // a encontrava mais. Sem pendências, ela não entra.
+            TagsSalaActivity.carregarParaConferencia(v.sessao, v, copiaLeituras, epcsLidos,
+                    bens.size(), finalPendentes);
+            // O selo da sala mostra as pendências que acabaram de entrar em Pendências.
+            atualizarListaSalas();
+
             if (finalPendentes > 0) {
+                // A varredura vai ao PC (ou à fila) já agora, nas duas escolhas; as
+                // resoluções seguem depois, no "Sincronizar" das Pendências.
+                SyncManager.getInstance(ScanActivity.this).sincronizarVarredura(v.sessao, v, copiaLeituras, null, null);
                 // Alerta ao operador conforme RF09
                 new AlertDialog.Builder(ScanActivity.this)
                         .setTitle(R.string.tituloVarreduraEncerrada)
                         .setMessage(getString(R.string.msgPendenciasDetectadas, finalLidos, finalPendentes, v.sala))
                         .setPositiveButton(R.string.btResolverAgora, (dialog, which) -> {
                             TagsSalaActivity.salvarParaConferencia(ScanActivity.this, v.sessao, v, copiaLeituras, epcsLidos, v.sala);
+                            TagsSalaActivity.abrirAoEntrar(v);
                             if (MainActivity.myTabHost != null) {
                                 MainActivity.myTabHost.setCurrentTab(MainActivity.ABA_PENDENCIAS);
                             }
@@ -463,6 +538,7 @@ public class ScanActivity extends Activity implements OnClickListener {
                             TagsSalaActivity.salvarParaConferencia(ScanActivity.this, v.sessao, v, copiaLeituras, epcsLidos, v.sala);
                             Toast.makeText(ScanActivity.this, R.string.msgPendenciaSalvaDepois, Toast.LENGTH_LONG).show();
                         })
+                        .setNegativeButton(R.string.btResolverDepois, null)
                         .setCancelable(false)
                         .show();
             } else {
@@ -563,25 +639,30 @@ public class ScanActivity extends Activity implements OnClickListener {
             tvChipVarredura.setVisibility(View.GONE);
         }
 
-        // Cada cartão mostra só o que serve no passo atual. Durante a varredura o
-        // "Encerrar sessão" some, para não ser tocado por engano no meio da sala.
-        boolean podeIniciarVarredura = s != null && v == null;
-        grupoCamposSessao.setVisibility(s == null ? View.VISIBLE : View.GONE);
-        BtIniciarSessao.setVisibility(s == null ? View.VISIBLE : View.GONE);
-        BtEncerrarSessao.setVisibility(podeIniciarVarredura ? View.VISIBLE : View.GONE);
-        grupoCamposVarredura.setVisibility(podeIniciarVarredura ? View.VISIBLE : View.GONE);
-        BtIniciarVarredura.setVisibility(podeIniciarVarredura ? View.VISIBLE : View.GONE);
+        // A tela sai só do estado: sem sessão, os campos da sessão; com sessão, as salas da
+        // unidade; com a varredura aberta, só a leitura. Da leitura só se sai encerrando a
+        // varredura, então nenhuma etiqueta cai em outra sala nem a sessão é encerrada por
+        // engano no meio de uma sala.
+        boolean telaVarredura = v != null;
+        boolean telaSalas = s != null && !telaVarredura;
+        boolean telaSessao = s == null && !telaVarredura;
+        cardSessao.setVisibility(telaVarredura ? View.GONE : View.VISIBLE);
+        // Na tela de salas o "⋮" é o do card de salas; dois no mesmo passo confundiriam.
+        btMaisAcoesSessao.setVisibility(telaSessao ? View.VISIBLE : View.GONE);
+        grupoCamposSessao.setVisibility(telaSessao ? View.VISIBLE : View.GONE);
+        BtIniciarSessao.setVisibility(telaSessao ? View.VISIBLE : View.GONE);
+        grupoProgressoSalas.setVisibility(telaSalas ? View.VISIBLE : View.GONE);
+        BtEncerrarSessao.setVisibility(telaSalas ? View.VISIBLE : View.GONE);
+        cardSalas.setVisibility(telaSalas ? View.VISIBLE : View.GONE);
+        cardVarredura.setVisibility(telaVarredura ? View.VISIBLE : View.GONE);
+        cardLista.setVisibility(telaVarredura ? View.VISIBLE : View.GONE);
         BtEncerrarVarredura.setVisibility(v != null ? View.VISIBLE : View.GONE);
         grupoLeitura.setVisibility(v != null ? View.VISIBLE : View.GONE);
 
         BtIniciarSessao.setEnabled(s == null);
         BtEncerrarSessao.setEnabled(s != null);
-        BtIniciarVarredura.setEnabled(s != null && v == null);
         BtEncerrarVarredura.setEnabled(v != null);
         BtExportCsv.setEnabled(ultimaVarreduraEncerrada != null);
-        if (spinnerSala != null) {
-            spinnerSala.setEnabled(s != null && v == null);
-        }
         if (spinnerTecnica != null) {
             spinnerTecnica.setEnabled(s != null && v == null);
         }
@@ -616,15 +697,28 @@ public class ScanActivity extends Activity implements OnClickListener {
         selo.setVisibility(View.VISIBLE);
     }
 
-    /** Encerrar exporta e fecha a sessão de vez; por isso pede confirmação. */
+    /**
+     * Encerrar exporta e fecha a sessão de vez; por isso pede confirmação. Com salas da
+     * unidade ainda sem varredura, o aviso diz quantas e o que acontece com os bens delas.
+     */
     private void confirmarEncerrarSessao() {
         Sessao s = sessaoAtual;
         if (s == null) {
             return;
         }
+        String mensagem = getString(R.string.msgEncerrarSessao, s.unidade, s.totalVarreduras());
+        int faltando = 0;
+        for (SalaDaSessao sala : salasDaSessao) {
+            if (sala.varreduras == 0) {
+                faltando++;
+            }
+        }
+        if (salasSaoDaUnidade && faltando > 0) {
+            mensagem += "\n\n" + getResources().getQuantityString(R.plurals.salasFaltando, faltando, faltando);
+        }
         new AlertDialog.Builder(this)
                 .setTitle(R.string.tituloEncerrarSessao)
-                .setMessage(getString(R.string.msgEncerrarSessao, s.unidade, s.totalVarreduras()))
+                .setMessage(mensagem)
                 .setPositiveButton(R.string.btEncerrar, (dialog, which) -> encerrarSessao())
                 .setNegativeButton(R.string.btCancelar, null)
                 .show();
@@ -673,11 +767,19 @@ public class ScanActivity extends Activity implements OnClickListener {
             } else if (arg0 == BtClear) {
                 clearData();
             } else if (arg0 == BtIniciarSessao) {
+                Sessao antes = sessaoAtual;
                 iniciarSessao();
+                if (antes == null && sessaoAtual != null) {
+                    // Sessão nova: nenhuma sala varrida ainda. A lista sai do cache agora e
+                    // é refeita quando o PC responder.
+                    salasDaSessao.clear();
+                    montarSalasDaSessao();
+                    carregarSalas();
+                }
             } else if (arg0 == BtEncerrarSessao) {
                 confirmarEncerrarSessao();
-            } else if (arg0 == BtIniciarVarredura) {
-                iniciarVarredura();
+            } else if (arg0 == btVarrerSala) {
+                varrerSalaDigitada();
             } else if (arg0 == BtEncerrarVarredura) {
                 encerrarVarredura();
             } else if (arg0 == BtExportCsv) {
@@ -770,14 +872,25 @@ public class ScanActivity extends Activity implements OnClickListener {
         }
     }
 
-    /** Ações de apoio ao inventário, num menu para não tirarem espaço da lista. */
+    /**
+     * Ações de apoio ao inventário, num menu para não tirarem espaço da lista. Na leitura,
+     * as da lista desta sala; fora dela (salas, ou sessão encerrada), as da última sala e
+     * a lista do PC.
+     */
     private void abrirMaisAcoes(View ancora) {
         PopupMenu menu = new PopupMenu(this, ancora);
         menu.inflate(R.menu.acoes_inventario);
+        boolean lendoSala = varreduraAtual != null;
+        Menu itens = menu.getMenu();
         // Os botões ocultos guardam o estado de cada ação (setViewEnabled, atualizarStatus).
-        menu.getMenu().findItem(R.id.acao_limpar).setEnabled(BtClear.isEnabled());
-        menu.getMenu().findItem(R.id.acao_exportar_xls).setEnabled(Btimport.isEnabled());
-        menu.getMenu().findItem(R.id.acao_reexportar).setEnabled(BtExportCsv.isEnabled());
+        itens.findItem(R.id.acao_limpar).setVisible(lendoSala).setEnabled(BtClear.isEnabled());
+        MenuItem exportarXls = itens.findItem(R.id.acao_exportar_xls).setEnabled(Btimport.isEnabled());
+        if (!lendoSala) {
+            // Fora da leitura, a lista em memória é a da última sala varrida.
+            exportarXls.setTitle(R.string.acaoExportarXlsUltima);
+        }
+        itens.findItem(R.id.acao_reexportar).setVisible(!lendoSala).setEnabled(BtExportCsv.isEnabled());
+        itens.findItem(R.id.acao_atualizar_salas).setVisible(!lendoSala);
         menu.setOnMenuItemClickListener(item -> {
             int id = item.getItemId();
             if (id == R.id.acao_limpar) {
@@ -786,6 +899,9 @@ public class ScanActivity extends Activity implements OnClickListener {
                 onClick(Btimport);
             } else if (id == R.id.acao_reexportar) {
                 onClick(BtExportCsv);
+            } else if (id == R.id.acao_atualizar_salas) {
+                avisar(R.string.msgAtualizandoSalas);
+                carregarSalas();
             }
             return true;
         });
@@ -844,30 +960,265 @@ public class ScanActivity extends Activity implements OnClickListener {
             etUnidade.setText(unidadeSugerida);
             unidadeSugerida = null;
         }
+        // Na volta de Pendências, o selo de cada sala já mostra o que foi resolvido lá.
+        atualizarListaSalas();
+        carregarSalas();
     }
 
-    private void carregarSalasNoSpinner() {
-        if (spinnerSala == null) return;
-        SyncManager.getInstance(this).buscarSalasNomes(salas -> {
-            List<String> lista = new ArrayList<>();
-            if (salas != null && !salas.isEmpty()) {
-                lista.addAll(salas);
+    /** Busca as salas no PC (ou no cache) e refaz a lista de unidades e a de salas. */
+    private void carregarSalas() {
+        if (spinnerUnidade == null || adaptadorSalas == null) return;
+        SyncManager.getInstance(this).buscarSalas(salas -> {
+            salasCadastradas.clear();
+            if (salas != null) {
+                salasCadastradas.addAll(salas);
             }
-            if (lista.isEmpty()) {
-                lista.add("Sala Padrão");
+            preencherUnidades();
+            montarSalasDaSessao();
+        });
+    }
+
+    /**
+     * A unidade vem da lista do PC: digitada, um "Ufal" no lugar de "UFAL" deixava a
+     * sessão sem nenhum bem no relatório. Sem lista (nunca falou com o PC), o campo de
+     * texto volta, com aviso para digitar como está cadastrada.
+     */
+    private void preencherUnidades() {
+        Set<String> unidades = new java.util.TreeSet<>();
+        for (SyncManager.SalaCadastrada s : salasCadastradas) {
+            if (!s.unidade.isEmpty()) {
+                unidades.add(s.unidade);
             }
-            String selected = spinnerSala.getSelectedItem() != null ? spinnerSala.getSelectedItem().toString() : "";
-            ArrayAdapter<String> adapterSalas = new ArrayAdapter<>(ScanActivity.this,
-                    R.layout.item_spinner, lista);
-            adapterSalas.setDropDownViewResource(R.layout.item_spinner_dropdown);
-            spinnerSala.setAdapter(adapterSalas);
-            if (!selected.isEmpty()) {
-                int pos = lista.indexOf(selected);
-                if (pos >= 0) {
-                    spinnerSala.setSelection(pos);
+        }
+        boolean temLista = !unidades.isEmpty();
+        spinnerUnidade.setVisibility(temLista ? View.VISIBLE : View.GONE);
+        etUnidade.setVisibility(temLista ? View.GONE : View.VISIBLE);
+        tvUnidadeAviso.setVisibility(temLista ? View.GONE : View.VISIBLE);
+        if (temLista) {
+            preencherSpinner(spinnerUnidade, new ArrayList<>(unidades));
+        }
+    }
+
+    /** Unidade da nova sessão: a escolhida na lista ou, sem lista, a digitada. */
+    private String unidadeEscolhida() {
+        if (spinnerUnidade.getVisibility() == View.VISIBLE && spinnerUnidade.getSelectedItem() != null) {
+            return spinnerUnidade.getSelectedItem().toString().trim();
+        }
+        return etUnidade.getText().toString().trim();
+    }
+
+    /**
+     * Salas da unidade da sessão, com o andamento de cada uma. Unidade fora do cadastro
+     * (digitada) mostra todas, como antes; sem cadastro nenhum, o operador digita a sala.
+     * Refazer a lista (o PC respondeu, "Atualizar salas") não perde o que já foi varrido.
+     */
+    private void montarSalasDaSessao() {
+        Sessao s = sessaoAtual;
+        if (s == null) {
+            return;
+        }
+        List<String> daUnidade = new ArrayList<>();
+        List<String> todas = new ArrayList<>();
+        for (SyncManager.SalaCadastrada sala : salasCadastradas) {
+            if (sala.unidade.equals(s.unidade) && !daUnidade.contains(sala.nome)) {
+                daUnidade.add(sala.nome);
+            }
+            if (!todas.contains(sala.nome)) {
+                todas.add(sala.nome);
+            }
+        }
+        salasSaoDaUnidade = !daUnidade.isEmpty();
+        List<String> nomes = salasSaoDaUnidade ? daUnidade : todas;
+        semSalasDoPc = nomes.isEmpty();
+
+        List<SalaDaSessao> novas = new ArrayList<>();
+        for (String nome : nomes) {
+            SalaDaSessao existente = procurarSala(nome);
+            novas.add(existente != null ? existente : new SalaDaSessao(nome));
+        }
+        // Sala já varrida que não está na lista (digitada, ou saiu do cadastro) continua nela.
+        for (SalaDaSessao sala : salasDaSessao) {
+            if (sala.varreduras > 0 && !novas.contains(sala)) {
+                novas.add(sala);
+            }
+        }
+        salasDaSessao.clear();
+        salasDaSessao.addAll(novas);
+        atualizarListaSalas();
+    }
+
+    private SalaDaSessao procurarSala(String nome) {
+        for (SalaDaSessao sala : salasDaSessao) {
+            if (sala.nome.equals(nome)) {
+                return sala;
+            }
+        }
+        return null;
+    }
+
+    /** A sala na lista desta sessão; uma sala digitada entra na lista na primeira varredura. */
+    private SalaDaSessao salaDaSessao(String nome) {
+        SalaDaSessao sala = procurarSala(nome);
+        if (sala == null) {
+            sala = new SalaDaSessao(nome);
+            salasDaSessao.add(sala);
+        }
+        return sala;
+    }
+
+    /** Ordena (as que faltam primeiro), conta o progresso e redesenha a lista de salas. */
+    private void atualizarListaSalas() {
+        if (adaptadorSalas == null) {
+            return;
+        }
+        // Ordenação estável: dentro de cada grupo fica a ordem do cadastro.
+        Collections.sort(salasDaSessao, (a, b) -> Boolean.compare(a.varreduras > 0, b.varreduras > 0));
+        int total = salasDaSessao.size();
+        int varridas = 0;
+        for (SalaDaSessao sala : salasDaSessao) {
+            if (sala.varreduras > 0) {
+                varridas++;
+            }
+        }
+        Sessao s = sessaoAtual;
+        tvTituloSalas.setText(s != null ? getString(R.string.tituloSalasUnidade, s.unidade) : "");
+        boolean mostrarProgresso = salasSaoDaUnidade && total > 0;
+        tvProgressoSalas.setVisibility(mostrarProgresso ? View.VISIBLE : View.GONE);
+        pbSalas.setVisibility(mostrarProgresso ? View.VISIBLE : View.GONE);
+        if (mostrarProgresso) {
+            tvProgressoSalas.setText(getResources().getQuantityString(R.plurals.progressoSalas,
+                    total, varridas, total));
+            pbSalas.setMax(total);
+            pbSalas.setProgress(varridas);
+        }
+        adaptadorSalas.notifyDataSetChanged();
+        lvSalasVarredura.setVisibility(total > 0 ? View.VISIBLE : View.GONE);
+        grupoSalaManual.setVisibility(semSalasDoPc ? View.VISIBLE : View.GONE);
+        if (semSalasDoPc) {
+            tvSalaManualAviso.setText(R.string.salasManualAviso);
+        }
+    }
+
+    /** Toque numa sala: abre a varredura dela. Sala já varrida pede confirmação antes. */
+    private void escolherSala(final SalaDaSessao sala) {
+        if (sala == null || sessaoAtual == null || varreduraAtual != null) {
+            return;
+        }
+        if (sala.varreduras == 0 || sala.ultima == null) {
+            iniciarVarredura(sala.nome);
+            return;
+        }
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.tituloRevarrer)
+                .setMessage(getString(R.string.msgRevarrer, sala.nome, hora(sala.ultima.fim)))
+                .setPositiveButton(R.string.btVarrerDeNovo, (dialog, which) -> iniciarVarredura(sala.nome))
+                .setNegativeButton(R.string.btCancelar, null)
+                .show();
+    }
+
+    /** Sem salas do PC: varre a sala digitada (a mesma confirmação se ela já foi varrida). */
+    private void varrerSalaDigitada() {
+        String nome = etSalaManual.getText().toString().trim();
+        if (nome.isEmpty()) {
+            avisar(R.string.msgSalaVazia);
+            return;
+        }
+        InputMethodManager teclado = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        if (teclado != null) {
+            teclado.hideSoftInputFromWindow(etSalaManual.getWindowToken(), 0);
+        }
+        SalaDaSessao jaNaLista = procurarSala(nome);
+        if (jaNaLista != null) {
+            escolherSala(jaNaLista);
+        } else {
+            iniciarVarredura(nome);
+        }
+        if (varreduraAtual != null) {
+            etSalaManual.setText("");
+        }
+    }
+
+    /**
+     * BACK com a varredura aberta: em vez de sair, pergunta se encerra a sala. Devolve
+     * false quando não há varredura, para o MainActivity seguir com o voltar normal.
+     */
+    public boolean voltar() {
+        final Varredura v = varreduraAtual;
+        if (v == null) {
+            return false;
+        }
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.tituloEncerrarVarredura)
+                .setMessage(getString(R.string.msgEncerrarVarreduraVoltar, v.sala))
+                .setPositiveButton(R.string.btEncerrar, (dialog, which) -> {
+                    if (varreduraAtual == v) {
+                        encerrarVarredura();
+                    }
+                })
+                .setNegativeButton(R.string.btContinuarLendo, null)
+                .show();
+        return true;
+    }
+
+    /** Uma linha de item_sala.xml por sala da unidade, com o andamento nesta sessão. */
+    private class SalasAdapter extends ArrayAdapter<SalaDaSessao> {
+        SalasAdapter() {
+            super(ScanActivity.this, R.layout.item_sala, salasDaSessao);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            if (convertView == null) {
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_sala, parent, false);
+            }
+
+            SalaDaSessao sala = getItem(position);
+            if (sala != null) {
+                TextView nome = convertView.findViewById(R.id.tv_sala_nome);
+                TextView detalhe = convertView.findViewById(R.id.tv_sala_detalhe);
+                TextView selo = convertView.findViewById(R.id.tv_sala_status);
+                View faixa = convertView.findViewById(R.id.v_sala_faixa);
+
+                nome.setText(getString(R.string.pendSala, sala.nome));
+                if (sala.varreduras == 0 || sala.ultima == null) {
+                    detalhe.setText(R.string.salaAindaNaoVarrida);
+                    selo.setVisibility(View.GONE);
+                    faixa.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.contorno_forte));
+                } else {
+                    detalhe.setText(getString(R.string.salaVarridaResumo,
+                            hora(sala.ultima.fim), sala.etiquetas));
+                    // Pendências ainda abertas na aba Pendências; resolvidas lá, o selo muda aqui.
+                    int pendentes = TagsSalaActivity.pendentesDe(sala.ultima);
+                    boolean comPendencias = pendentes > 0;
+                    String texto = comPendencias
+                            ? getResources().getQuantityString(R.plurals.seloPendentes, pendentes, pendentes)
+                            : sala.varreduras > 1 ? getString(R.string.seloVarridaVezes, sala.varreduras)
+                            : getString(R.string.seloVarrida);
+                    selo.setText(texto);
+                    selo.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getContext(),
+                            comPendencias ? R.color.alerta_fundo : R.color.sucesso_fundo)));
+                    selo.setTextColor(ContextCompat.getColor(getContext(),
+                            comPendencias ? R.color.alerta_texto : R.color.sucesso_texto));
+                    selo.setVisibility(View.VISIBLE);
+                    faixa.setBackgroundColor(ContextCompat.getColor(getContext(),
+                            comPendencias ? R.color.alerta : R.color.sucesso));
                 }
             }
-        });
+
+            return convertView;
+        }
+    }
+
+    /** Troca os itens do spinner mantendo a escolha atual, se ela continuar na lista. */
+    private void preencherSpinner(Spinner spinner, List<String> itens) {
+        String selecionado = spinner.getSelectedItem() != null ? spinner.getSelectedItem().toString() : "";
+        ArrayAdapter<String> adapterItens = new ArrayAdapter<>(ScanActivity.this, R.layout.item_spinner, itens);
+        adapterItens.setDropDownViewResource(R.layout.item_spinner_dropdown);
+        spinner.setAdapter(adapterItens);
+        int pos = itens.indexOf(selecionado);
+        if (pos >= 0) {
+            spinner.setSelection(pos);
+        }
     }
 
     @Override

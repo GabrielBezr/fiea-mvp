@@ -199,6 +199,7 @@
                 <TextView
                     android:id="@+id/tv_etiq_status"
                     android:layout_width="match_parent"
+                    android:accessibilityLiveRegion="polite"
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-medium"
                     android:textAppearance="@style/TextAppearance.Fiea.Corpo" />
