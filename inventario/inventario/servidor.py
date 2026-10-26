@@ -61,6 +61,10 @@ def obter_ip_local():
     except Exception:
         return "127.0.0.1"
 
+import base64
+
+FAVICON_ICO_BYTES = base64.b64decode("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")
+FAVICON_PNG_BYTES = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACy0lEQVR42u1X7UtTYRS/JVgL+lIfoj4U1Mc+9Af0oaToBXpHShalIBlUWF8KelMpi0KpoKiMQiOxZbJJmJVvm+415wtJbbaZuc1pbZPNuTXny073nMu9LPdSH5q3YAcO9z7P+e2c3/O757l3D8PwlpG5hFm78wyzsaid2VMDKXHMjTWw1i8mWb6aySozpazwXMdaWFNY+XwWjyZBSqAk812cd6yd0mf+Jz0hWnHe0wTSBP5JAvuvd4CsYwgM/W7QmV3Q2OWEI7d0wEgVwJR+4PxwPWFzyjTwUmMjrJ71N91O2HVFJeTKva2DBuMw6M1uqFZ9hWXSuuQEdpQoIRKJwFw78aATmNPtwFSNAlPeD0yOHA7eVMdgcZx/10C5Nl9oEeL89Vrtx+QEFHo7Ab2BMBTcew/HWMfrqjwFR+B4E2y93AoLWGy9wUFYpydIGB6/Jp9Tp07L5TI7fGB3Bej+/mtLcgKB0BQBUa7F2S/IFx2QUSz7hho+2XygMbkgk53z/+Cw+AgkLE4ShV1xVA4ToWmKl9T0QffAGN1XvLUmJoAJoiXj/fPwOK3Y4Q5S7HHTAKw/2RAXa7R4KNepCqMwtzJXDkarh7APkxHYdL457vPHgusKXgnjYnZFWRdb4mJROcxlHfHT2MZKv/uqCixO/+8VOFfVK6xoQ2GjIGvGvufU7fyKthW1wdnKnoRYHMdTB+1p62BiAsgO7bs3RJJHxwofdQkJlx6qpW2KNjsbgbw7epCWa8lxmz1hFUMLTk5DW9838vEg1y9ynT0xgXc9IwQyWsdi3g2VLV8oFgrP0LiU3U7RW4/3LZdawTsRpnl8fyAWF8P3QHPvaGICWra7TXYflMlNMQRwy2HsmZKTEFVAxVCtyakZ2radbANuL24jHDr2Cf97mXqI5qqVg3//Vbxwb/pjlCbwXxMQ/W+56AcT0Y9moh9ORT6e/wQsXsMsZqQz6gAAAABJRU5ErkJggg==")
 
 HTML_TEMPLATE = """
 <!DOCTYPE html>
@@ -68,26 +72,174 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FIEA Inventário - Gestão de Bens & Servidor Local</title>
+    <title>FIEA Inventário - Gestão de Bens &amp; Servidor Local</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACy0lEQVR42u1X7UtTYRS/JVgL+lIfoj4U1Mc+9Af0oaToBXpHShalIBlUWF8KelMpi0KpoKiMQiOxZbJJmJVvm+415wtJbbaZuc1pbZPNuTXny073nMu9LPdSH5q3YAcO9z7P+e2c3/O757l3D8PwlpG5hFm78wyzsaid2VMDKXHMjTWw1i8mWb6aySozpazwXMdaWFNY+XwWjyZBSqAk812cd6yd0mf+Jz0hWnHe0wTSBP5JAvuvd4CsYwgM/W7QmV3Q2OWEI7d0wEgVwJR+4PxwPWFzyjTwUmMjrJ71N91O2HVFJeTKva2DBuMw6M1uqFZ9hWXSuuQEdpQoIRKJwFw78aATmNPtwFSNAlPeD0yOHA7eVMdgcZx/10C5Nl9oEeL89Vrtx+QEFHo7Ab2BMBTcew/HWMfrqjwFR+B4E2y93AoLWGy9wUFYpydIGB6/Jp9Tp07L5TI7fGB3Bej+/mtLcgKB0BQBUa7F2S/IFx2QUSz7hho+2XygMbkgk53z/+Cw+AgkLE4ShV1xVA4ToWmKl9T0QffAGN1XvLUmJoAJoiXj/fPwOK3Y4Q5S7HHTAKw/2RAXa7R4KNepCqMwtzJXDkarh7APkxHYdL457vPHgusKXgnjYnZFWRdb4mJROcxlHfHT2MZKv/uqCixO/+8VOFfVK6xoQ2GjIGvGvufU7fyKthW1wdnKnoRYHMdTB+1p62BiAsgO7bs3RJJHxwofdQkJlx6qpW2KNjsbgbw7epCWa8lxmz1hFUMLTk5DW9838vEg1y9ynT0xgXc9IwQyWsdi3g2VLV8oFgrP0LiU3U7RW4/3LZdawTsRpnl8fyAWF8P3QHPvaGICWra7TXYflMlNMQRwy2HsmZKTEFVAxVCtyakZ2radbANuL24jHDr2Cf97mXqI5qqVg3//Vbxwb/pjlCbwXxMQ/W+56AcT0Y9moh9ORT6e/wQsXsMsZqQz6gAAAABJRU5ErkJggg==">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=fiea">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=fiea">
+    <link rel="shortcut icon" href="/favicon.ico?v=fiea">
+    <link rel="apple-touch-icon" href="/favicon.png?v=fiea">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-        .navbar { background-color: #1e3a8a; }
-        .card { border-radius: 10px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        .badge-metal { background-color: #0284c7; }
-        .badge-rfid { background-color: #059669; }
-        .ip-box { background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px; }
+        :root {
+            --fiea-azul: #004EA6;
+            --fiea-azul-escuro: #003A7C;
+            --fiea-azul-claro: #00A0E7;
+            --fiea-azul-fundo: #E6EEF8;
+            --fundo: #F1F5F9;
+            --superficie: #FFFFFF;
+            --contorno: #E2E8F0;
+            --contorno-forte: #CBD5E1;
+            --texto-primario: #1E293B;
+            --texto-secundario: #475569;
+            --texto-dica: #64748B;
+            --sucesso: #059669;
+            --sucesso-fundo: #DCFCE7;
+            --sucesso-texto: #166534;
+            --alerta: #D97706;
+            --alerta-fundo: #FEF3C7;
+            --alerta-texto: #92400E;
+            --erro: #DC2626;
+            --erro-fundo: #FEE2E2;
+            --erro-texto: #991B1B;
+            --info: #0284C7;
+            --info-fundo: #E0F2FE;
+            --info-texto: #075985;
+            --ciano: #0891B2;
+            --ciano-fundo: #CFFAFE;
+            --ciano-texto: #155E75;
+        }
+        body {
+            background-color: var(--fundo);
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--texto-primario);
+            -webkit-font-smoothing: antialiased;
+        }
+        .navbar-fiea {
+            background-color: var(--fiea-azul);
+            border-bottom: 1px solid var(--fiea-azul-escuro);
+        }
+        .navbar-brand {
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: #FFFFFF !important;
+        }
+        .nav-pill-btn {
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 0.875rem;
+            text-decoration: none;
+            transition: all 0.15s ease-in-out;
+            display: inline-flex;
+            align-items: center;
+        }
+        .nav-pill-btn.active {
+            background-color: #FFFFFF;
+            color: var(--fiea-azul) !important;
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .nav-pill-btn:not(.active) {
+            background-color: rgba(255, 255, 255, 0.12);
+            color: #FFFFFF !important;
+        }
+        .nav-pill-btn:not(.active):hover {
+            background-color: rgba(255, 255, 255, 0.22);
+        }
+        .card {
+            border-radius: 12px;
+            border: 1px solid var(--contorno);
+            background-color: var(--superficie);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+        }
+        .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid var(--contorno);
+        }
+        .ip-box {
+            background: var(--fiea-azul-fundo);
+            border: 1px solid #BAE6FD;
+            border-radius: 10px;
+            padding: 14px 18px;
+        }
+        .btn-primary {
+            background-color: var(--fiea-azul);
+            border-color: var(--fiea-azul);
+            font-weight: 500;
+        }
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: var(--fiea-azul-escuro);
+            border-color: var(--fiea-azul-escuro);
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .status-dot.online {
+            background-color: var(--sucesso);
+            box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
+        }
+        .status-dot.offline {
+            background-color: var(--texto-dica);
+        }
+        .badge-localizado {
+            background-color: var(--sucesso-fundo);
+            color: var(--sucesso-texto);
+            border: 1px solid #86EFAC;
+            font-weight: 600;
+        }
+        .badge-fora-local {
+            background-color: var(--alerta-fundo);
+            color: var(--alerta-texto);
+            border: 1px solid #FDE68A;
+            font-weight: 600;
+        }
+        .badge-nao-localizado {
+            background-color: var(--erro-fundo);
+            color: var(--erro-texto);
+            border: 1px solid #FECACA;
+            font-weight: 600;
+        }
+        .badge-sem-cobertura {
+            background-color: var(--fundo);
+            color: var(--texto-secundario);
+            border: 1px solid var(--contorno-forte);
+            font-weight: 600;
+        }
+        .badge-sobras {
+            background-color: var(--ciano-fundo);
+            color: var(--ciano-texto);
+            border: 1px solid #A5F3FC;
+            font-weight: 600;
+        }
+        .badge-metal {
+            background-color: var(--info-fundo);
+            color: var(--info-texto);
+            border: 1px solid #BAE6FD;
+            font-weight: 500;
+        }
+
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+    <nav class="navbar navbar-expand-lg navbar-fiea mb-4">
         <div class="container-fluid px-4">
-            <a class="navbar-brand mb-0 h1 text-decoration-none" href="/">📦 FIEA Coleta RFID — Servidor Local</a>
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                    <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                    <path d="M7 15h.01"></path>
+                    <path d="M10 15h7"></path>
+                    <path d="M7 10h10"></path>
+                </svg>
+                FIEA Coleta RFID — Servidor Local
+            </a>
             <div class="d-flex align-items-center gap-2">
-                <a href="/" class="btn btn-sm btn-light text-primary fw-bold">📋 Bens Cadastrados</a>
-                <a href="/salas" class="btn btn-sm btn-outline-light">🏢 Gerenciar Salas</a>
-                <a href="/relatorio" class="btn btn-sm btn-outline-light">📊 Relatório de Inventário</a>
-                <span class="badge bg-success ms-2">Servidor Ativo</span>
+                <a href="/" class="nav-pill-btn active">Bens Cadastrados</a>
+                <a href="/salas" class="nav-pill-btn">Gerenciar Salas</a>
+                <a href="/relatorio" class="nav-pill-btn">Relatório de Inventário</a>
+                <span class="badge bg-white text-dark ms-2 fw-semibold">Servidor Ativo</span>
             </div>
         </div>
     </nav>
@@ -96,16 +248,16 @@ HTML_TEMPLATE = """
         <!-- Banner de Conexão com o Urovo -->
         <div class="ip-box mb-4 d-flex justify-content-between align-items-center">
             <div>
-                <h6 class="text-primary mb-1 fw-bold">📡 Conexão com o Coletor Urovo DT50 (Mesma Rede Wi-Fi)</h6>
+                <h6 class="text-primary mb-1 fw-bold">Conexão com o Coletor Urovo DT50 (Mesma Rede Wi-Fi)</h6>
                 <p class="mb-0 text-muted small">
                     Endereço para configurar no coletor: 
-                    <strong class="text-dark fs-6 font-monospace">http://{{ ip_local }}:5000</strong>
+                    <strong class="text-dark fs-6 font-monospace px-2 py-1 bg-white rounded border">http://{{ ip_local }}:5000</strong>
                 </p>
             </div>
             <div class="d-flex align-items-center gap-3">
                 <div id="badgeColetor" class="badge bg-secondary p-2 d-flex align-items-center gap-2" style="font-size: 0.85rem;">
-                    <span id="dotColetor" class="rounded-circle bg-white" style="width: 8px; height: 8px; display: inline-block;"></span>
-                    <span id="textoColetor">⚪ Coletor: Aguardando Wi-Fi</span>
+                    <span id="dotColetor" class="status-dot offline"></span>
+                    <span id="textoColetor">Coletor: Aguardando Wi-Fi</span>
                 </div>
                 <div class="text-end">
                     <span class="badge bg-light text-primary border">Total de Bens: {{ bens|length }}</span>
@@ -117,7 +269,7 @@ HTML_TEMPLATE = """
         {% if mensagem %}
         <div class="alert alert-{{ tipo_msg or 'info' }} alert-dismissible fade show" role="alert">
             {{ mensagem }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
         </div>
         {% endif %}
 
@@ -126,7 +278,7 @@ HTML_TEMPLATE = """
             <div class="col-lg-4 mb-4">
                 <div class="card h-100">
                     <div class="card-header bg-white py-3">
-                        <h6 class="mb-0 fw-bold">➕ Cadastrar Novo Bem</h6>
+                        <h6 class="mb-0 fw-bold">Cadastrar Novo Bem</h6>
                     </div>
                     <div class="card-body">
                         <form method="POST" action="/cadastrar">
@@ -142,7 +294,7 @@ HTML_TEMPLATE = """
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <label class="form-label small fw-semibold mb-0">EPC da Tag RFID</label>
                                     <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" id="btnCapturarTag" style="font-size: 0.78rem;">
-                                        📡 Capturar do Urovo
+                                        Capturar do Urovo
                                     </button>
                                 </div>
                                 <input type="text" name="epc" id="campoEpc" class="form-control font-monospace" placeholder="Ex: E2801160600002162A7A1C57">
@@ -151,7 +303,7 @@ HTML_TEMPLATE = """
                             <div class="mb-3">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <label class="form-label small fw-semibold mb-0">Sala Esperada *</label>
-                                    <a href="/salas" class="text-decoration-none small text-primary" style="font-size: 0.76rem;">➕ Nova Sala</a>
+                                    <a href="/salas" class="text-decoration-none small text-primary fw-medium" style="font-size: 0.76rem;">+ Nova Sala</a>
                                 </div>
                                 <select name="sala" class="form-select" required>
                                     <option value="" disabled selected>Selecione uma sala...</option>
@@ -176,8 +328,16 @@ HTML_TEMPLATE = """
             <div class="col-lg-8 mb-4">
                 <div class="card h-100">
                     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0 fw-bold">📋 Relação Patrimonial de Bens</h6>
-                        <input type="text" id="filtro" class="form-control form-control-sm w-50" placeholder="🔍 Filtrar por patrimônio, descrição ou sala...">
+                        <h6 class="mb-0 fw-bold">Relação Patrimonial de Bens</h6>
+                        <div class="input-group input-group-sm w-50">
+                            <span class="input-group-text bg-white border-end-0">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                            </span>
+                            <input type="text" id="filtro" class="form-control border-start-0 ps-0" placeholder="Filtrar por patrimônio, descrição ou sala...">
+                        </div>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive" style="max-height: 520px; overflow-y: auto;">
@@ -195,9 +355,9 @@ HTML_TEMPLATE = """
                                 <tbody>
                                     {% for b in bens %}
                                     <tr>
-                                        <td class="fw-bold">{{ b.patrimonio }}</td>
+                                        <td class="fw-bold font-monospace">{{ b.patrimonio }}</td>
                                         <td>{{ b.descricao }}</td>
-                                        <td><span class="badge bg-secondary">{{ b.sala or 'Sem sala' }}</span></td>
+                                        <td><span class="badge bg-light text-dark border">{{ b.sala or 'Sem sala' }}</span></td>
                                         <td class="font-monospace small">
                                             {% if b.epc %}
                                                 <span class="badge bg-light text-dark border">{{ b.epc }}</span>
@@ -214,7 +374,12 @@ HTML_TEMPLATE = """
                                         </td>
                                         <td class="text-center">
                                             <form method="POST" action="/excluir/{{ b.patrimonio }}" onsubmit="return confirm('Excluir o bem {{ b.patrimonio }}?');" style="display:inline;">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" title="Excluir">✕</button>
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" title="Excluir">
+                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                    </svg>
+                                                </button>
                                             </form>
                                         </td>
                                     </tr>
@@ -255,14 +420,14 @@ HTML_TEMPLATE = """
                 if (pollingCaptura) {
                     clearInterval(pollingCaptura);
                     pollingCaptura = null;
-                    btnCapturar.innerHTML = '📡 Capturar do Urovo';
+                    btnCapturar.innerText = 'Capturar do Urovo';
                     btnCapturar.className = 'btn btn-sm btn-outline-primary py-0 px-2';
                     statusCaptura.innerHTML = 'Deixe em branco se ainda não foi etiquetado.';
                     statusCaptura.className = 'form-text small text-muted';
                     return;
                 }
 
-                btnCapturar.innerHTML = '⏳ Aguardando... (Cancelar)';
+                btnCapturar.innerText = 'Aguardando leitura... (Cancelar)';
                 btnCapturar.className = 'btn btn-sm btn-warning py-0 px-2';
                 statusCaptura.innerHTML = '<span class="spinner-border spinner-border-sm text-primary me-1"></span> Aproxime o Urovo da etiqueta e clique em <strong>"Transmitir Tag ao PC"</strong> no coletor...';
                 statusCaptura.className = 'form-text small text-primary fw-semibold';
@@ -274,11 +439,11 @@ HTML_TEMPLATE = """
                             if (data && data.epc) {
                                 campoEpc.value = data.epc;
                                 campoEpc.classList.add('is-valid');
-                                statusCaptura.innerHTML = '✅ Tag capturada com sucesso: <code>' + data.epc + '</code>';
+                                statusCaptura.innerHTML = 'Tag capturada com sucesso: <code>' + data.epc + '</code>';
                                 statusCaptura.className = 'form-text small text-success fw-bold';
                                 clearInterval(pollingCaptura);
                                 pollingCaptura = null;
-                                btnCapturar.innerHTML = '📡 Capturar do Urovo';
+                                btnCapturar.innerText = 'Capturar do Urovo';
                                 btnCapturar.className = 'btn btn-sm btn-outline-success py-0 px-2';
                             }
                         })
@@ -298,17 +463,13 @@ HTML_TEMPLATE = """
                     if (!badge) return;
 
                     if (data && data.conectado) {
-                        badge.className = 'badge bg-success p-2 d-flex align-items-center gap-2';
-                        dot.className = 'rounded-circle bg-white spinner-grow spinner-grow-sm';
-                        dot.style.width = '8px';
-                        dot.style.height = '8px';
-                        texto.innerText = `🟢 Coletor Conectado (${data.ip || 'Urovo'} · há ${data.segundos_atras}s)`;
+                        badge.className = 'badge bg-success-subtle text-success border border-success p-2 d-flex align-items-center gap-2';
+                        dot.className = 'status-dot online';
+                        texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'} · há ${data.segundos_atras}s)`;
                     } else {
-                        badge.className = 'badge bg-secondary p-2 d-flex align-items-center gap-2';
-                        dot.className = 'rounded-circle bg-white';
-                        dot.style.width = '8px';
-                        dot.style.height = '8px';
-                        texto.innerText = '⚪ Coletor: Aguardando Wi-Fi';
+                        badge.className = 'badge bg-light text-secondary border p-2 d-flex align-items-center gap-2';
+                        dot.className = 'status-dot offline';
+                        texto.innerText = 'Coletor: Aguardando Wi-Fi';
                     }
                 })
                 .catch(() => {});
@@ -328,23 +489,173 @@ HTML_SALAS_TEMPLATE = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FIEA Inventário - Gestão de Salas</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACy0lEQVR42u1X7UtTYRS/JVgL+lIfoj4U1Mc+9Af0oaToBXpHShalIBlUWF8KelMpi0KpoKiMQiOxZbJJmJVvm+415wtJbbaZuc1pbZPNuTXny073nMu9LPdSH5q3YAcO9z7P+e2c3/O757l3D8PwlpG5hFm78wyzsaid2VMDKXHMjTWw1i8mWb6aySozpazwXMdaWFNY+XwWjyZBSqAk812cd6yd0mf+Jz0hWnHe0wTSBP5JAvuvd4CsYwgM/W7QmV3Q2OWEI7d0wEgVwJR+4PxwPWFzyjTwUmMjrJ71N91O2HVFJeTKva2DBuMw6M1uqFZ9hWXSuuQEdpQoIRKJwFw78aATmNPtwFSNAlPeD0yOHA7eVMdgcZx/10C5Nl9oEeL89Vrtx+QEFHo7Ab2BMBTcew/HWMfrqjwFR+B4E2y93AoLWGy9wUFYpydIGB6/Jp9Tp07L5TI7fGB3Bej+/mtLcgKB0BQBUa7F2S/IFx2QUSz7hho+2XygMbkgk53z/+Cw+AgkLE4ShV1xVA4ToWmKl9T0QffAGN1XvLUmJoAJoiXj/fPwOK3Y4Q5S7HHTAKw/2RAXa7R4KNepCqMwtzJXDkarh7APkxHYdL457vPHgusKXgnjYnZFWRdb4mJROcxlHfHT2MZKv/uqCixO/+8VOFfVK6xoQ2GjIGvGvufU7fyKthW1wdnKnoRYHMdTB+1p62BiAsgO7bs3RJJHxwofdQkJlx6qpW2KNjsbgbw7epCWa8lxmz1hFUMLTk5DW9838vEg1y9ynT0xgXc9IwQyWsdi3g2VLV8oFgrP0LiU3U7RW4/3LZdawTsRpnl8fyAWF8P3QHPvaGICWra7TXYflMlNMQRwy2HsmZKTEFVAxVCtyakZ2radbANuL24jHDr2Cf97mXqI5qqVg3//Vbxwb/pjlCbwXxMQ/W+56AcT0Y9moh9ORT6e/wQsXsMsZqQz6gAAAABJRU5ErkJggg==">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=fiea">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=fiea">
+    <link rel="shortcut icon" href="/favicon.ico?v=fiea">
+    <link rel="apple-touch-icon" href="/favicon.png?v=fiea">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-        .navbar { background-color: #1e3a8a; }
-        .card { border-radius: 10px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        .ip-box { background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px; }
+        :root {
+            --fiea-azul: #004EA6;
+            --fiea-azul-escuro: #003A7C;
+            --fiea-azul-claro: #00A0E7;
+            --fiea-azul-fundo: #E6EEF8;
+            --fundo: #F1F5F9;
+            --superficie: #FFFFFF;
+            --contorno: #E2E8F0;
+            --contorno-forte: #CBD5E1;
+            --texto-primario: #1E293B;
+            --texto-secundario: #475569;
+            --texto-dica: #64748B;
+            --sucesso: #059669;
+            --sucesso-fundo: #DCFCE7;
+            --sucesso-texto: #166534;
+            --alerta: #D97706;
+            --alerta-fundo: #FEF3C7;
+            --alerta-texto: #92400E;
+            --erro: #DC2626;
+            --erro-fundo: #FEE2E2;
+            --erro-texto: #991B1B;
+            --info: #0284C7;
+            --info-fundo: #E0F2FE;
+            --info-texto: #075985;
+            --ciano: #0891B2;
+            --ciano-fundo: #CFFAFE;
+            --ciano-texto: #155E75;
+        }
+        body {
+            background-color: var(--fundo);
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--texto-primario);
+            -webkit-font-smoothing: antialiased;
+        }
+        .navbar-fiea {
+            background-color: var(--fiea-azul);
+            border-bottom: 1px solid var(--fiea-azul-escuro);
+        }
+        .navbar-brand {
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: #FFFFFF !important;
+        }
+        .nav-pill-btn {
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 0.875rem;
+            text-decoration: none;
+            transition: all 0.15s ease-in-out;
+            display: inline-flex;
+            align-items: center;
+        }
+        .nav-pill-btn.active {
+            background-color: #FFFFFF;
+            color: var(--fiea-azul) !important;
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .nav-pill-btn:not(.active) {
+            background-color: rgba(255, 255, 255, 0.12);
+            color: #FFFFFF !important;
+        }
+        .nav-pill-btn:not(.active):hover {
+            background-color: rgba(255, 255, 255, 0.22);
+        }
+        .card {
+            border-radius: 12px;
+            border: 1px solid var(--contorno);
+            background-color: var(--superficie);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+        }
+        .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid var(--contorno);
+        }
+        .ip-box {
+            background: var(--fiea-azul-fundo);
+            border: 1px solid #BAE6FD;
+            border-radius: 10px;
+            padding: 14px 18px;
+        }
+        .btn-primary {
+            background-color: var(--fiea-azul);
+            border-color: var(--fiea-azul);
+            font-weight: 500;
+        }
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: var(--fiea-azul-escuro);
+            border-color: var(--fiea-azul-escuro);
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .status-dot.online {
+            background-color: var(--sucesso);
+            box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
+        }
+        .status-dot.offline {
+            background-color: var(--texto-dica);
+        }
+        .badge-localizado {
+            background-color: var(--sucesso-fundo);
+            color: var(--sucesso-texto);
+            border: 1px solid #86EFAC;
+            font-weight: 600;
+        }
+        .badge-fora-local {
+            background-color: var(--alerta-fundo);
+            color: var(--alerta-texto);
+            border: 1px solid #FDE68A;
+            font-weight: 600;
+        }
+        .badge-nao-localizado {
+            background-color: var(--erro-fundo);
+            color: var(--erro-texto);
+            border: 1px solid #FECACA;
+            font-weight: 600;
+        }
+        .badge-sem-cobertura {
+            background-color: var(--fundo);
+            color: var(--texto-secundario);
+            border: 1px solid var(--contorno-forte);
+            font-weight: 600;
+        }
+        .badge-sobras {
+            background-color: var(--ciano-fundo);
+            color: var(--ciano-texto);
+            border: 1px solid #A5F3FC;
+            font-weight: 600;
+        }
+        .badge-metal {
+            background-color: var(--info-fundo);
+            color: var(--info-texto);
+            border: 1px solid #BAE6FD;
+            font-weight: 500;
+        }
+
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+    <nav class="navbar navbar-expand-lg navbar-fiea mb-4">
         <div class="container-fluid px-4">
-            <a class="navbar-brand mb-0 h1 text-decoration-none" href="/">📦 FIEA Coleta RFID — Servidor Local</a>
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                    <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                    <path d="M7 15h.01"></path>
+                    <path d="M10 15h7"></path>
+                    <path d="M7 10h10"></path>
+                </svg>
+                FIEA Coleta RFID — Servidor Local
+            </a>
             <div class="d-flex align-items-center gap-2">
-                <a href="/" class="btn btn-sm btn-outline-light">📋 Bens Cadastrados</a>
-                <a href="/salas" class="btn btn-sm btn-light text-primary fw-bold">🏢 Gerenciar Salas</a>
-                <a href="/relatorio" class="btn btn-sm btn-outline-light">📊 Relatório de Inventário</a>
-                <span class="badge bg-success ms-2">Servidor Ativo</span>
+                <a href="/" class="nav-pill-btn">Bens Cadastrados</a>
+                <a href="/salas" class="nav-pill-btn active">Gerenciar Salas</a>
+                <a href="/relatorio" class="nav-pill-btn">Relatório de Inventário</a>
+                <span class="badge bg-white text-dark ms-2 fw-semibold">Servidor Ativo</span>
             </div>
         </div>
     </nav>
@@ -353,15 +664,15 @@ HTML_SALAS_TEMPLATE = """
         <!-- Banner de Conexão com o Urovo -->
         <div class="ip-box mb-4 d-flex justify-content-between align-items-center">
             <div>
-                <h6 class="text-primary mb-1 fw-bold">🏢 Cadastro e Gestão de Salas</h6>
+                <h6 class="text-primary mb-1 fw-bold">Cadastro e Gestão de Salas</h6>
                 <p class="mb-0 text-muted small">
                     As salas cadastradas aqui alimentam o coletor Urovo DT50 e o menu de seleção no cadastro de bens.
                 </p>
             </div>
             <div class="d-flex align-items-center gap-3">
                 <div id="badgeColetor" class="badge bg-secondary p-2 d-flex align-items-center gap-2" style="font-size: 0.85rem;">
-                    <span id="dotColetor" class="rounded-circle bg-white" style="width: 8px; height: 8px; display: inline-block;"></span>
-                    <span id="textoColetor">⚪ Coletor: Aguardando Wi-Fi</span>
+                    <span id="dotColetor" class="status-dot offline"></span>
+                    <span id="textoColetor">Coletor: Aguardando Wi-Fi</span>
                 </div>
                 <div class="text-end">
                     <span class="badge bg-light text-primary border">Total de Salas: {{ salas|length }}</span>
@@ -372,7 +683,7 @@ HTML_SALAS_TEMPLATE = """
         {% if mensagem %}
         <div class="alert alert-{{ tipo_msg or 'info' }} alert-dismissible fade show" role="alert">
             {{ mensagem }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
         </div>
         {% endif %}
 
@@ -381,7 +692,7 @@ HTML_SALAS_TEMPLATE = """
             <div class="col-lg-4 mb-4">
                 <div class="card h-100">
                     <div class="card-header bg-white py-3">
-                        <h6 class="mb-0 fw-bold">➕ Cadastrar Nova Sala</h6>
+                        <h6 class="mb-0 fw-bold">Cadastrar Nova Sala</h6>
                     </div>
                     <div class="card-body">
                         <form method="POST" action="/salas/cadastrar">
@@ -395,7 +706,7 @@ HTML_SALAS_TEMPLATE = """
                                 <input type="text" name="unidade" class="form-control" value="UFAL" placeholder="Ex: UFAL" required>
                             </div>
                             <button type="submit" class="btn btn-primary w-100 py-2">Salvar Sala</button>
-                            <a href="/" class="btn btn-link w-100 text-center text-muted small mt-2">← Voltar para Cadastro de Bens</a>
+                            <a href="/" class="btn btn-link w-100 text-center text-muted small mt-2 text-decoration-none">Voltar para Cadastro de Bens</a>
                         </form>
                     </div>
                 </div>
@@ -405,8 +716,8 @@ HTML_SALAS_TEMPLATE = """
             <div class="col-lg-8 mb-4">
                 <div class="card h-100">
                     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0 fw-bold">📋 Salas Cadastradas</h6>
-                        <span class="badge bg-primary">{{ salas|length }} salas</span>
+                        <h6 class="mb-0 fw-bold">Salas Cadastradas</h6>
+                        <span class="badge bg-light text-primary border">{{ salas|length }} salas</span>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive" style="max-height: 520px; overflow-y: auto;">
@@ -426,20 +737,27 @@ HTML_SALAS_TEMPLATE = """
                                         <td><span class="badge bg-light text-dark border">{{ s.unidade }}</span></td>
                                         <td>
                                             {% if s.total_bens > 0 %}
-                                            <span class="badge bg-success-subtle text-success border border-success">{{ s.total_bens }} bem(ns)</span>
+                                                <span class="badge bg-primary-subtle text-primary border border-primary">{{ s.total_bens }} bem(ns)</span>
                                             {% else %}
-                                            <span class="text-muted small">0 bens</span>
+                                                <span class="text-muted small">Nenhum</span>
                                             {% endif %}
                                         </td>
                                         <td class="text-end">
-                                            <form method="POST" action="/salas/excluir/{{ s.id }}" style="display:inline;" onsubmit="return confirm('Deseja realmente excluir a sala {{ s.nome }}?');">
-                                                <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2" style="font-size: 0.8rem;">Excluir</button>
+                                            <form method="POST" action="/salas/excluir/{{ s.id }}" onsubmit="return confirm('Deseja excluir a sala {{ s.nome }}?');" style="display:inline;">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" title="Excluir Sala">
+                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                    </svg>
+                                                </button>
                                             </form>
                                         </td>
                                     </tr>
                                     {% else %}
                                     <tr>
-                                        <td colspan="4" class="text-center text-muted py-4">Nenhuma sala cadastrada ainda. Utilize o formulário ao lado.</td>
+                                        <td colspan="4" class="text-center py-4 text-muted">
+                                            Nenhuma sala cadastrada ainda. Utilize o formulário ao lado.
+                                        </td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -451,8 +769,8 @@ HTML_SALAS_TEMPLATE = """
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Monitoramento em tempo real do status de conexão com o coletor Urovo
         function atualizarStatusColetor() {
             fetch('/api/status-coletor')
                 .then(r => r.json())
@@ -463,17 +781,13 @@ HTML_SALAS_TEMPLATE = """
                     if (!badge) return;
 
                     if (data && data.conectado) {
-                        badge.className = 'badge bg-success p-2 d-flex align-items-center gap-2';
-                        dot.className = 'rounded-circle bg-white spinner-grow spinner-grow-sm';
-                        dot.style.width = '8px';
-                        dot.style.height = '8px';
-                        texto.innerText = `🟢 Coletor Conectado (${data.ip || 'Urovo'} · há ${data.segundos_atras}s)`;
+                        badge.className = 'badge bg-success-subtle text-success border border-success p-2 d-flex align-items-center gap-2';
+                        dot.className = 'status-dot online';
+                        texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'} · há ${data.segundos_atras}s)`;
                     } else {
-                        badge.className = 'badge bg-secondary p-2 d-flex align-items-center gap-2';
-                        dot.className = 'rounded-circle bg-white';
-                        dot.style.width = '8px';
-                        dot.style.height = '8px';
-                        texto.innerText = '⚪ Coletor: Aguardando Wi-Fi';
+                        badge.className = 'badge bg-light text-secondary border p-2 d-flex align-items-center gap-2';
+                        dot.className = 'status-dot offline';
+                        texto.innerText = 'Coletor: Aguardando Wi-Fi';
                     }
                 })
                 .catch(() => {});
@@ -486,7 +800,6 @@ HTML_SALAS_TEMPLATE = """
 """
 
 
-
 HTML_RELATORIO_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -494,27 +807,168 @@ HTML_RELATORIO_TEMPLATE = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FIEA Inventário - Relatório de Auditoria e Conferência Patrimonial</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACy0lEQVR42u1X7UtTYRS/JVgL+lIfoj4U1Mc+9Af0oaToBXpHShalIBlUWF8KelMpi0KpoKiMQiOxZbJJmJVvm+415wtJbbaZuc1pbZPNuTXny073nMu9LPdSH5q3YAcO9z7P+e2c3/O757l3D8PwlpG5hFm78wyzsaid2VMDKXHMjTWw1i8mWb6aySozpazwXMdaWFNY+XwWjyZBSqAk812cd6yd0mf+Jz0hWnHe0wTSBP5JAvuvd4CsYwgM/W7QmV3Q2OWEI7d0wEgVwJR+4PxwPWFzyjTwUmMjrJ71N91O2HVFJeTKva2DBuMw6M1uqFZ9hWXSuuQEdpQoIRKJwFw78aATmNPtwFSNAlPeD0yOHA7eVMdgcZx/10C5Nl9oEeL89Vrtx+QEFHo7Ab2BMBTcew/HWMfrqjwFR+B4E2y93AoLWGy9wUFYpydIGB6/Jp9Tp07L5TI7fGB3Bej+/mtLcgKB0BQBUa7F2S/IFx2QUSz7hho+2XygMbkgk53z/+Cw+AgkLE4ShV1xVA4ToWmKl9T0QffAGN1XvLUmJoAJoiXj/fPwOK3Y4Q5S7HHTAKw/2RAXa7R4KNepCqMwtzJXDkarh7APkxHYdL457vPHgusKXgnjYnZFWRdb4mJROcxlHfHT2MZKv/uqCixO/+8VOFfVK6xoQ2GjIGvGvufU7fyKthW1wdnKnoRYHMdTB+1p62BiAsgO7bs3RJJHxwofdQkJlx6qpW2KNjsbgbw7epCWa8lxmz1hFUMLTk5DW9838vEg1y9ynT0xgXc9IwQyWsdi3g2VLV8oFgrP0LiU3U7RW4/3LZdawTsRpnl8fyAWF8P3QHPvaGICWra7TXYflMlNMQRwy2HsmZKTEFVAxVCtyakZ2radbANuL24jHDr2Cf97mXqI5qqVg3//Vbxwb/pjlCbwXxMQ/W+56AcT0Y9moh9ORT6e/wQsXsMsZqQz6gAAAABJRU5ErkJggg==">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=fiea">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=fiea">
+    <link rel="shortcut icon" href="/favicon.ico?v=fiea">
+    <link rel="apple-touch-icon" href="/favicon.png?v=fiea">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1e293b; }
-        .navbar { background-color: #1e3a8a; }
-        .card { border-radius: 10px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        .ip-box { background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px; }
-        .kpi-card { border-radius: 10px; transition: transform 0.15s ease; }
-        .kpi-card:hover { transform: translateY(-2px); }
-        .badge-metal { background-color: #0284c7; }
+        :root {
+            --fiea-azul: #004EA6;
+            --fiea-azul-escuro: #003A7C;
+            --fiea-azul-claro: #00A0E7;
+            --fiea-azul-fundo: #E6EEF8;
+            --fundo: #F1F5F9;
+            --superficie: #FFFFFF;
+            --contorno: #E2E8F0;
+            --contorno-forte: #CBD5E1;
+            --texto-primario: #1E293B;
+            --texto-secundario: #475569;
+            --texto-dica: #64748B;
+            --sucesso: #059669;
+            --sucesso-fundo: #DCFCE7;
+            --sucesso-texto: #166534;
+            --alerta: #D97706;
+            --alerta-fundo: #FEF3C7;
+            --alerta-texto: #92400E;
+            --erro: #DC2626;
+            --erro-fundo: #FEE2E2;
+            --erro-texto: #991B1B;
+            --info: #0284C7;
+            --info-fundo: #E0F2FE;
+            --info-texto: #075985;
+            --ciano: #0891B2;
+            --ciano-fundo: #CFFAFE;
+            --ciano-texto: #155E75;
+        }
+        body {
+            background-color: var(--fundo);
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--texto-primario);
+            -webkit-font-smoothing: antialiased;
+        }
+        .navbar-fiea {
+            background-color: var(--fiea-azul);
+            border-bottom: 1px solid var(--fiea-azul-escuro);
+        }
+        .navbar-brand {
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: #FFFFFF !important;
+        }
+        .nav-pill-btn {
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 0.875rem;
+            text-decoration: none;
+            transition: all 0.15s ease-in-out;
+            display: inline-flex;
+            align-items: center;
+        }
+        .nav-pill-btn.active {
+            background-color: #FFFFFF;
+            color: var(--fiea-azul) !important;
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .nav-pill-btn:not(.active) {
+            background-color: rgba(255, 255, 255, 0.12);
+            color: #FFFFFF !important;
+        }
+        .nav-pill-btn:not(.active):hover {
+            background-color: rgba(255, 255, 255, 0.22);
+        }
+        .card {
+            border-radius: 12px;
+            border: 1px solid var(--contorno);
+            background-color: var(--superficie);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+        }
+        .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid var(--contorno);
+        }
+        .ip-box {
+            background: var(--fiea-azul-fundo);
+            border: 1px solid #BAE6FD;
+            border-radius: 10px;
+            padding: 14px 18px;
+        }
+        .btn-primary {
+            background-color: var(--fiea-azul);
+            border-color: var(--fiea-azul);
+            font-weight: 500;
+        }
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: var(--fiea-azul-escuro);
+            border-color: var(--fiea-azul-escuro);
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .status-dot.online {
+            background-color: var(--sucesso);
+            box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
+        }
+        .status-dot.offline {
+            background-color: var(--texto-dica);
+        }
+        .badge-localizado {
+            background-color: var(--sucesso-fundo);
+            color: var(--sucesso-texto);
+            border: 1px solid #86EFAC;
+            font-weight: 600;
+        }
+        .badge-fora-local {
+            background-color: var(--alerta-fundo);
+            color: var(--alerta-texto);
+            border: 1px solid #FDE68A;
+            font-weight: 600;
+        }
+        .badge-nao-localizado {
+            background-color: var(--erro-fundo);
+            color: var(--erro-texto);
+            border: 1px solid #FECACA;
+            font-weight: 600;
+        }
+        .badge-sem-cobertura {
+            background-color: var(--fundo);
+            color: var(--texto-secundario);
+            border: 1px solid var(--contorno-forte);
+            font-weight: 600;
+        }
+        .badge-sobras {
+            background-color: var(--ciano-fundo);
+            color: var(--ciano-texto);
+            border: 1px solid #A5F3FC;
+            font-weight: 600;
+        }
+        .badge-metal {
+            background-color: var(--info-fundo);
+            color: var(--info-texto);
+            border: 1px solid #BAE6FD;
+            font-weight: 500;
+        }
+
+        .kpi-card { border-radius: 12px; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
         
         /* Área de Arraste de Arquivos (Drag and Drop) */
         .drop-zone {
-            border: 2px dashed #3b82f6;
+            border: 2px dashed #004EA6;
             border-radius: 12px;
-            background-color: #f0f7ff;
+            background-color: var(--fiea-azul-fundo);
             transition: all 0.2s ease-in-out;
             cursor: pointer;
         }
         .drop-zone.dragover {
-            background-color: #dbeafe;
-            border-color: #1d4ed8;
+            background-color: #DBEAFE;
+            border-color: #003A7C;
             transform: scale(1.01);
         }
 
@@ -584,14 +1038,22 @@ HTML_RELATORIO_TEMPLATE = """
 </head>
 <body>
     <!-- Navbar (Oculto na Impressão) -->
-    <nav class="navbar navbar-expand-lg navbar-dark mb-4 no-print">
+    <nav class="navbar navbar-expand-lg navbar-fiea mb-4 no-print">
         <div class="container-fluid px-4">
-            <a class="navbar-brand mb-0 h1 text-decoration-none" href="/">📦 FIEA Coleta RFID — Servidor Local</a>
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                    <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                    <path d="M7 15h.01"></path>
+                    <path d="M10 15h7"></path>
+                    <path d="M7 10h10"></path>
+                </svg>
+                FIEA Coleta RFID — Servidor Local
+            </a>
             <div class="d-flex align-items-center gap-2">
-                <a href="/" class="btn btn-sm btn-outline-light">📋 Bens Cadastrados</a>
-                <a href="/salas" class="btn btn-sm btn-outline-light">🏢 Gerenciar Salas</a>
-                <a href="/relatorio" class="btn btn-sm btn-light text-primary fw-bold">📊 Relatório de Inventário</a>
-                <span class="badge bg-success ms-2">Servidor Ativo</span>
+                <a href="/" class="nav-pill-btn">Bens Cadastrados</a>
+                <a href="/salas" class="nav-pill-btn">Gerenciar Salas</a>
+                <a href="/relatorio" class="nav-pill-btn active">Relatório de Inventário</a>
+                <span class="badge bg-white text-dark ms-2 fw-semibold">Servidor Ativo</span>
             </div>
         </div>
     </nav>
@@ -621,15 +1083,15 @@ HTML_RELATORIO_TEMPLATE = """
         <!-- Banner de Conexão com o Urovo (No-print) -->
         <div class="ip-box mb-4 d-flex justify-content-between align-items-center no-print">
             <div>
-                <h6 class="text-primary mb-1 fw-bold">📊 Relatório de Conferência e Auditoria Patrimonial</h6>
+                <h6 class="text-primary mb-1 fw-bold">Relatório de Conferência e Auditoria Patrimonial</h6>
                 <p class="mb-0 text-muted small">
                     Confronto automático entre o cadastro mestre de bens e as leituras de campo realizadas pelo coletor Urovo DT50.
                 </p>
             </div>
             <div class="d-flex align-items-center gap-3">
                 <div id="badgeColetor" class="badge bg-secondary p-2 d-flex align-items-center gap-2" style="font-size: 0.85rem;">
-                    <span id="dotColetor" class="rounded-circle bg-white" style="width: 8px; height: 8px; display: inline-block;"></span>
-                    <span id="textoColetor">⚪ Coletor: Aguardando Wi-Fi</span>
+                    <span id="dotColetor" class="status-dot offline"></span>
+                    <span id="textoColetor">Coletor: Aguardando Wi-Fi</span>
                 </div>
                 <div class="text-end">
                     <span class="badge bg-light text-primary border">Sessões: {{ sessoes|length }}</span>
@@ -640,7 +1102,7 @@ HTML_RELATORIO_TEMPLATE = """
         {% if mensagem %}
         <div class="alert alert-{{ tipo_msg or 'info' }} alert-dismissible fade show no-print" role="alert">
             {{ mensagem }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
         </div>
         {% endif %}
 
@@ -653,8 +1115,12 @@ HTML_RELATORIO_TEMPLATE = """
                             <label class="form-label small fw-bold text-muted mb-0">Selecionar Sessão de Auditoria:</label>
                             {% if sessao_id %}
                             <form method="POST" action="/relatorio/excluir-sessao/{{ sessao_id }}" style="display:inline;" onsubmit="return confirm('Deseja realmente excluir o histórico desta sessão ({{ sessao_id }})? Todas as leituras e varreduras desta coleta serão apagadas.');">
-                                <button type="submit" class="btn btn-link text-danger p-0 text-decoration-none small" style="font-size: 0.78rem;" title="Excluir esta sessão de inventário">
-                                    🗑️ Excluir esta Sessão
+                                <button type="submit" class="btn btn-link text-danger p-0 text-decoration-none small d-inline-flex align-items-center gap-1" style="font-size: 0.78rem;" title="Excluir esta sessão de inventário">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                    Excluir esta Sessão
                                 </button>
                             </form>
                             {% endif %}
@@ -670,20 +1136,35 @@ HTML_RELATORIO_TEMPLATE = """
                         </select>
                     </div>
                     <div class="col-lg-7 col-md-12 d-flex justify-content-lg-end gap-2 pt-lg-3">
-                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleAreaImportacao()">
-                            📁 Importar CSVs Offline
+                        <button type="button" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1" onclick="toggleAreaImportacao()">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            Importar CSVs Offline
                         </button>
                         {% if sessao_id %}
-                        <a href="/relatorio/{{ sessao_id }}/exportar-csv" class="btn btn-sm btn-outline-success">
-                            📥 Baixar CSV / Excel
+                        <a href="/relatorio/{{ sessao_id }}/exportar-csv" class="btn btn-sm btn-outline-success d-inline-flex align-items-center gap-1">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Baixar CSV / Excel
                         </a>
                         <div class="d-inline-flex align-items-center bg-light border rounded px-2 py-1">
                             <div class="form-check form-check-inline mb-0 me-2 small">
                                 <input class="form-check-input" type="checkbox" id="checkImprimirSobras" checked onchange="toggleImprimirSobras(this.checked)">
                                 <label class="form-check-label text-muted small" for="checkImprimirSobras" title="Marque para incluir a lista de tags não cadastradas no PDF impresso">Incluir Sobras no PDF</label>
                             </div>
-                            <button type="button" class="btn btn-sm btn-primary" onclick="imprimirRelatorio()" title="Gera o PDF oficial através do diálogo de impressão do navegador">
-                                🖨️ Exportar PDF / Imprimir
+                            <button type="button" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" onclick="imprimirRelatorio()" title="Gera o PDF oficial através do diálogo de impressão do navegador">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                    <rect x="6" y="14" width="12" height="8"></rect>
+                                </svg>
+                                Exportar PDF / Imprimir
                             </button>
                         </div>
                         {% endif %}
@@ -696,7 +1177,11 @@ HTML_RELATORIO_TEMPLATE = """
         <div class="card mb-4 no-print border-primary border-opacity-50" id="cardImportacao">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
-                    <span class="fs-5">📥</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#004EA6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
                     <div>
                         <h6 class="mb-0 fw-bold text-primary">Importação de Arquivos da Coleta Offline (Urovo DT50)</h6>
                         <small class="text-muted">Como enviar os arquivos sem confusão com nomes compridos</small>
@@ -747,7 +1232,13 @@ HTML_RELATORIO_TEMPLATE = """
                     <div id="dropZone" class="drop-zone p-4 text-center">
                         <input type="file" name="arquivos" id="inputFileCsv" multiple accept=".csv" class="d-none">
                         <div id="dropPrompt">
-                            <div class="fs-1 text-primary mb-2">📂</div>
+                            <div class="mb-2">
+                                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#004EA6" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                            </div>
                             <h6 class="fw-bold mb-1">Arraste os arquivos CSV aqui ou clique para selecionar do PC</h6>
                             <p class="text-muted small mb-0">
                                 Dica: Você pode arrastar <code>sessao_*.csv</code> e <code>leituras_*.csv</code> juntos. O sistema agrupa automaticamente.
@@ -756,7 +1247,7 @@ HTML_RELATORIO_TEMPLATE = """
                         <div id="fileListContainer" class="mt-3 text-start small d-none"></div>
                         <div id="btnContainer" class="mt-3 d-none">
                             <button type="submit" id="btnEnviarCsv" class="btn btn-success px-4 py-2 fw-semibold">
-                                🚀 Processar Arquivos Selecionados e Atualizar Relatório
+                                Processar Arquivos Selecionados e Atualizar Relatório
                             </button>
                         </div>
                     </div>
@@ -796,47 +1287,57 @@ HTML_RELATORIO_TEMPLATE = """
             <div class="col-xl-2 col-md-4 col-6">
                 <div class="card kpi-card bg-white h-100 p-3 border-start border-4 border-primary">
                     <div class="text-muted small fw-semibold text-uppercase">Total Esperado</div>
-                    <div class="fs-3 fw-bold text-dark my-1">{{ relatorio.bens|length }}</div>
+                    <div class="fs-2 fw-bold text-dark my-1">{{ relatorio.bens|length }}</div>
                     <div class="text-muted small">Bens no cadastro</div>
                 </div>
             </div>
             <!-- Localizados -->
             <div class="col-xl-2 col-md-4 col-6">
-                <div class="card kpi-card bg-white h-100 p-3 border-start border-4 border-success">
-                    <div class="text-success small fw-semibold text-uppercase">🟢 Localizados</div>
-                    <div class="fs-3 fw-bold text-success my-1">{{ localizados|length }}</div>
+                <div class="card kpi-card bg-white h-100 p-3 border-start border-4" style="border-left-color: var(--sucesso) !important;">
+                    <div class="small fw-semibold text-uppercase d-flex align-items-center gap-1" style="color: var(--sucesso-texto);">
+                        <span class="status-dot online"></span> Localizados
+                    </div>
+                    <div class="fs-2 fw-bold my-1" style="color: var(--sucesso-texto);">{{ localizados|length }}</div>
                     <div class="text-muted small">{{ pct_localizados }}% de acurácia</div>
                 </div>
             </div>
             <!-- Fora do Local -->
             <div class="col-xl-2 col-md-4 col-6">
-                <div class="card kpi-card bg-white h-100 p-3 border-start border-4 border-warning">
-                    <div class="text-warning small fw-semibold text-uppercase">🟡 Fora do Local</div>
-                    <div class="fs-3 fw-bold text-warning my-1">{{ fora_do_local|length }}</div>
+                <div class="card kpi-card bg-white h-100 p-3 border-start border-4" style="border-left-color: var(--alerta) !important;">
+                    <div class="small fw-semibold text-uppercase d-flex align-items-center gap-1" style="color: var(--alerta-texto);">
+                        <span class="status-dot" style="background-color: var(--alerta);"></span> Fora do Local
+                    </div>
+                    <div class="fs-2 fw-bold my-1" style="color: var(--alerta-texto);">{{ fora_do_local|length }}</div>
                     <div class="text-muted small">Sala trocada / divergente</div>
                 </div>
             </div>
             <!-- Não Localizados -->
             <div class="col-xl-2 col-md-4 col-6">
-                <div class="card kpi-card bg-white h-100 p-3 border-start border-4 border-danger">
-                    <div class="text-danger small fw-semibold text-uppercase">🔴 Não Localizados</div>
-                    <div class="fs-3 fw-bold text-danger my-1">{{ nao_localizados|length }}</div>
+                <div class="card kpi-card bg-white h-100 p-3 border-start border-4" style="border-left-color: var(--erro) !important;">
+                    <div class="small fw-semibold text-uppercase d-flex align-items-center gap-1" style="color: var(--erro-texto);">
+                        <span class="status-dot" style="background-color: var(--erro);"></span> Não Localizados
+                    </div>
+                    <div class="fs-2 fw-bold my-1" style="color: var(--erro-texto);">{{ nao_localizados|length }}</div>
                     <div class="text-muted small">Faltantes na sala</div>
                 </div>
             </div>
             <!-- Sem Cobertura -->
             <div class="col-xl-2 col-md-4 col-6">
-                <div class="card kpi-card bg-white h-100 p-3 border-start border-4 border-secondary">
-                    <div class="text-secondary small fw-semibold text-uppercase">⚪ Sem Cobertura</div>
-                    <div class="fs-3 fw-bold text-secondary my-1">{{ sem_cobertura|length }}</div>
+                <div class="card kpi-card bg-white h-100 p-3 border-start border-4" style="border-left-color: var(--texto-secundario) !important;">
+                    <div class="small fw-semibold text-uppercase d-flex align-items-center gap-1" style="color: var(--texto-secundario);">
+                        <span class="status-dot offline"></span> Sem Cobertura
+                    </div>
+                    <div class="fs-2 fw-bold my-1" style="color: var(--texto-secundario);">{{ sem_cobertura|length }}</div>
                     <div class="text-muted small">Sala não auditada</div>
                 </div>
             </div>
-            <!-- Não Cadastrados (Sobras) -->
+            <!-- Tags Sobrando -->
             <div class="col-xl-2 col-md-4 col-6">
-                <div class="card kpi-card bg-white h-100 p-3 border-start border-4 border-info">
-                    <div class="text-info small fw-semibold text-uppercase">🔵 Tags Sobrando</div>
-                    <div class="fs-3 fw-bold text-info my-1">{{ nao_cadastrados|length }}</div>
+                <div class="card kpi-card bg-white h-100 p-3 border-start border-4" style="border-left-color: var(--ciano) !important;">
+                    <div class="small fw-semibold text-uppercase d-flex align-items-center gap-1" style="color: var(--ciano-texto);">
+                        <span class="status-dot" style="background-color: var(--ciano);"></span> Tags Sobrando
+                    </div>
+                    <div class="fs-2 fw-bold my-1" style="color: var(--ciano-texto);">{{ nao_cadastrados|length }}</div>
                     <div class="text-muted small">Lidos sem cadastro</div>
                 </div>
             </div>
@@ -850,24 +1351,32 @@ HTML_RELATORIO_TEMPLATE = """
                         <button type="button" class="btn btn-sm btn-primary btn-filtro" onclick="filtrarTabela('todos', this)">
                             Todos ({{ relatorio.bens|length }})
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-success btn-filtro" onclick="filtrarTabela('localizado', this)">
-                            🟢 Localizados ({{ localizados|length }})
+                        <button type="button" class="btn btn-sm btn-outline-secondary btn-filtro" onclick="filtrarTabela('localizado', this)">
+                            Localizados ({{ localizados|length }})
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-warning btn-filtro" onclick="filtrarTabela('fora do local', this)">
-                            🟡 Fora do Local ({{ fora_do_local|length }})
+                        <button type="button" class="btn btn-sm btn-outline-secondary btn-filtro" onclick="filtrarTabela('fora do local', this)">
+                            Fora do Local ({{ fora_do_local|length }})
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-danger btn-filtro" onclick="filtrarTabela('nao localizado', this)">
-                            🔴 Faltantes ({{ nao_localizados|length }})
+                        <button type="button" class="btn btn-sm btn-outline-secondary btn-filtro" onclick="filtrarTabela('nao localizado', this)">
+                            Faltantes ({{ nao_localizados|length }})
                         </button>
                         <button type="button" class="btn btn-sm btn-outline-secondary btn-filtro" onclick="filtrarTabela('sem cobertura', this)">
-                            ⚪ Sem Cobertura ({{ sem_cobertura|length }})
+                            Sem Cobertura ({{ sem_cobertura|length }})
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-info btn-filtro" onclick="rolarParaSobras()">
-                            🔵 Tags Sobrando ({{ nao_cadastrados|length }})
+                        <button type="button" class="btn btn-sm btn-outline-secondary btn-filtro" onclick="rolarParaSobras()">
+                            Tags Sobrando ({{ nao_cadastrados|length }})
                         </button>
                     </div>
                     <div class="col-lg-4 col-md-12">
-                        <input type="text" id="inputBuscaRelatorio" class="form-control form-control-sm" placeholder="🔍 Filtrar por patrimônio, descrição, sala...">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-white border-end-0">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                            </span>
+                            <input type="text" id="inputBuscaRelatorio" class="form-control border-start-0 ps-0" placeholder="Filtrar por patrimônio, descrição, sala...">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -876,7 +1385,7 @@ HTML_RELATORIO_TEMPLATE = """
         <!-- Tabela Principal: Relação Analítica de Bens -->
         <div class="card mb-4">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                <h6 class="mb-0 fw-bold">📋 Relação Patrimonial Conferida</h6>
+                <h6 class="mb-0 fw-bold">Relação Patrimonial Conferida</h6>
                 <span class="badge bg-light text-dark border">{{ relatorio.bens|length }} bens auditados</span>
             </div>
             <div class="card-body p-0">
@@ -911,7 +1420,7 @@ HTML_RELATORIO_TEMPLATE = """
                                 <td>
                                     {% if b.salas_lidas %}
                                         {% for sl in b.salas_lidas %}
-                                        <span class="badge {% if sl == b.sala_esperada %}bg-success-subtle text-success border border-success{% else %}bg-warning-subtle text-dark border border-warning{% endif %}">
+                                        <span class="badge {% if sl == b.sala_esperada %}badge-localizado{% else %}badge-fora-local{% endif %}">
                                             {{ sl }}
                                         </span>
                                         {% endfor %}
@@ -921,13 +1430,13 @@ HTML_RELATORIO_TEMPLATE = """
                                 </td>
                                 <td>
                                     {% if b.situacao == 'localizado' %}
-                                        <span class="badge bg-success-subtle text-success border border-success">🟢 Localizado</span>
+                                        <span class="badge badge-localizado">Localizado</span>
                                     {% elif b.situacao == 'fora do local' %}
-                                        <span class="badge bg-warning-subtle text-dark border border-warning">🟡 Fora do Local</span>
+                                        <span class="badge badge-fora-local">Fora do Local</span>
                                     {% elif b.situacao == 'nao localizado' %}
-                                        <span class="badge bg-danger-subtle text-danger border border-danger">🔴 Não Localizado</span>
+                                        <span class="badge badge-nao-localizado">Não Localizado</span>
                                     {% elif b.situacao == 'sem cobertura' %}
-                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary">⚪ Sem Cobertura</span>
+                                        <span class="badge badge-sem-cobertura">Sem Cobertura</span>
                                     {% else %}
                                         <span class="badge bg-light text-dark border">{{ b.situacao }}</span>
                                     {% endif %}
@@ -966,13 +1475,13 @@ HTML_RELATORIO_TEMPLATE = """
         <div class="card mb-4" id="secaoSobras">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
-                    <span class="fs-5">🔵</span>
+                    <span class="status-dot" style="background-color: var(--ciano);"></span>
                     <div>
                         <h6 class="mb-0 fw-bold text-info-emphasis">Tags RFID Sobrando no Ambiente (Não Cadastradas)</h6>
                         <small class="text-muted">Etiquetas lidas pelo coletor que não possuem correspondência patrimonial no cadastro</small>
                     </div>
                 </div>
-                <span class="badge bg-info-subtle text-info-emphasis border border-info">{{ relatorio.epcs_nao_cadastrados|length }} tag(s)</span>
+                <span class="badge badge-sobras">{{ relatorio.epcs_nao_cadastrados|length }} tag(s)</span>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive" id="containerTabelaSobras" style="max-height: 380px; overflow-y: auto;">
@@ -997,7 +1506,7 @@ HTML_RELATORIO_TEMPLATE = """
                                     {% endfor %}
                                 </td>
                                 <td>
-                                    <span class="badge bg-info-subtle text-info border border-info">🔵 Não Cadastrado</span>
+                                    <span class="badge badge-sobras">Não Cadastrado</span>
                                 </td>
                                 <td class="small text-muted">
                                     Verificar se o bem pertence a outra unidade ou se foi etiquetado antes do cadastro patrimonial.
@@ -1032,7 +1541,15 @@ HTML_RELATORIO_TEMPLATE = """
         {% else %}
         <!-- Estado Vazio / Sem Sessão Selecionada -->
         <div class="card p-5 text-center my-4">
-            <div class="fs-1 mb-3">📋</div>
+            <div class="mb-3 text-muted">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-secondary opacity-50">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+            </div>
             <h5 class="fw-bold">Nenhuma sessão de inventário disponível para visualização</h5>
             <p class="text-muted small">
                 Para visualizar a conferência, realize uma coleta com o Urovo DT50 ou utilize o quadro acima para importar os arquivos CSV offline.
@@ -1161,7 +1678,7 @@ HTML_RELATORIO_TEMPLATE = """
                     btnContainer.classList.add('d-none');
                     return;
                 }
-                let html = '<div class="alert alert-info py-2 mb-0"><h6 class="mb-1 fw-bold">📄 ' + files.length + ' arquivo(s) CSV selecionado(s):</h6><ul class="mb-0 ps-3">';
+                let html = '<div class="alert alert-info py-2 mb-0"><h6 class="mb-1 fw-bold">' + files.length + ' arquivo(s) CSV selecionado(s):</h6><ul class="mb-0 ps-3">';
                 for (let i = 0; i < files.length; i++) {
                     html += '<li><code>' + files[i].name + '</code> (' + Math.round(files[i].size / 1024) + ' KB)</li>';
                 }
@@ -1183,17 +1700,13 @@ HTML_RELATORIO_TEMPLATE = """
                     if (!badge) return;
 
                     if (data && data.conectado) {
-                        badge.className = 'badge bg-success p-2 d-flex align-items-center gap-2';
-                        dot.className = 'rounded-circle bg-white spinner-grow spinner-grow-sm';
-                        dot.style.width = '8px';
-                        dot.style.height = '8px';
-                        texto.innerText = `🟢 Coletor Conectado (${data.ip || 'Urovo'} · há ${data.segundos_atras}s)`;
+                        badge.className = 'badge bg-success-subtle text-success border border-success p-2 d-flex align-items-center gap-2';
+                        dot.className = 'status-dot online';
+                        texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'} · há ${data.segundos_atras}s)`;
                     } else {
-                        badge.className = 'badge bg-secondary p-2 d-flex align-items-center gap-2';
-                        dot.className = 'rounded-circle bg-white';
-                        dot.style.width = '8px';
-                        dot.style.height = '8px';
-                        texto.innerText = '⚪ Coletor: Aguardando Wi-Fi';
+                        badge.className = 'badge bg-light text-secondary border p-2 d-flex align-items-center gap-2';
+                        dot.className = 'status-dot offline';
+                        texto.innerText = 'Coletor: Aguardando Wi-Fi';
                     }
                 })
                 .catch(() => {});
@@ -1207,6 +1720,24 @@ HTML_RELATORIO_TEMPLATE = """
 
 
 # ---------------------------------------------------------------- Rotas Web
+
+
+@app.route("/favicon.ico")
+def favicon():
+    resp = make_response(FAVICON_ICO_BYTES)
+    resp.headers["Content-Type"] = "image/x-icon"
+    resp.headers["Cache-Control"] = "no-cache, must-revalidate"
+    return resp
+
+
+@app.route("/favicon.png")
+def favicon_png():
+    resp = make_response(FAVICON_PNG_BYTES)
+    resp.headers["Content-Type"] = "image/png"
+    resp.headers["Cache-Control"] = "no-cache, must-revalidate"
+    return resp
+
+
 
 
 
@@ -1824,11 +2355,17 @@ def api_sincronizar():
 
 
 def iniciar_servidor(porta=5000):
+    import sys
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
     ip = obter_ip_local()
     print("=" * 65)
-    print("🚀 SERVIDOR LOCAL DE INVENTÁRIO INICIADO COM SUCESSO!")
-    print(f"👉 Interface Web no PC: http://localhost:{porta}")
-    print(f"👉 Conexão Wi-Fi (Urovo DT50): http://{ip}:{porta}")
+    print("SERVIDOR LOCAL DE INVENTARIO INICIADO COM SUCESSO!")
+    print(f"Interface Web no PC: http://localhost:{porta}")
+    print(f"Conexao Wi-Fi (Urovo DT50): http://{ip}:{porta}")
     print("=" * 65)
     app.run(host="0.0.0.0", port=porta, debug=False)
 

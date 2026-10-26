@@ -28,6 +28,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -694,5 +701,258 @@ public class SyncManager {
 
     private String formatarData(long timestamp) {
         return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US).format(new Date(timestamp));
+    }
+
+    public static class ResumoBase {
+        public final int totalSalas;
+        public final int totalBens;
+        public final int totalRfid;
+        public final boolean sucessoRede;
+
+        public ResumoBase(int totalSalas, int totalBens, int totalRfid, boolean sucessoRede) {
+            this.totalSalas = totalSalas;
+            this.totalBens = totalBens;
+            this.totalRfid = totalRfid;
+            this.sucessoRede = sucessoRede;
+        }
+    }
+
+    public void registrarUltimaVarredura(String sala, int tagsLidas, long timestamp) {
+        prefs.edit()
+                .putString("ultima_varredura_sala", sala != null ? sala : "")
+                .putInt("ultima_varredura_tags", tagsLidas)
+                .putLong("ultima_varredura_tempo", timestamp)
+                .apply();
+    }
+
+    public String getUltimaVarreduraTexto(Context ctx) {
+        String sala = prefs.getString("ultima_varredura_sala", "");
+        if (sala.isEmpty()) {
+            return ctx.getString(com.rfid.demo.R.string.painelSemVarredura);
+        }
+        int tags = prefs.getInt("ultima_varredura_tags", 0);
+        long tempo = prefs.getLong("ultima_varredura_tempo", 0);
+        String hora = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date(tempo));
+        return ctx.getString(com.rfid.demo.R.string.painelUltimaVarredura, sala, tags, hora);
+    }
+
+    public static class ResumoPanorama {
+        public final List<String> unidades;
+        public final Map<String, ResumoBase> dadosPorUnidade;
+        public final boolean sucessoRede;
+
+        public ResumoPanorama(List<String> unidades, Map<String, ResumoBase> dadosPorUnidade, boolean sucessoRede) {
+            this.unidades = unidades != null ? unidades : new ArrayList<String>();
+            this.dadosPorUnidade = dadosPorUnidade != null ? dadosPorUnidade : new HashMap<String, ResumoBase>();
+            this.sucessoRede = sucessoRede;
+        }
+
+        public ResumoBase getResumo(String unidade) {
+            if (unidade == null || unidade.isEmpty() || !dadosPorUnidade.containsKey(unidade)) {
+                if (dadosPorUnidade.containsKey("")) {
+                    return dadosPorUnidade.get("");
+                }
+                return new ResumoBase(0, 0, 0, sucessoRede);
+            }
+            return dadosPorUnidade.get(unidade);
+        }
+    }
+
+    public ResumoBase getResumoBaseCache() {
+        return getResumoPanoramaCache().getResumo("");
+    }
+
+    public ResumoPanorama getResumoPanoramaCache() {
+        try {
+            File f = new File(context.getFilesDir(), "cache_panorama.json");
+            if (f.exists()) {
+                String content = lerArquivo(f);
+                JSONObject root = new JSONObject(content);
+                List<String> unidades = new ArrayList<>();
+                JSONArray arrU = root.optJSONArray("unidades");
+                if (arrU != null) {
+                    for (int i = 0; i < arrU.length(); i++) {
+                        unidades.add(arrU.getString(i));
+                    }
+                }
+                Map<String, ResumoBase> mapa = new HashMap<>();
+                JSONObject dados = root.optJSONObject("dados");
+                if (dados != null) {
+                    Iterator<String> keys = dados.keys();
+                    while (keys.hasNext()) {
+                        String k = keys.next();
+                        JSONObject d = dados.getJSONObject(k);
+                        mapa.put(k, new ResumoBase(
+                                d.optInt("salas", 0),
+                                d.optInt("bens", 0),
+                                d.optInt("rfid", 0),
+                                false
+                        ));
+                    }
+                }
+                return new ResumoPanorama(unidades, mapa, false);
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Erro ao ler cache_panorama.json: " + e.getMessage());
+        }
+
+        int salas = prefs.getInt("cache_total_salas", 0);
+        int bens = prefs.getInt("cache_total_bens", 0);
+        int rfid = prefs.getInt("cache_total_rfid", 0);
+        Map<String, ResumoBase> mapaFallback = new HashMap<>();
+        mapaFallback.put("", new ResumoBase(salas, bens, rfid, false));
+        return new ResumoPanorama(new ArrayList<String>(), mapaFallback, false);
+    }
+
+    public void carregarResumoPanorama(Callback<ResumoPanorama> callback) {
+        executor.execute(() -> {
+            boolean sucessoRede = false;
+            Set<String> setUnidades = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+            Map<String, Set<String>> salasPorUnidade = new HashMap<>();
+            salasPorUnidade.put("", new HashSet<>());
+
+            Map<String, Integer> bensPorUnidade = new HashMap<>();
+            bensPorUnidade.put("", 0);
+
+            Map<String, Integer> rfidPorUnidade = new HashMap<>();
+            rfidPorUnidade.put("", 0);
+
+            try {
+                URL urlSalas = new URL(getServerUrl() + "/api/salas");
+                HttpURLConnection connSalas = (HttpURLConnection) urlSalas.openConnection();
+                connSalas.setConnectTimeout(3000);
+                connSalas.setReadTimeout(3000);
+                connSalas.setRequestMethod("GET");
+                if (connSalas.getResponseCode() == 200) {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(connSalas.getInputStream(), StandardCharsets.UTF_8));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) sb.append(line);
+                    reader.close();
+                    JSONArray arr = new JSONArray(sb.toString());
+                    for (int i = 0; i < arr.length(); i++) {
+                        JSONObject s = arr.getJSONObject(i);
+                        String nome = s.optString("nome", "").trim();
+                        String unidade = s.optString("unidade", "").trim();
+                        if (!nome.isEmpty()) {
+                            salasPorUnidade.get("").add(nome);
+                            if (!unidade.isEmpty()) {
+                                setUnidades.add(unidade);
+                                if (!salasPorUnidade.containsKey(unidade)) {
+                                    salasPorUnidade.put(unidade, new HashSet<>());
+                                }
+                                salasPorUnidade.get(unidade).add(nome);
+                            }
+                        }
+                    }
+                    sucessoRede = true;
+                }
+                connSalas.disconnect();
+            } catch (Exception ignored) {
+            }
+
+            try {
+                URL urlBens = new URL(getServerUrl() + "/api/bens");
+                HttpURLConnection connBens = (HttpURLConnection) urlBens.openConnection();
+                connBens.setConnectTimeout(3000);
+                connBens.setReadTimeout(3000);
+                connBens.setRequestMethod("GET");
+                if (connBens.getResponseCode() == 200) {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(connBens.getInputStream(), StandardCharsets.UTF_8));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) sb.append(line);
+                    reader.close();
+                    JSONArray arr = new JSONArray(sb.toString());
+                    for (int i = 0; i < arr.length(); i++) {
+                        JSONObject b = arr.getJSONObject(i);
+                        String epc = b.optString("epc", "").trim();
+                        String unidade = b.optString("unidade", "").trim();
+                        boolean temRfid = !epc.isEmpty();
+
+                        bensPorUnidade.put("", bensPorUnidade.get("") + 1);
+                        if (temRfid) {
+                            rfidPorUnidade.put("", rfidPorUnidade.get("") + 1);
+                        }
+
+                        if (!unidade.isEmpty()) {
+                            setUnidades.add(unidade);
+                            int bAtual = bensPorUnidade.containsKey(unidade) ? bensPorUnidade.get(unidade) : 0;
+                            bensPorUnidade.put(unidade, bAtual + 1);
+                            if (temRfid) {
+                                int rAtual = rfidPorUnidade.containsKey(unidade) ? rfidPorUnidade.get(unidade) : 0;
+                                rfidPorUnidade.put(unidade, rAtual + 1);
+                            }
+                        }
+                    }
+                    sucessoRede = true;
+                }
+                connBens.disconnect();
+            } catch (Exception ignored) {
+            }
+
+            ResumoPanorama panorama;
+            if (sucessoRede) {
+                List<String> listaUnidades = new ArrayList<>(setUnidades);
+                Map<String, ResumoBase> dadosMapa = new HashMap<>();
+
+                int salasG = salasPorUnidade.get("").size();
+                int bensG = bensPorUnidade.get("");
+                int rfidG = rfidPorUnidade.get("");
+                dadosMapa.put("", new ResumoBase(salasG, bensG, rfidG, true));
+
+                for (String u : listaUnidades) {
+                    int salasU = salasPorUnidade.containsKey(u) ? salasPorUnidade.get(u).size() : 0;
+                    int bensU = bensPorUnidade.containsKey(u) ? bensPorUnidade.get(u) : 0;
+                    int rfidU = rfidPorUnidade.containsKey(u) ? rfidPorUnidade.get(u) : 0;
+                    dadosMapa.put(u, new ResumoBase(salasU, bensU, rfidU, true));
+                }
+
+                try {
+                    JSONObject root = new JSONObject();
+                    JSONArray arrU = new JSONArray();
+                    for (String u : listaUnidades) arrU.put(u);
+                    root.put("unidades", arrU);
+
+                    JSONObject dadosObj = new JSONObject();
+                    for (Map.Entry<String, ResumoBase> entry : dadosMapa.entrySet()) {
+                        JSONObject d = new JSONObject();
+                        d.put("salas", entry.getValue().totalSalas);
+                        d.put("bens", entry.getValue().totalBens);
+                        d.put("rfid", entry.getValue().totalRfid);
+                        dadosObj.put(entry.getKey(), d);
+                    }
+                    root.put("dados", dadosObj);
+
+                    File f = new File(context.getFilesDir(), "cache_panorama.json");
+                    salvarArquivo(f, root.toString());
+
+                    prefs.edit()
+                            .putInt("cache_total_salas", salasG)
+                            .putInt("cache_total_bens", bensG)
+                            .putInt("cache_total_rfid", rfidG)
+                            .apply();
+                } catch (Exception e) {
+                    Log.w(TAG, "Erro ao salvar cache_panorama.json: " + e.getMessage());
+                }
+
+                panorama = new ResumoPanorama(listaUnidades, dadosMapa, true);
+            } else {
+                panorama = getResumoPanoramaCache();
+            }
+
+            final ResumoPanorama resultado = panorama;
+            if (callback != null) {
+                mainHandler.post(() -> callback.onResult(resultado));
+            }
+        });
+    }
+
+    public void carregarResumoBase(Callback<ResumoBase> callback) {
+        carregarResumoPanorama(panorama -> {
+            if (callback != null) {
+                callback.onResult(panorama.getResumo(""));
+            }
+        });
     }
 }

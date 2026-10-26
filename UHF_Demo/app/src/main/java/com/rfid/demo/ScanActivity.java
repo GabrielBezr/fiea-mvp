@@ -107,6 +107,17 @@ public class ScanActivity extends Activity implements OnClickListener {
     // Paralelo a tagList, que segue alimentando a tela. onInventoryTag roda em
     // thread própria, por isso a lista é sincronizada e os estados são volatile.
     private volatile Sessao sessaoAtual = null;
+    private static volatile Sessao sessaoAtualStatic = null;
+
+    public static Sessao getSessaoAtual() {
+        return sessaoAtualStatic;
+    }
+
+    private static volatile String unidadeSugerida = null;
+
+    public static void setUnidadeSugerida(String unidade) {
+        unidadeSugerida = unidade;
+    }
     private volatile Varredura varreduraAtual = null;
     private Varredura ultimaVarreduraEncerrada = null;
     private Sessao ultimaSessaoEncerrada = null;
@@ -369,6 +380,7 @@ public class ScanActivity extends Activity implements OnClickListener {
             return;
         }
         sessaoAtual = new Sessao(unidade, operador, System.currentTimeMillis());
+        sessaoAtualStatic = sessaoAtual;
         ultimaSessaoEncerrada = null;
         ultimaVarreduraEncerrada = null;
         etUnidade.setEnabled(false);
@@ -390,6 +402,7 @@ public class ScanActivity extends Activity implements OnClickListener {
         }
         s.fim = System.currentTimeMillis();
         sessaoAtual = null;
+        sessaoAtualStatic = null;
         ultimaSessaoEncerrada = s;
         etUnidade.setEnabled(true);
         etOperador.setEnabled(true);
@@ -470,6 +483,7 @@ public class ScanActivity extends Activity implements OnClickListener {
 
         // Sem rede a busca espera o timeout antes de cair no cache; o aviso mostra
         // que o app está trabalhando e não travou.
+        SyncManager.getInstance(this).registrarUltimaVarredura(v.sala, copiaLeituras.size(), System.currentTimeMillis());
         grupoConferindo.setVisibility(View.VISIBLE);
         SyncManager.getInstance(this).buscarBensDaSala(v.sala, v.sessao.unidade, bens -> {
             grupoConferindo.setVisibility(View.GONE);
@@ -935,6 +949,19 @@ public class ScanActivity extends Activity implements OnClickListener {
     protected void onResume() {
         super.onResume();
         registrarCallback();
+        if (sessaoAtual == null && unidadeSugerida != null && !unidadeSugerida.isEmpty()) {
+            if (spinnerUnidade != null && spinnerUnidade.getVisibility() == View.VISIBLE) {
+                for (int i = 0; i < spinnerUnidade.getCount(); i++) {
+                    if (unidadeSugerida.equalsIgnoreCase(String.valueOf(spinnerUnidade.getItemAtPosition(i)))) {
+                        spinnerUnidade.setSelection(i);
+                        break;
+                    }
+                }
+            } else if (etUnidade != null) {
+                etUnidade.setText(unidadeSugerida);
+            }
+            unidadeSugerida = null;
+        }
         // Na volta de Pendências, o selo de cada sala já mostra o que foi resolvido lá.
         atualizarListaSalas();
         carregarSalas();

@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Navegação inferior. A ordem e os ids casam com as abas 0, 1 e 2 do TabHost
+<!-- Navegação inferior. A ordem e os ids casam com as abas 0, 1, 2 e 3 do TabHost
      (MainActivity.abaDoItem / itemDaAba). -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_painel"
+        android:icon="@drawable/ic_dashboard"
+        android:title="@string/nav_painel" />
     <item
         android:id="@+id/nav_inventario"
         android:icon="@drawable/ic_inventory_2"
