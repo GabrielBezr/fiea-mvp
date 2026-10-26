@@ -5,6 +5,8 @@
     <!-- Casca: barra superior, navegação e área de desenvolvedor -->
     <string name="app_titulo">Coleta</string>
     <string name="descLogo">FIEA</string>
+    <string name="nav_painel">Painel</string>
+    <string name="tab_painel">Painel</string>
     <string name="nav_inventario">Inventário</string>
     <string name="nav_pendencias">Pendências</string>
     <string name="nav_etiquetagem">Etiquetagem</string>
@@ -51,6 +53,42 @@
     <string name="statusFaltante">Faltante</string>
     <string name="statusPendente">Pendente</string>
     <string name="msgBancadaSemTag">Nenhuma tag perto do leitor. Encoste a etiqueta e toque em Transmitir de novo.</string>
+
+    <!-- Painel (Home Page) -->
+    <string name="painelSaudacao">Olá, %1$s</string>
+    <string name="painelOperadorPadrao">Operador</string>
+    <string name="painelTituloPrincipal">Painel</string>
+    <string name="painelEnviosPendentes">Envios pendentes</string>
+    <string name="painelTudoSincronizado">Tudo sincronizado</string>
+    <string name="painelAguardandoWifi">Aguardando Wi-Fi</string>
+    <string name="painelItensNoCatalogo">Itens no catálogo</string>
+    <string name="painelComRfidSub">%1$d com RFID</string>
+    <string name="painelUltimaContagem">Última contagem</string>
+    <string name="painelAcoesRapidas">Ações rápidas</string>
+    <string name="painelAcaoLeituraTitulo">Iniciar leitura</string>
+    <string name="painelAcaoLeituraSub">Ler tags com o coletor</string>
+    <string name="painelAcaoContinuarTitulo">Continuar coleta</string>
+    <string name="painelAcaoContinuarSub">Sessão em andamento (%1$s)</string>
+    <string name="painelAcaoPendenciasTitulo">Conferir pendências</string>
+    <string name="painelAcaoPendenciasSub">Resolver faltantes ou manuais</string>
+    <string name="painelAcaoEtiquetagemTitulo">Cadastrar etiqueta</string>
+    <string name="painelAcaoEtiquetagemSub">Vincular tag RFID a patrimônio</string>
+    <string name="painelTituloSessao">Sessão de Inventário</string>
+    <string name="painelSessaoInativa">Nenhuma sessão em andamento. Inicie uma sessão para começar o inventário.</string>
+    <string name="painelSessaoAtiva">Operador: %1$s (%2$s)\n%3$d varredura(s) realizada(s)</string>
+    <string name="painelBtIniciar">Iniciar Sessão</string>
+    <string name="painelBtContinuar">Continuar Coleta</string>
+    <string name="painelTituloPanorama">Bens e Salas</string>
+    <string name="painelTodasUnidades">Todas as Unidades</string>
+    <string name="painelRotuloSalas">Salas</string>
+    <string name="painelRotuloBens">Bens</string>
+    <string name="painelRotuloRfid">Com RFID</string>
+    <string name="painelBtSincronizar">Sincronizar Base</string>
+    <string name="painelSincronizando">Sincronizando base com o servidor…</string>
+    <string name="painelSincronizadoSucesso">Base atualizada: %1$d salas e %2$d bens.</string>
+    <string name="painelSincronizadoOffline">Servidor inacessível. Usando dados salvos no aparelho.</string>
+    <string name="painelSemVarredura">Nenhuma varredura registrada neste aparelho.</string>
+    <string name="painelUltimaVarredura">Última varredura: %1$s · %2$d tags lidas às %3$s</string>
 
     <string name="version">Version:</string>
     <string name="dmin">MinFre:</string>
@@ -139,6 +177,7 @@
     <string name="hintSala">nome da sala</string>
     <string name="msgSalaVazia">Informe a sala antes de iniciar a varredura</string>
     <string name="lblTecnica">Técnica</string>
+    <string name="chipInativa">Inativa</string>
     <string name="chipAtiva">Ativa</string>
     <string name="chipEmAndamento">Em andamento</string>
     <string name="chipEncerrada">Encerrada</string>

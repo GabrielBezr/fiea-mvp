@@ -71,6 +71,17 @@ public class ScanActivity extends Activity implements OnClickListener {
     // Paralelo a tagList, que segue alimentando a tela. onInventoryTag roda em
     // thread própria, por isso a lista é sincronizada e os estados são volatile.
     private volatile Sessao sessaoAtual = null;
+    private static volatile Sessao sessaoAtualStatic = null;
+
+    public static Sessao getSessaoAtual() {
+        return sessaoAtualStatic;
+    }
+
+    private static volatile String unidadeSugerida = null;
+
+    public static void setUnidadeSugerida(String unidade) {
+        unidadeSugerida = unidade;
+    }
     private volatile Varredura varreduraAtual = null;
     private Varredura ultimaVarreduraEncerrada = null;
     private Sessao ultimaSessaoEncerrada = null;
@@ -306,6 +317,7 @@ public class ScanActivity extends Activity implements OnClickListener {
             return;
         }
         sessaoAtual = new Sessao(unidade, operador, System.currentTimeMillis());
+        sessaoAtualStatic = sessaoAtual;
         ultimaSessaoEncerrada = null;
         ultimaVarreduraEncerrada = null;
         etUnidade.setEnabled(false);
@@ -325,8 +337,10 @@ public class ScanActivity extends Activity implements OnClickListener {
         if (varreduraAtual != null) {
             encerrarVarredura();
         }
+        TagsSalaActivity.sincronizarTodasPendentes(this);
         s.fim = System.currentTimeMillis();
         sessaoAtual = null;
+        sessaoAtualStatic = null;
         ultimaSessaoEncerrada = s;
         etUnidade.setEnabled(true);
         etOperador.setEnabled(true);
@@ -407,6 +421,7 @@ public class ScanActivity extends Activity implements OnClickListener {
 
         // Sem rede a busca espera o timeout antes de cair no cache; o aviso mostra
         // que o app está trabalhando e não travou.
+        SyncManager.getInstance(this).registrarUltimaVarredura(v.sala, copiaLeituras.size(), System.currentTimeMillis());
         grupoConferindo.setVisibility(View.VISIBLE);
         SyncManager.getInstance(this).buscarBensDaSala(v.sala, bens -> {
             grupoConferindo.setVisibility(View.GONE);
@@ -439,14 +454,14 @@ public class ScanActivity extends Activity implements OnClickListener {
                         .setTitle(R.string.tituloVarreduraEncerrada)
                         .setMessage(getString(R.string.msgPendenciasDetectadas, finalLidos, finalPendentes, v.sala))
                         .setPositiveButton(R.string.btResolverAgora, (dialog, which) -> {
-                            TagsSalaActivity.carregarParaConferencia(v.sessao, v, copiaLeituras, epcsLidos, v.sala);
+                            TagsSalaActivity.salvarParaConferencia(ScanActivity.this, v.sessao, v, copiaLeituras, epcsLidos, v.sala);
                             if (MainActivity.myTabHost != null) {
                                 MainActivity.myTabHost.setCurrentTab(MainActivity.ABA_PENDENCIAS);
                             }
                         })
                         .setNegativeButton(R.string.btResolverDepois, (dialog, which) -> {
-                            // Salva na fila de sincronização
-                            SyncManager.getInstance(ScanActivity.this).sincronizarVarredura(v.sessao, v, copiaLeituras, null, null);
+                            TagsSalaActivity.salvarParaConferencia(ScanActivity.this, v.sessao, v, copiaLeituras, epcsLidos, v.sala);
+                            Toast.makeText(ScanActivity.this, R.string.msgPendenciaSalvaDepois, Toast.LENGTH_LONG).show();
                         })
                         .setCancelable(false)
                         .show();
@@ -825,6 +840,10 @@ public class ScanActivity extends Activity implements OnClickListener {
         super.onResume();
         registrarCallback();
         carregarSalasNoSpinner();
+        if (sessaoAtual == null && unidadeSugerida != null && !unidadeSugerida.isEmpty() && etUnidade != null) {
+            etUnidade.setText(unidadeSugerida);
+            unidadeSugerida = null;
+        }
     }
 
     private void carregarSalasNoSpinner() {

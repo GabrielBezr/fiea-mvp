@@ -1,55 +1,75 @@
 [
     {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_replay.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_replay.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_search_off.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_search_off.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\mipmap-xhdpi_ic_launcher_foreground.png.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher_foreground.png"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\color_selector_navegacao.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\color\\selector_navegacao.xml"
+    },
+    {
         "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\xml_network_security_config.xml.flat",
         "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\xml\\network_security_config.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_sell.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_sell.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_fundo_spinner.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\fundo_spinner.xml"
     },
     {
         "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_activity_read_write.xml.flat",
         "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\activity_read_write.xml"
     },
     {
-        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_activity_main.xml.flat",
-        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\activity_main.xml"
-    },
-    {
         "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_check_text_color2.xml.flat",
         "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\check_text_color2.xml"
-    },
-    {
-        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\xml_nfc_tech_filter.xml.flat",
-        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\xml\\nfc_tech_filter.xml"
-    },
-    {
-        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable-xxhdpi_ic_launcher.png.flat",
-        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable-xxhdpi\\ic_launcher.png"
-    },
-    {
-        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_color_button_background.xml.flat",
-        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\color_button_background.xml"
     },
     {
         "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_activity_tags_sala.xml.flat",
         "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\activity_tags_sala.xml"
     },
     {
-        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable-hdpi_ic_launcher.png.flat",
-        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable-hdpi\\ic_launcher.png"
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_item_par.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\item_par.xml"
     },
     {
-        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_activity_etiquetagem.xml.flat",
-        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\activity_etiquetagem.xml"
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_check_circle.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_check_circle.xml"
     },
     {
-        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable-xhdpi_ic_launcher.png.flat",
-        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable-xhdpi\\ic_launcher.png"
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\mipmap-anydpi-v26\\ic_launcher.xml"
     },
     {
-        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_activity_scan.xml.flat",
-        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\activity_scan.xml"
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\mipmap-mdpi_ic_launcher_foreground.png.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher_foreground.png"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable-xxhdpi_logo_fiea.png.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable-xxhdpi\\logo_fiea.png"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_item_bem.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\item_bem.xml"
     },
     {
         "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_activity_setting.xml.flat",
         "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\activity_setting.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_sync.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_sync.xml"
     },
     {
         "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_color_button_selector.xml.flat",
@@ -60,16 +80,36 @@
         "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\gradient_bg.xml"
     },
     {
-        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_button_press_background.xml.flat",
-        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\button_press_background.xml"
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_dashboard.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_dashboard.xml"
     },
     {
-        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_tab_indicator_press.xml.flat",
-        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\tab_indicator_press.xml"
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_warning.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_warning.xml"
     },
     {
-        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_activity_splash.xml.flat",
-        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\activity_splash.xml"
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_info.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_info.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_meeting_room.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_meeting_room.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\menu_navegacao_principal.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\menu\\navegacao_principal.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_activity_painel.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\activity_painel.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_code.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_code.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_fundo_dialogo.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\fundo_dialogo.xml"
     },
     {
         "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_activity_mask.xml.flat",
@@ -80,35 +120,183 @@
         "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\button_disenabled_background.xml"
     },
     {
-        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_item_scan.xml.flat",
-        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\item_scan.xml"
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_item_spinner_dropdown.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\item_spinner_dropdown.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_contactless.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_contactless.xml"
     },
     {
         "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\xml_provider_paths.xml.flat",
         "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\xml\\provider_paths.xml"
     },
     {
-        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_custom_tab_indicator.xml.flat",
-        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\custom_tab_indicator.xml"
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_refresh.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_refresh.xml"
     },
     {
-        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable-mdpi_ic_launcher.png.flat",
-        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable-mdpi\\ic_launcher.png"
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\color_selector_botao_contorno.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\color\\selector_botao_contorno.xml"
     },
     {
         "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_loading.xml.flat",
         "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\loading.xml"
     },
     {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_listtag_items.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\listtag_items.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_arrow_back.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_arrow_back.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_fundo_chip.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\fundo_chip.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_activity_main.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\activity_main.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_arrow_drop_down.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_arrow_drop_down.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_wifi_off.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_wifi_off.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_file_download.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_file_download.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\xml_nfc_tech_filter.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\xml\\nfc_tech_filter.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_fact_check.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_fact_check.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_color_button_background.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\color_button_background.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_inventory_2.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_inventory_2.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_fundo_campo.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\fundo_campo.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_pending_actions.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_pending_actions.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_activity_etiquetagem.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\activity_etiquetagem.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\mipmap-hdpi_ic_launcher_foreground.png.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher_foreground.png"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_settings.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_settings.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_error.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_error.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_activity_scan.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\activity_scan.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_wifi.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_wifi.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\mipmap-xxhdpi_ic_launcher_foreground.png.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher_foreground.png"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\menu_acoes_inventario.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\menu\\acoes_inventario.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_item_spinner.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\item_spinner.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\color_selector_texto_perigo.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\color\\selector_texto_perigo.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_person.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_person.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_tab_indicator_press.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\tab_indicator_press.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_more_vert.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_more_vert.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_activity_splash.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\activity_splash.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_play_arrow.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_play_arrow.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_item_scan.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\item_scan.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_qr_code_scanner.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_qr_code_scanner.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\mipmap-xxxhdpi_ic_launcher_foreground.png.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher_foreground.png"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_custom_tab_indicator.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\custom_tab_indicator.xml"
+    },
+    {
         "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_activity_finding.xml.flat",
         "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\activity_finding.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_delete_sweep.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_delete_sweep.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\color_selector_botao_perigo.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\color\\selector_botao_perigo.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_alerta_sinal.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_alerta_sinal.xml"
     },
     {
         "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_tab_indicator_normal.xml.flat",
         "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\tab_indicator_normal.xml"
     },
     {
-        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\layout_listtag_items.xml.flat",
-        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\layout\\listtag_items.xml"
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_close.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_close.xml"
+    },
+    {
+        "merged": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\build\\intermediates\\merged_res\\debug\\drawable_ic_stop.xml.flat",
+        "source": "C:\\Users\\rafae\\RFIDSDKSample\\UHF_Demo\\app\\src\\main\\res\\drawable\\ic_stop.xml"
     }
 ]

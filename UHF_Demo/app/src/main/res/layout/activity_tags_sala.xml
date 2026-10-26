@@ -93,6 +93,19 @@
                         android:maxLines="1"
                         android:textAppearance="@style/TextAppearance.Fiea.Subtitulo" />
 
+                    <Spinner
+                        android:id="@+id/spinner_salas_pendentes"
+                        style="@style/Widget.Fiea.Spinner"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_marginStart="@dimen/espaco_8"
+                        android:layout_marginEnd="@dimen/espaco_8"
+                        android:layout_weight="1"
+                        android:minHeight="36dp"
+                        android:paddingStart="@dimen/espaco_4"
+                        android:paddingEnd="28dp"
+                        android:visibility="gone" />
+
                     <!-- Envia a varredura e as resoluções ao PC (ou guarda na fila) -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_sincronizar_servidor"

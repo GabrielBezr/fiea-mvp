@@ -2,16 +2,20 @@ package com.rfid.demo;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,15 +30,23 @@ import com.rfid.demo.utils.Sessao;
 import com.rfid.demo.utils.SyncManager;
 import com.rfid.demo.utils.Varredura;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * Tela de Conferência e Resolução de Pendências (RF09 e RF10).
- * Substitui a antiga tela de Tags de Referência.
  *
  * Permite ao operador inspecionar os bens da sala que não foram lidos por RFID e
  * resolvê-los por:
@@ -44,12 +56,35 @@ import java.util.Set;
  */
 public class TagsSalaActivity extends Activity implements View.OnClickListener {
 
-    // Dados compartilhados vindos da varredura
+    private static final String TAG = "TagsSalaActivity";
+    private static final String ARQUIVO_CONFERENCIAS = "conferencias_pendentes.json";
+
+    public static class ConferenciaPendente {
+        public final Sessao sessao;
+        public final Varredura varredura;
+        public final List<Leitura> leituras;
+        public final Set<String> epcsLidos;
+        public final String sala;
+        public final List<SyncManager.PendenciaResolvida> resolucoes = new ArrayList<>();
+
+        public ConferenciaPendente(Sessao sessao, Varredura varredura, List<Leitura> leituras, Set<String> epcsLidos, String sala) {
+            this.sessao = sessao;
+            this.varredura = varredura;
+            this.leituras = leituras != null ? new ArrayList<>(leituras) : new ArrayList<Leitura>();
+            this.epcsLidos = epcsLidos != null ? new HashSet<>(epcsLidos) : new HashSet<String>();
+            this.sala = sala != null ? sala : "";
+        }
+    }
+
+    // Fila de varreduras pendentes de conferência (por sala)
+    public static final Map<String, ConferenciaPendente> conferenciasPendentes = new LinkedHashMap<>();
+    public static String salaAtiva = "";
+
+    // Campos legados mantidos para compatibilidade direta
     public static Sessao sessaoVarredura = null;
     public static Varredura varreduraConcluida = null;
     public static List<Leitura> leiturasVarredura = new ArrayList<>();
     public static Set<String> epcsLidosVarredura = new HashSet<>();
-    public static String salaAtiva = "";
 
     // Métodos de resolução (RF10), um botão para cada
     private static final int ACAO_QR = 0;
@@ -57,6 +92,7 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
     private static final int ACAO_FALTANTE = 2;
 
     private TextView tvPendSala, tvPendStatus, tvItemSelecionado, tvSyncStatus;
+    private Spinner spinnerSalasPendentes;
     private TextView tvContRfid, tvContQr, tvContManual, tvContFaltante, tvContPendente;
     private LinearProgressIndicator pbPendencias;
     private View grupoSemVarredura, grupoConferencia;
@@ -65,17 +101,206 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
     private ListView lvPendencias;
 
     private final List<SyncManager.BemEsperado> listaBens = new ArrayList<>();
-    private final List<SyncManager.PendenciaResolvida> pendenciasResolvidas = new ArrayList<>();
     private SyncManager.BemEsperado bemSelecionado = null;
     private BensAdapter adaptador;
     private SyncManager syncManager;
 
     public static void carregarParaConferencia(Sessao s, Varredura v, List<Leitura> leituras, Set<String> epcs, String sala) {
+        salvarParaConferencia(null, s, v, leituras, epcs, sala);
+    }
+
+    public static synchronized void salvarParaConferencia(Context ctx, Sessao s, Varredura v, List<Leitura> leituras, Set<String> epcs, String sala) {
+        if (sala == null || sala.isEmpty()) return;
+        ConferenciaPendente cp = new ConferenciaPendente(s, v, leituras, epcs, sala);
+        conferenciasPendentes.put(sala, cp);
+        salaAtiva = sala;
+
+        // Atualiza campos estáticos legados
         sessaoVarredura = s;
         varreduraConcluida = v;
-        leiturasVarredura = leituras != null ? new ArrayList<>(leituras) : new ArrayList<Leitura>();
-        epcsLidosVarredura = epcs != null ? new HashSet<>(epcs) : new HashSet<String>();
-        salaAtiva = sala != null ? sala : "";
+        leiturasVarredura = cp.leituras;
+        epcsLidosVarredura = cp.epcsLidos;
+
+        if (ctx != null) {
+            salvarConferenciasNoDisco(ctx);
+        }
+    }
+
+    public static synchronized void salvarConferenciasNoDisco(Context ctx) {
+        if (ctx == null) return;
+        try {
+            JSONArray arr = new JSONArray();
+            for (ConferenciaPendente cp : conferenciasPendentes.values()) {
+                JSONObject obj = new JSONObject();
+                obj.put("sala", cp.sala);
+
+                if (cp.sessao != null) {
+                    JSONObject sObj = new JSONObject();
+                    sObj.put("id", cp.sessao.id);
+                    sObj.put("unidade", cp.sessao.unidade);
+                    sObj.put("operador", cp.sessao.operador);
+                    sObj.put("inicio", cp.sessao.inicio);
+                    sObj.put("fim", cp.sessao.fim);
+                    obj.put("sessao", sObj);
+                }
+
+                if (cp.varredura != null) {
+                    JSONObject vObj = new JSONObject();
+                    vObj.put("id", cp.varredura.id);
+                    vObj.put("numero", cp.varredura.numero);
+                    vObj.put("sala", cp.varredura.sala);
+                    vObj.put("tecnica", cp.varredura.tecnica);
+                    vObj.put("potenciaDbm", cp.varredura.potenciaDbm);
+                    vObj.put("inicio", cp.varredura.inicio);
+                    vObj.put("fim", cp.varredura.fim);
+                    vObj.put("epcReferencia", cp.varredura.epcReferencia != null ? cp.varredura.epcReferencia : "");
+                    obj.put("varredura", vObj);
+                }
+
+                JSONArray lArr = new JSONArray();
+                for (Leitura l : cp.leituras) {
+                    JSONObject lo = new JSONObject();
+                    lo.put("timestamp", l.timestamp);
+                    lo.put("epc", l.epc);
+                    lo.put("rssi", l.rssi);
+                    lArr.put(lo);
+                }
+                obj.put("leituras", lArr);
+
+                JSONArray eArr = new JSONArray();
+                for (String epc : cp.epcsLidos) {
+                    eArr.put(epc);
+                }
+                obj.put("epcsLidos", eArr);
+
+                JSONArray rArr = new JSONArray();
+                for (SyncManager.PendenciaResolvida pr : cp.resolucoes) {
+                    JSONObject ro = new JSONObject();
+                    ro.put("patrimonio", pr.patrimonio);
+                    ro.put("epc", pr.epc);
+                    ro.put("metodo", pr.metodo);
+                    ro.put("timestamp", pr.timestamp);
+                    rArr.put(ro);
+                }
+                obj.put("resolucoes", rArr);
+
+                arr.put(obj);
+            }
+
+            File file = new File(ctx.getFilesDir(), ARQUIVO_CONFERENCIAS);
+            FileOutputStream fos = new FileOutputStream(file, false);
+            fos.write(arr.toString().getBytes(StandardCharsets.UTF_8));
+            fos.close();
+        } catch (Exception e) {
+            Log.e(TAG, "Erro ao salvar conferências no disco: " + e.getMessage());
+        }
+    }
+
+    public static synchronized void carregarConferenciasDoDisco(Context ctx) {
+        if (ctx == null) return;
+        try {
+            File file = new File(ctx.getFilesDir(), ARQUIVO_CONFERENCIAS);
+            if (!file.exists()) return;
+
+            FileInputStream fis = new FileInputStream(file);
+            byte[] data = new byte[(int) file.length()];
+            fis.read(data);
+            fis.close();
+
+            String content = new String(data, StandardCharsets.UTF_8);
+            JSONArray arr = new JSONArray(content);
+
+            for (int i = 0; i < arr.length(); i++) {
+                JSONObject obj = arr.getJSONObject(i);
+                String sala = obj.optString("sala", "");
+                if (sala.isEmpty()) continue;
+
+                Sessao s = null;
+                JSONObject sObj = obj.optJSONObject("sessao");
+                if (sObj != null) {
+                    s = new Sessao(
+                            sObj.optString("unidade", "UFAL"),
+                            sObj.optString("operador", "Operador"),
+                            sObj.optLong("inicio", System.currentTimeMillis())
+                    );
+                    s.fim = sObj.optLong("fim", 0);
+                }
+
+                Varredura v = null;
+                JSONObject vObj = obj.optJSONObject("varredura");
+                if (vObj != null && s != null) {
+                    v = new Varredura(
+                            s,
+                            vObj.optInt("numero", 1),
+                            vObj.optString("sala", sala),
+                            vObj.optString("tecnica", "estatica_porta"),
+                            vObj.optInt("potenciaDbm", 30),
+                            vObj.optLong("inicio", System.currentTimeMillis())
+                    );
+                    v.fim = vObj.optLong("fim", 0);
+                    v.epcReferencia = vObj.optString("epcReferencia", "");
+                }
+
+                List<Leitura> leituras = new ArrayList<>();
+                JSONArray lArr = obj.optJSONArray("leituras");
+                if (lArr != null) {
+                    for (int j = 0; j < lArr.length(); j++) {
+                        JSONObject lo = lArr.getJSONObject(j);
+                        leituras.add(new Leitura(
+                                lo.optLong("timestamp", System.currentTimeMillis()),
+                                lo.optString("epc", ""),
+                                lo.optInt("rssi", 0)
+                        ));
+                    }
+                }
+
+                Set<String> epcs = new HashSet<>();
+                JSONArray eArr = obj.optJSONArray("epcsLidos");
+                if (eArr != null) {
+                    for (int j = 0; j < eArr.length(); j++) {
+                        epcs.add(eArr.getString(j));
+                    }
+                }
+
+                ConferenciaPendente cp = new ConferenciaPendente(s, v, leituras, epcs, sala);
+
+                JSONArray rArr = obj.optJSONArray("resolucoes");
+                if (rArr != null) {
+                    for (int j = 0; j < rArr.length(); j++) {
+                        JSONObject ro = rArr.getJSONObject(j);
+                        cp.resolucoes.add(new SyncManager.PendenciaResolvida(
+                                ro.optString("patrimonio", ""),
+                                ro.optString("epc", ""),
+                                ro.optString("metodo", "MANUAL")
+                        ));
+                    }
+                }
+
+                if (!conferenciasPendentes.containsKey(sala)) {
+                    conferenciasPendentes.put(sala, cp);
+                }
+            }
+
+            if ((salaAtiva == null || salaAtiva.isEmpty()) && !conferenciasPendentes.isEmpty()) {
+                salaAtiva = conferenciasPendentes.keySet().iterator().next();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Erro ao carregar conferências do disco: " + e.getMessage());
+        }
+    }
+
+    public static synchronized void sincronizarTodasPendentes(Context ctx) {
+        if (ctx == null) return;
+        carregarConferenciasDoDisco(ctx);
+        if (conferenciasPendentes.isEmpty()) return;
+
+        SyncManager sm = SyncManager.getInstance(ctx);
+        for (ConferenciaPendente cp : new ArrayList<>(conferenciasPendentes.values())) {
+            sm.sincronizarVarredura(cp.sessao, cp.varredura, cp.leituras, cp.resolucoes, null);
+        }
+        conferenciasPendentes.clear();
+        salaAtiva = "";
+        salvarConferenciasNoDisco(ctx);
     }
 
     @Override
@@ -86,6 +311,7 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         syncManager = SyncManager.getInstance(this);
 
         tvPendSala = findViewById(R.id.tv_pend_sala);
+        spinnerSalasPendentes = findViewById(R.id.spinner_salas_pendentes);
         tvPendStatus = findViewById(R.id.tv_pend_status);
         tvItemSelecionado = findViewById(R.id.tv_item_selecionado);
         tvSyncStatus = findViewById(R.id.tv_sync_status);
@@ -122,9 +348,10 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
             }
         });
         mostrarSelecionado();
+
+        carregarConferenciasDoDisco(this);
     }
 
-    /** Texto do bem escolhido; as ações só ficam ativas com um bem selecionado. */
     private void mostrarSelecionado() {
         boolean selecionado = bemSelecionado != null;
         if (selecionado) {
@@ -139,33 +366,103 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onResume() {
         super.onResume();
+        carregarConferenciasDoDisco(this);
         atualizarTela();
         verificarConexaoServidor();
     }
 
+    private ConferenciaPendente getConferenciaAtiva() {
+        if (salaAtiva != null && conferenciasPendentes.containsKey(salaAtiva)) {
+            return conferenciasPendentes.get(salaAtiva);
+        }
+        if (!conferenciasPendentes.isEmpty()) {
+            salaAtiva = conferenciasPendentes.keySet().iterator().next();
+            return conferenciasPendentes.get(salaAtiva);
+        }
+        return null;
+    }
+
     private void atualizarTela() {
-        String sala = salaAtiva != null && !salaAtiva.isEmpty() ? salaAtiva : (varreduraConcluida != null ? varreduraConcluida.sala : "");
-        // Sem varredura encerrada, a tela inteira vira a explicação de como chegar aqui.
-        boolean semVarredura = sala.isEmpty();
-        grupoSemVarredura.setVisibility(semVarredura ? View.VISIBLE : View.GONE);
-        grupoConferencia.setVisibility(semVarredura ? View.GONE : View.VISIBLE);
-        if (semVarredura) {
+        if (conferenciasPendentes.isEmpty()) {
+            grupoSemVarredura.setVisibility(View.VISIBLE);
+            grupoConferencia.setVisibility(View.GONE);
             return;
         }
 
-        tvPendSala.setText(getString(R.string.pendSala, sala));
+        grupoSemVarredura.setVisibility(View.GONE);
+        grupoConferencia.setVisibility(View.VISIBLE);
 
-        // Carrega bens da sala via SyncManager (rede ou cache offline)
+        if (salaAtiva == null || salaAtiva.isEmpty() || !conferenciasPendentes.containsKey(salaAtiva)) {
+            salaAtiva = conferenciasPendentes.keySet().iterator().next();
+        }
+
+        final ConferenciaPendente cp = getConferenciaAtiva();
+        if (cp == null) {
+            grupoSemVarredura.setVisibility(View.VISIBLE);
+            grupoConferencia.setVisibility(View.GONE);
+            return;
+        }
+
+        // Atualiza campos estáticos legados com a conferência ativa
+        sessaoVarredura = cp.sessao;
+        varreduraConcluida = cp.varredura;
+        leiturasVarredura = cp.leituras;
+        epcsLidosVarredura = cp.epcsLidos;
+
+        // Se houver mais de uma sala com pendência, exibe o seletor (Spinner)
+        if (conferenciasPendentes.size() > 1 && spinnerSalasPendentes != null) {
+            tvPendSala.setVisibility(View.GONE);
+            spinnerSalasPendentes.setVisibility(View.VISIBLE);
+
+            List<String> salas = new ArrayList<>(conferenciasPendentes.keySet());
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_spinner, salas);
+            adapter.setDropDownViewResource(R.layout.item_spinner_dropdown);
+            spinnerSalasPendentes.setAdapter(adapter);
+
+            int pos = salas.indexOf(salaAtiva);
+            if (pos >= 0) {
+                spinnerSalasPendentes.setSelection(pos);
+            }
+
+            spinnerSalasPendentes.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    String escolhida = salas.get(position);
+                    if (!escolhida.equals(salaAtiva)) {
+                        salaAtiva = escolhida;
+                        atualizarTela();
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {}
+            });
+        } else {
+            if (spinnerSalasPendentes != null) {
+                spinnerSalasPendentes.setVisibility(View.GONE);
+            }
+            tvPendSala.setVisibility(View.VISIBLE);
+            tvPendSala.setText(getString(R.string.pendSala, salaAtiva));
+        }
+
+        carregarBensDaSalaAtiva();
+    }
+
+    private void carregarBensDaSalaAtiva() {
+        final ConferenciaPendente cp = getConferenciaAtiva();
+        if (cp == null) return;
+
+        final String sala = cp.sala;
         syncManager.buscarBensDaSala(sala, bens -> {
+            if (!sala.equals(salaAtiva)) return;
+
             listaBens.clear();
             if (bens != null) {
                 for (SyncManager.BemEsperado b : bens) {
-                    // Cruzamento RF09: Se o EPC foi lido via RFID na varredura, marca como LOCALIZADO_RFID
-                    if (b.epc != null && !b.epc.isEmpty() && epcsLidosVarredura.contains(b.epc.toUpperCase())) {
+                    if (b.epc != null && !b.epc.isEmpty() && cp.epcsLidos.contains(b.epc.toUpperCase())) {
                         b.status = "LOCALIZADO_RFID";
                     }
-                    // Mantém resoluções já feitas nesta tela
-                    for (SyncManager.PendenciaResolvida pr : pendenciasResolvidas) {
+                    for (SyncManager.PendenciaResolvida pr : cp.resolucoes) {
                         if (pr.patrimonio.equalsIgnoreCase(b.patrimonio)) {
                             b.status = "LOCALIZADO_" + pr.metodo;
                             break;
@@ -174,20 +471,11 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
                     listaBens.add(b);
                 }
             }
-            // Pendentes primeiro: é o que o operador ainda precisa resolver. A ordenação
-            // é estável, então dentro de cada grupo vale a ordem que veio do PC.
-            Collections.sort(listaBens, (a, b) -> Boolean.compare(!estaPendente(a), !estaPendente(b)));
-            // A lista é recriada a cada carga; a seleção passa para o objeto novo do
-            // mesmo bem, senão as ações seguintes mexeriam num objeto fora da tela.
-            if (bemSelecionado != null) {
-                for (SyncManager.BemEsperado b : listaBens) {
-                    if (b.patrimonio != null && b.patrimonio.equalsIgnoreCase(bemSelecionado.patrimonio)) {
-                        bemSelecionado = b;
-                        break;
-                    }
-                }
-            }
 
+            Collections.sort(listaBens, (a, b) -> Boolean.compare(!estaPendente(a), !estaPendente(b)));
+
+            bemSelecionado = null;
+            mostrarSelecionado();
             atualizarContadores();
             adaptador.notifyDataSetChanged();
         });
@@ -206,7 +494,7 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         }
 
         tvPendStatus.setText(getString(R.string.pendProgresso, total - pendentes, total));
-        pbPendencias.setMax(Math.max(total, 1));
+        pbPendencias.setMax(total);
         pbPendencias.setProgressCompat(total - pendentes, true);
         tvContRfid.setText(String.valueOf(rfid));
         tvContQr.setText(String.valueOf(qr));
@@ -215,7 +503,6 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         tvContPendente.setText(String.valueOf(pendentes));
     }
 
-    /** Mesmo critério de atualizarContadores: tudo que não foi resolvido de algum jeito. */
     private static boolean estaPendente(SyncManager.BemEsperado b) {
         return !"LOCALIZADO_RFID".equals(b.status) && !"LOCALIZADO_QR".equals(b.status)
                 && !"LOCALIZADO_MANUAL".equals(b.status) && !"LOCALIZADO_FALTANTE".equals(b.status)
@@ -238,8 +525,6 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         });
     }
 
-    // O endereço do PC se configura na barra superior (MainActivity), que vale para
-    // todas as abas; o botão "Configurar PC" que havia aqui repetia isso.
     @Override
     public void onClick(View v) {
         if (v == btResolverQr) {
@@ -255,6 +540,20 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         }
     }
 
+    private void adicionarResolucao(SyncManager.PendenciaResolvida nova) {
+        ConferenciaPendente cp = getConferenciaAtiva();
+        if (cp != null) {
+            for (int i = 0; i < cp.resolucoes.size(); i++) {
+                if (cp.resolucoes.get(i).patrimonio.equalsIgnoreCase(nova.patrimonio)) {
+                    cp.resolucoes.remove(i);
+                    break;
+                }
+            }
+            cp.resolucoes.add(nova);
+            salvarConferenciasNoDisco(this);
+        }
+    }
+
     private void executarAcao(int opcao) {
         if (bemSelecionado == null) {
             Toast.makeText(this, getString(R.string.itemNenhum), Toast.LENGTH_SHORT).show();
@@ -262,7 +561,6 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         }
 
         if (opcao == ACAO_QR) {
-            // [1] Ler QR Code (Câmera) via ZXing (RF10)
             IntentIntegrator integrator = new IntentIntegrator(this);
             integrator.setPrompt(getString(R.string.qrPrompt, bemSelecionado.patrimonio));
             integrator.setBeepEnabled(true);
@@ -270,7 +568,6 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
             integrator.initiateScan();
 
         } else if (opcao == ACAO_MANUAL) {
-            // [2] Conferência Manual (RF10)
             final EditText etTombo = new EditText(this);
             etTombo.setText(bemSelecionado.patrimonio);
             etTombo.setHint(R.string.manualHint);
@@ -283,10 +580,9 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
                         String digitado = etTombo.getText().toString().trim();
                         if (!digitado.isEmpty()) {
                             bemSelecionado.status = "LOCALIZADO_MANUAL";
-                            pendenciasResolvidas.add(new SyncManager.PendenciaResolvida(bemSelecionado.patrimonio, bemSelecionado.epc, "MANUAL"));
+                            adicionarResolucao(new SyncManager.PendenciaResolvida(bemSelecionado.patrimonio, bemSelecionado.epc, "MANUAL"));
                             atualizarContadores();
                             adaptador.notifyDataSetChanged();
-                            // O cartão já confirma; o toast que repetia a mesma frase saiu.
                             tvItemSelecionado.setText(getString(R.string.resolvidoManual, bemSelecionado.patrimonio));
                         }
                     })
@@ -294,13 +590,12 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
                     .show();
 
         } else if (opcao == ACAO_FALTANTE) {
-            // [3] Item Faltante / Desaparecido
             new AlertDialog.Builder(this)
                     .setTitle(R.string.faltanteTitulo)
                     .setMessage(getString(R.string.faltanteMensagem, bemSelecionado.patrimonio, bemSelecionado.descricao))
                     .setPositiveButton(R.string.btMarcarFaltante, (dialog, which) -> {
                         bemSelecionado.status = "LOCALIZADO_FALTANTE";
-                        pendenciasResolvidas.add(new SyncManager.PendenciaResolvida(bemSelecionado.patrimonio, bemSelecionado.epc, "FALTANTE"));
+                        adicionarResolucao(new SyncManager.PendenciaResolvida(bemSelecionado.patrimonio, bemSelecionado.epc, "FALTANTE"));
                         atualizarContadores();
                         adaptador.notifyDataSetChanged();
                         tvItemSelecionado.setText(getString(R.string.resolvidoFaltante, bemSelecionado.patrimonio));
@@ -317,7 +612,7 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
             if (result.getContents() != null && bemSelecionado != null) {
                 String conteudoQr = result.getContents().trim();
                 bemSelecionado.status = "LOCALIZADO_QR";
-                pendenciasResolvidas.add(new SyncManager.PendenciaResolvida(bemSelecionado.patrimonio, conteudoQr, "QR"));
+                adicionarResolucao(new SyncManager.PendenciaResolvida(bemSelecionado.patrimonio, conteudoQr, "QR"));
                 atualizarContadores();
                 adaptador.notifyDataSetChanged();
                 tvItemSelecionado.setText(getString(R.string.resolvidoQr, bemSelecionado.patrimonio));
@@ -331,8 +626,14 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
     }
 
     private void sincronizarComServidor() {
+        final ConferenciaPendente cp = getConferenciaAtiva();
+        if (cp == null) {
+            Toast.makeText(this, getString(R.string.pendVaziaTitulo), Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Toast.makeText(this, getString(R.string.msgEnviandoPc), Toast.LENGTH_SHORT).show();
-        syncManager.sincronizarVarredura(sessaoVarredura, varreduraConcluida, leiturasVarredura, pendenciasResolvidas, sucesso -> {
+        syncManager.sincronizarVarredura(cp.sessao, cp.varredura, cp.leituras, cp.resolucoes, sucesso -> {
             if (sucesso) {
                 Toast.makeText(this, getString(R.string.msgEnviadoPc), Toast.LENGTH_LONG).show();
                 syncManager.sincronizarFilaOffline(filaSucesso -> {
@@ -342,6 +643,17 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
                 Toast.makeText(this, getString(R.string.msgEnvioNaFila), Toast.LENGTH_LONG).show();
                 verificarConexaoServidor();
             }
+
+            conferenciasPendentes.remove(cp.sala);
+            salvarConferenciasNoDisco(TagsSalaActivity.this);
+
+            if (!conferenciasPendentes.isEmpty()) {
+                salaAtiva = conferenciasPendentes.keySet().iterator().next();
+            } else {
+                salaAtiva = "";
+            }
+
+            atualizarTela();
         });
     }
 
@@ -353,10 +665,6 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         return getString(R.string.statusPendente);
     }
 
-    /**
-     * Selo de cada situação: {rótulo, fundo do selo, texto do selo, faixa lateral}.
-     * Mesmas cores do relatório web; o texto usa o tom escuro, que tem contraste.
-     */
     private static int[] estiloDaSituacao(String status) {
         if ("LOCALIZADO_RFID".equals(status)) {
             return new int[]{R.string.situacaoRfid, R.color.sucesso_fundo, R.color.sucesso_texto, R.color.sucesso};
@@ -373,7 +681,6 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         return new int[]{R.string.situacaoPendente, R.color.alerta_fundo, R.color.alerta_texto, R.color.alerta};
     }
 
-    // Adaptador visual da lista de bens
     private class BensAdapter extends ArrayAdapter<SyncManager.BemEsperado> {
         public BensAdapter(List<SyncManager.BemEsperado> itens) {
             super(TagsSalaActivity.this, R.layout.item_bem, itens);
@@ -395,7 +702,6 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
                 titulo.setText(getString(R.string.bemTitulo, bem.patrimonio, bem.descricao));
                 String epcTxt = bem.epc != null && !bem.epc.isEmpty()
                         ? getString(R.string.bemEpc, bem.epc) : getString(R.string.bemSemEpc);
-                // Metálico ajuda a entender por que o RFID não leu (etiqueta sobre metal).
                 detalhe.setText(bem.metalico ? getString(R.string.bemMetalico, epcTxt) : epcTxt);
 
                 int[] estilo = estiloDaSituacao(bem.status);

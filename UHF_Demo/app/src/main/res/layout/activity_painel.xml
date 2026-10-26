@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/fundo"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/espaco_16">
+
+        <!-- Cabeçalho Personalizado -->
+        <TextView
+            android:id="@+id/tv_painel_saudacao"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Olá, Operador"
+            android:textAppearance="@style/TextAppearance.Fiea.Legenda"
+            android:textColor="@color/texto_secundario" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="@dimen/espaco_16"
+            android:text="@string/painelTituloPrincipal"
+            android:textAppearance="@style/TextAppearance.Fiea.Titulo"
+            android:textColor="@color/texto_primario"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <!-- Topo: 2 Cards Lado a Lado -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/espaco_16"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <!-- Card 1: Itens no Catálogo / Unidade -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Fiea.Card"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="@dimen/espaco_8"
+                android:layout_weight="1">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <Spinner
+                        android:id="@+id/spinner_painel_unidade"
+                        style="@style/Widget.Fiea.Spinner"
+                        android:layout_width="match_parent"
+                        android:layout_height="36dp"
+                        android:layout_marginBottom="@dimen/espaco_8"
+                        android:minHeight="36dp"
+                        android:paddingStart="@dimen/espaco_4"
+                        android:paddingEnd="28dp" />
+
+                    <TextView
+                        android:id="@+id/tv_painel_bens"
+                        style="@style/Widget.Fiea.Contagem"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="-"
+                        android:textSize="28sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/painelItensNoCatalogo"
+                        android:textAppearance="@style/TextAppearance.Fiea.Legenda"
+                        android:textColor="@color/texto_secundario" />
+
+                    <TextView
+                        android:id="@+id/tv_painel_rfid_sub"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/espaco_4"
+                        android:text="0 com RFID"
+                        android:textAppearance="@style/TextAppearance.Fiea.Legenda"
+                        android:textColor="@color/fiea_azul"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card 2: Envios Pendentes (Fila Offline) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_envios_pendentes"
+                style="@style/Widget.Fiea.Card"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/espaco_8"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginBottom="@dimen/espaco_8"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_sync"
+                        android:tint="@color/fiea_azul" />
+
+                    <TextView
+                        android:id="@+id/tv_painel_fila_num"
+                        style="@style/Widget.Fiea.Contagem"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textSize="28sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/painelEnviosPendentes"
+                        android:textAppearance="@style/TextAppearance.Fiea.Legenda"
+                        android:textColor="@color/texto_secundario" />
+
+                    <TextView
+                        android:id="@+id/tv_painel_fila_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/espaco_4"
+                        android:text="@string/painelTudoSincronizado"
+                        android:textAppearance="@style/TextAppearance.Fiea.Legenda"
+                        android:textColor="@color/sucesso_texto"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <!-- Card Central: Última Contagem e Sessão -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.Fiea.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/espaco_16">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_meeting_room"
+                        android:tint="@color/fiea_azul" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/espaco_8"
+                        android:layout_weight="1"
+                        android:text="@string/painelUltimaContagem"
+                        android:textAppearance="@style/TextAppearance.Fiea.Subtitulo" />
+
+                    <TextView
+                        android:id="@+id/tv_chip_sessao_painel"
+                        style="@style/Widget.Fiea.Selo"
+                        android:text="@string/chipInativa"
+                        android:visibility="visible" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_painel_ultima_atividade"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/espaco_12"
+                    android:text="@string/painelSemVarredura"
+                    android:textAppearance="@style/TextAppearance.Fiea.Corpo"
+                    android:textColor="@color/texto_primario" />
+
+                <TextView
+                    android:id="@+id/tv_sessao_painel_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/espaco_4"
+                    android:text="@string/painelSessaoInativa"
+                    android:textAppearance="@style/TextAppearance.Fiea.Legenda"
+                    android:textColor="@color/texto_secundario" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Seção: Ações Rápidas -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/espaco_8"
+            android:text="@string/painelAcoesRapidas"
+            android:textAppearance="@style/TextAppearance.Fiea.Subtitulo"
+            android:textColor="@color/texto_primario" />
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.Fiea.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/espaco_16"
+            app:contentPadding="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Ação 1: Iniciar / Continuar Leitura -->
+                <LinearLayout
+                    android:id="@+id/item_acao_leitura"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/espaco_16">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_play_arrow"
+                        android:tint="@color/fiea_azul" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/espaco_12"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tv_acao_leitura_titulo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/painelAcaoLeituraTitulo"
+                            android:textAppearance="@style/TextAppearance.Fiea.Subtitulo"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/tv_acao_leitura_sub"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="@string/painelAcaoLeituraSub"
+                            android:textAppearance="@style/TextAppearance.Fiea.Legenda"
+                            android:textColor="@color/texto_secundario" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/contorno" />
+
+                <!-- Ação 2: Conferir Pendências -->
+                <LinearLayout
+                    android:id="@+id/item_acao_pendencias"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/espaco_16">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_pending_actions"
+                        android:tint="@color/fiea_azul" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/espaco_12"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/painelAcaoPendenciasTitulo"
+                            android:textAppearance="@style/TextAppearance.Fiea.Subtitulo"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="@string/painelAcaoPendenciasSub"
+                            android:textAppearance="@style/TextAppearance.Fiea.Legenda"
+                            android:textColor="@color/texto_secundario" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/contorno" />
+
+                <!-- Ação 3: Cadastrar / Vincular Etiqueta -->
+                <LinearLayout
+                    android:id="@+id/item_acao_etiquetagem"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/espaco_16">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_sell"
+                        android:tint="@color/fiea_azul" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/espaco_12"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/painelAcaoEtiquetagemTitulo"
+                            android:textAppearance="@style/TextAppearance.Fiea.Subtitulo"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="@string/painelAcaoEtiquetagemSub"
+                            android:textAppearance="@style/TextAppearance.Fiea.Legenda"
+                            android:textColor="@color/texto_secundario" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Botão Sincronizar Base -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/bt_sincronizar_base"
+            style="@style/Widget.Fiea.Botao.Secundario"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/espaco_16"
+            android:text="@string/painelBtSincronizar"
+            app:icon="@drawable/ic_refresh" />
+
+    </LinearLayout>
+</ScrollView>

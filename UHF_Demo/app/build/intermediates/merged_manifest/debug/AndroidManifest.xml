@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="br.fiea.mvp.rfid"
     android:versionCode="1"
-    android:versionName="2.5.202610141316" >
+    android:versionName="2.5.202610261303" >
 
     <uses-sdk
         android:minSdkVersion="26"
@@ -45,7 +45,7 @@
         android:appComponentFactory="androidx.core.app.CoreComponentFactory"
         android:debuggable="true"
         android:extractNativeLibs="false"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:requestLegacyExternalStorage="true"
         android:theme="@style/AppTheme"
@@ -68,7 +68,7 @@
             android:name="com.rfid.demo.SplashActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:theme="@style/Theme.Fiea.Splash"
             android:windowSoftInputMode="adjustPan" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -76,10 +76,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+             adjustPan: as abas são Activities dentro da Main, então o modo de teclado
+             que vale é este; sem ele a navegação inferior sobe junto com o teclado.
+        -->
         <activity
             android:name="com.rfid.demo.MainActivity"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name="com.rfid.demo.PainelActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan" />
         <activity
             android:name="com.rfid.demo.SettingActivity"
             android:screenOrientation="portrait" />

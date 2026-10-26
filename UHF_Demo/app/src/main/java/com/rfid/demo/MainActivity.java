@@ -33,12 +33,13 @@ import com.ubx.usdk.RFIDSDKManager;
 
 public class MainActivity extends TabActivity   {
 
-	// Índices das abas no TabHost. As três primeiras aparecem na navegação inferior;
+	// Índices das abas no TabHost. As quatro primeiras aparecem na navegação inferior;
 	// da ABA_LOCALIZAR em diante são as ferramentas do demo, só pela área de desenvolvedor.
-	public static final int ABA_INVENTARIO = 0;
-	public static final int ABA_PENDENCIAS = 1;
-	public static final int ABA_ETIQUETAGEM = 2;
-	public static final int ABA_LOCALIZAR = 3;
+	public static final int ABA_PAINEL = 0;
+	public static final int ABA_INVENTARIO = 1;
+	public static final int ABA_PENDENCIAS = 2;
+	public static final int ABA_ETIQUETAGEM = 3;
+	public static final int ABA_LOCALIZAR = 4;
 
 	private static final int CONEXAO_VERIFICANDO = 0;
 	private static final int CONEXAO_ONLINE = 1;
@@ -61,6 +62,7 @@ public class MainActivity extends TabActivity   {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_main);
 		myTabHost = getTabHost();
+		Intent intentPainel = new Intent(this, PainelActivity.class);
 		Intent intent0 = new Intent(this, ScanActivity.class);
 		Intent intent1 = new Intent(this,ReadWriteActivity.class);
 		Intent intent2 = new Intent(this, SettingActivity.class);
@@ -69,7 +71,7 @@ public class MainActivity extends TabActivity   {
 		Intent intent5 = new Intent(this, EtiquetagemActivity.class);
 		Intent intent6 = new Intent(this, TagsSalaActivity.class);
 
-
+		TabHost.TabSpec tabSpecPainel = myTabHost.newTabSpec(getString(R.string.tab_painel)).setIndicator(getString(R.string.tab_painel)).setContent(intentPainel);
 		TabHost.TabSpec tabSpec0 = myTabHost.newTabSpec(getString(R.string.tab_scan)).setIndicator(getString(R.string.tab_scan)).setContent(intent0);
 		TabHost.TabSpec tabSpec1 = myTabHost.newTabSpec(getString(R.string.tab_rw)).setIndicator(getString(R.string.tab_rw)).setContent(intent1);
 		TabHost.TabSpec tabSpec2 = myTabHost.newTabSpec(getString(R.string.tab_param)).setIndicator(getString(R.string.tab_param)).setContent(intent2);
@@ -78,6 +80,7 @@ public class MainActivity extends TabActivity   {
 		TabHost.TabSpec tabSpec5 = myTabHost.newTabSpec(getString(R.string.tab_etiquetagem)).setIndicator(getString(R.string.tab_etiquetagem)).setContent(intent5);
 		TabHost.TabSpec tabSpec6 = myTabHost.newTabSpec(getString(R.string.tab_pendencias)).setIndicator(getString(R.string.tab_pendencias)).setContent(intent6);
 
+		myTabHost.addTab(tabSpecPainel);
 		myTabHost.addTab(tabSpec0);
 		myTabHost.addTab(tabSpec6);
 		myTabHost.addTab(tabSpec5);
@@ -86,7 +89,7 @@ public class MainActivity extends TabActivity   {
 		myTabHost.addTab(tabSpec3);
 		myTabHost.addTab(tabSpec2);
 
-		myTabHost.setCurrentTab(0);
+		myTabHost.setCurrentTab(ABA_PAINEL);
 
 		myTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
 			@Override
@@ -152,16 +155,18 @@ public class MainActivity extends TabActivity   {
 				abrirMenuDesenvolvedor();
 			}
 		});
-		btSairDev.setOnClickListener(v -> myTabHost.setCurrentTab(ABA_INVENTARIO));
+		btSairDev.setOnClickListener(v -> myTabHost.setCurrentTab(ABA_PAINEL));
 	}
 
 	private static int abaDoItem(int itemId) {
+		if (itemId == R.id.nav_painel) return ABA_PAINEL;
 		if (itemId == R.id.nav_pendencias) return ABA_PENDENCIAS;
 		if (itemId == R.id.nav_etiquetagem) return ABA_ETIQUETAGEM;
 		return ABA_INVENTARIO;
 	}
 
 	private static int itemDaAba(int aba) {
+		if (aba == ABA_PAINEL) return R.id.nav_painel;
 		if (aba == ABA_PENDENCIAS) return R.id.nav_pendencias;
 		if (aba == ABA_ETIQUETAGEM) return R.id.nav_etiquetagem;
 		return R.id.nav_inventario;
@@ -382,9 +387,9 @@ public class MainActivity extends TabActivity   {
 
 		long secondTime = System.currentTimeMillis();
 		if(event.getKeyCode() == KeyEvent.KEYCODE_BACK &&  event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0){
-			// Fora do Inventário, voltar leva a ele; só lá o voltar duplo fecha o app.
-			if (myTabHost.getCurrentTab() != ABA_INVENTARIO) {
-				myTabHost.setCurrentTab(ABA_INVENTARIO);
+			// Fora do Painel, voltar leva a ele; só nele o voltar duplo fecha o app.
+			if (myTabHost.getCurrentTab() != ABA_PAINEL) {
+				myTabHost.setCurrentTab(ABA_PAINEL);
 				return true;
 			}
 			if (secondTime - firstTime < 2000) {
