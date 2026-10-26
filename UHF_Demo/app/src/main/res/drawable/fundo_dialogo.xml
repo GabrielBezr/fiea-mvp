@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mesmo recuo de 16dp do fundo padrão dos diálogos do Android, com canto maior. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:insetLeft="16dp"
+    android:insetTop="16dp"
+    android:insetRight="16dp"
+    android:insetBottom="16dp">
+    <shape android:shape="rectangle">
+        <corners android:radius="@dimen/raio_dialogo" />
+        <solid android:color="@color/superficie" />
+    </shape>
+</inset>

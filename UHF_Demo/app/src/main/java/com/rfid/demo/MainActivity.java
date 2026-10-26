@@ -3,6 +3,7 @@ package com.rfid.demo;
 import android.app.Activity;
 import android.app.TabActivity;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -15,21 +16,43 @@ import android.app.AlertDialog;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.InputType;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TabHost;
 import android.widget.TabWidget;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.rfid.demo.utils.Dialogos;
 import com.ubx.usdk.RFIDSDKManager;
 
 public class MainActivity extends TabActivity   {
-	
+
+	// Índices das abas no TabHost. As três primeiras aparecem na navegação inferior;
+	// da ABA_LOCALIZAR em diante são as ferramentas do demo, só pela área de desenvolvedor.
+	public static final int ABA_INVENTARIO = 0;
+	public static final int ABA_PENDENCIAS = 1;
+	public static final int ABA_ETIQUETAGEM = 2;
+	public static final int ABA_LOCALIZAR = 3;
+
+	private static final int CONEXAO_VERIFICANDO = 0;
+	private static final int CONEXAO_ONLINE = 1;
+	private static final int CONEXAO_OFFLINE = 2;
+
 	public static TabHost myTabHost;
-	private View layoutConexaoServidor;
-	private TextView tvStatusConexao, tvBtnConfigIp;
+	private int abaAnterior = ABA_INVENTARIO;
+	private View layoutConexaoServidor, btConfigServidor;
+	private TextView tvStatusConexao;
+	private ImageView ivStatusConexao;
+	private View barraSuperior, btSairDev, divisorNavegacao;
+	private ImageView ivLogo;
+	private TextView tvTitulo;
+	private BottomNavigationView navegacao;
 	private final Handler handlerConexao = new Handler(Looper.getMainLooper());
 	private Runnable runnableVerificarConexao;
 
@@ -73,6 +96,17 @@ public class MainActivity extends TabActivity   {
 				if (current instanceof ScanActivity) {
 					((ScanActivity) current).registrarCallback();
 				}
+				// Ao sair de Pendências, a aba volta para a lista de salas: na volta o
+				// operador escolhe a próxima sala, em vez de cair na última que resolveu.
+				int aba = myTabHost.getCurrentTab();
+				if (abaAnterior == ABA_PENDENCIAS && aba != ABA_PENDENCIAS) {
+					Activity pendencias = getLocalActivityManager().getActivity(getString(R.string.tab_pendencias));
+					if (pendencias instanceof TagsSalaActivity) {
+						((TagsSalaActivity) pendencias).voltarParaSalas();
+					}
+				}
+				abaAnterior = aba;
+				atualizarCasca(aba);
 			}
 		});
 
@@ -85,7 +119,7 @@ public class MainActivity extends TabActivity   {
 						.setMessage(R.string.msgReconexaoTexto)
 						.setPositiveButton(R.string.btSincronizarAgora, (dialog, which) -> {
 							com.rfid.demo.utils.SyncManager.getInstance(MainActivity.this).sincronizarFilaOffline(sucessos -> {
-								android.widget.Toast.makeText(MainActivity.this, "Sincronizados " + sucessos + " pacotes com sucesso ao PC!", android.widget.Toast.LENGTH_LONG).show();
+								android.widget.Toast.makeText(MainActivity.this, getString(R.string.msgFilaSincronizada, sucessos), android.widget.Toast.LENGTH_LONG).show();
 							});
 						})
 						.setNegativeButton(R.string.btResolverDepois, null)
@@ -97,21 +131,94 @@ public class MainActivity extends TabActivity   {
 
 
 
-		setStatusBarColor(this,getResources().getColor(R.color.white_title_status));
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			Window window = getWindow();
-			window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-		}
+		// Barra de status na cor da barra superior, com ícones claros.
+		setStatusBarColor(this, ContextCompat.getColor(this, R.color.fiea_azul));
 		inicializarBarraConexao();
+		inicializarNavegacao();
+		atualizarCasca(myTabHost.getCurrentTab());
+	}
+
+	private void inicializarNavegacao() {
+		barraSuperior = findViewById(R.id.barra_superior);
+		ivLogo = findViewById(R.id.iv_logo);
+		tvTitulo = findViewById(R.id.tv_titulo);
+		btSairDev = findViewById(R.id.bt_sair_dev);
+		divisorNavegacao = findViewById(R.id.divisor_navegacao);
+		navegacao = findViewById(R.id.navegacao);
+
+		navegacao.setOnItemSelectedListener(item -> {
+			myTabHost.setCurrentTab(abaDoItem(item.getItemId()));
+			return true;
+		});
+
+		// Escondida de propósito: o operador não precisa das ferramentas do demo.
+		View areaTitulo = findViewById(R.id.area_titulo);
+		areaTitulo.setOnLongClickListener(v -> {
+			abrirMenuDesenvolvedor();
+			return true;
+		});
+		// Já no modo desenvolvedor, um toque no título troca de ferramenta.
+		areaTitulo.setOnClickListener(v -> {
+			if (myTabHost.getCurrentTab() >= ABA_LOCALIZAR) {
+				abrirMenuDesenvolvedor();
+			}
+		});
+		btSairDev.setOnClickListener(v -> myTabHost.setCurrentTab(ABA_INVENTARIO));
+	}
+
+	private static int abaDoItem(int itemId) {
+		if (itemId == R.id.nav_pendencias) return ABA_PENDENCIAS;
+		if (itemId == R.id.nav_etiquetagem) return ABA_ETIQUETAGEM;
+		return ABA_INVENTARIO;
+	}
+
+	private static int itemDaAba(int aba) {
+		if (aba == ABA_PENDENCIAS) return R.id.nav_pendencias;
+		if (aba == ABA_ETIQUETAGEM) return R.id.nav_etiquetagem;
+		return R.id.nav_inventario;
+	}
+
+	/**
+	 * Ajusta a barra superior e a navegação à aba atual: azul nas abas do operador,
+	 * escura e sem navegação inferior nas ferramentas de desenvolvedor.
+	 */
+	private void atualizarCasca(int aba) {
+		boolean dev = aba >= ABA_LOCALIZAR;
+		int corBarra = ContextCompat.getColor(this, dev ? R.color.modo_dev : R.color.fiea_azul);
+		barraSuperior.setBackgroundColor(corBarra);
+		getWindow().setStatusBarColor(corBarra);
+		ivLogo.setVisibility(dev ? View.GONE : View.VISIBLE);
+		btSairDev.setVisibility(dev ? View.VISIBLE : View.GONE);
+		if (dev) {
+			String[] nomes = getResources().getStringArray(R.array.devNomesCurtos);
+			tvTitulo.setText(getString(R.string.devTituloBarra, nomes[aba - ABA_LOCALIZAR]));
+		} else {
+			tvTitulo.setText(R.string.app_titulo);
+		}
+		navegacao.setVisibility(dev ? View.GONE : View.VISIBLE);
+		divisorNavegacao.setVisibility(dev ? View.GONE : View.VISIBLE);
+		// Acompanha também as trocas feitas por código (ScanActivity abre Pendências).
+		if (!dev && navegacao.getSelectedItemId() != itemDaAba(aba)) {
+			navegacao.setSelectedItemId(itemDaAba(aba));
+		}
+	}
+
+	private void abrirMenuDesenvolvedor() {
+		new AlertDialog.Builder(this)
+				.setTitle(R.string.devTitulo)
+				.setItems(R.array.devFerramentas, (dialog, which) -> myTabHost.setCurrentTab(ABA_LOCALIZAR + which))
+				.setNegativeButton(R.string.btCancelar, null)
+				.show();
 	}
 
 	private void inicializarBarraConexao() {
 		layoutConexaoServidor = findViewById(R.id.layout_conexao_servidor);
 		tvStatusConexao = findViewById(R.id.tv_status_conexao);
-		tvBtnConfigIp = findViewById(R.id.tv_btn_config_ip);
+		ivStatusConexao = findViewById(R.id.iv_status_conexao);
+		btConfigServidor = findViewById(R.id.bt_config_servidor);
 
 		View.OnClickListener abrirConfig = v -> abrirDialogoConfigIp();
-		if (tvBtnConfigIp != null) tvBtnConfigIp.setOnClickListener(abrirConfig);
+		if (btConfigServidor != null) btConfigServidor.setOnClickListener(abrirConfig);
 		if (layoutConexaoServidor != null) layoutConexaoServidor.setOnClickListener(abrirConfig);
 
 		runnableVerificarConexao = new Runnable() {
@@ -127,30 +234,56 @@ public class MainActivity extends TabActivity   {
 		com.rfid.demo.utils.SyncManager sm = com.rfid.demo.utils.SyncManager.getInstance(this);
 		sm.testarConexao(online -> {
 			if (layoutConexaoServidor == null || tvStatusConexao == null) return;
-			if (online) {
-				layoutConexaoServidor.setBackgroundColor(Color.parseColor("#DCFCE7"));
-				tvStatusConexao.setTextColor(Color.parseColor("#166534"));
-				int naFila = sm.totalPendenciasNaFila();
-				tvStatusConexao.setText("🟢 Conectado ao PC (" + sm.getServerUrl() + ")" + (naFila > 0 ? " · " + naFila + " na fila" : ""));
-			} else {
-				layoutConexaoServidor.setBackgroundColor(Color.parseColor("#FEE2E2"));
-				tvStatusConexao.setTextColor(Color.parseColor("#991B1B"));
-				tvStatusConexao.setText("🔴 Sem Conexão com PC (Modo Offline)");
-			}
+			// A fila aparece também offline: é quando o operador mais precisa saber dela.
+			mostrarConexao(online ? CONEXAO_ONLINE : CONEXAO_OFFLINE, sm.totalPendenciasNaFila());
 		});
+	}
+
+	/** Pinta o chip de conexão da barra superior; naFila > 0 acrescenta a contagem. */
+	private void mostrarConexao(int estado, int naFila) {
+		int fundo, cor, icone, rotulo;
+		if (estado == CONEXAO_ONLINE) {
+			fundo = R.color.sucesso_fundo;
+			cor = R.color.sucesso_texto;
+			icone = R.drawable.ic_wifi;
+			rotulo = R.string.conexaoOnline;
+		} else if (estado == CONEXAO_OFFLINE) {
+			fundo = R.color.erro_fundo;
+			cor = R.color.erro_texto;
+			icone = R.drawable.ic_wifi_off;
+			rotulo = R.string.conexaoOffline;
+		} else {
+			fundo = R.color.alerta_fundo;
+			cor = R.color.alerta_texto;
+			icone = R.drawable.ic_sync;
+			rotulo = R.string.conexaoVerificando;
+		}
+		String texto = getString(rotulo);
+		if (naFila > 0) {
+			texto = getString(R.string.conexaoNaFila, texto, naFila);
+		}
+		int corTexto = ContextCompat.getColor(this, cor);
+		layoutConexaoServidor.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, fundo)));
+		layoutConexaoServidor.setContentDescription(getString(R.string.descConexao, texto));
+		tvStatusConexao.setText(texto);
+		tvStatusConexao.setTextColor(corTexto);
+		ivStatusConexao.setImageResource(icone);
+		ivStatusConexao.setImageTintList(ColorStateList.valueOf(corTexto));
 	}
 
 	private void abrirDialogoConfigIp() {
 		com.rfid.demo.utils.SyncManager sm = com.rfid.demo.utils.SyncManager.getInstance(this);
 		EditText input = new EditText(this);
 		input.setSingleLine(true);
+		input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
+		input.setHint(R.string.hintConfigServidor);
 		input.setText(sm.getServerUrl());
 
 		new AlertDialog.Builder(this)
-				.setTitle("Configurar Servidor Local")
-				.setMessage("Informe o endereço IP e porta do PC na rede Wi-Fi:\n(Ex: http://172.20.107.210:5000)")
-				.setView(input)
-				.setPositiveButton("Salvar e Testar", (dialog, which) -> {
+				.setTitle(R.string.tituloConfigServidor)
+				.setMessage(R.string.msgConfigServidor)
+				.setView(Dialogos.comMargem(this, input))
+				.setPositiveButton(R.string.btSalvarTestar, (dialog, which) -> {
 					String novaUrl = input.getText().toString().trim();
 					if (!novaUrl.isEmpty()) {
 						if (!novaUrl.startsWith("http://") && !novaUrl.startsWith("https://")) {
@@ -158,12 +291,12 @@ public class MainActivity extends TabActivity   {
 						}
 						sm.setServerUrl(novaUrl);
 						if (tvStatusConexao != null) {
-							tvStatusConexao.setText("🟡 Testando " + novaUrl + "...");
+							mostrarConexao(CONEXAO_VERIFICANDO, 0);
 						}
 						verificarStatusServidor();
 					}
 				})
-				.setNegativeButton("Cancelar", null)
+				.setNegativeButton(R.string.btCancelar, null)
 				.show();
 	}
 
@@ -260,6 +393,20 @@ public class MainActivity extends TabActivity   {
 
 		long secondTime = System.currentTimeMillis();
 		if(event.getKeyCode() == KeyEvent.KEYCODE_BACK &&  event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0){
+			// Em Pendências, dentro de uma sala, voltar primeiro devolve à lista de salas.
+			Activity atual = getCurrentActivity();
+			if (atual instanceof TagsSalaActivity && ((TagsSalaActivity) atual).voltarParaSalas()) {
+				return true;
+			}
+			// No Inventário, com uma sala em leitura, voltar pergunta se encerra a varredura.
+			if (atual instanceof ScanActivity && ((ScanActivity) atual).voltar()) {
+				return true;
+			}
+			// Fora do Inventário, voltar leva a ele; só lá o voltar duplo fecha o app.
+			if (myTabHost.getCurrentTab() != ABA_INVENTARIO) {
+				myTabHost.setCurrentTab(ABA_INVENTARIO);
+				return true;
+			}
 			if (secondTime - firstTime < 2000) {
 				RFIDSDKManager.getInstance().release();
 				finish();

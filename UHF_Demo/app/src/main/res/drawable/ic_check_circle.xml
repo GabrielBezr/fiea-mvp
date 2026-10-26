@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material Icons (Round), Apache 2.0. A cor é aplicada por tint onde o ícone é usado. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@color/texto_secundario"
+        android:pathData="M12 2 C6.48 2 2 6.48 2 12 s4.48 10 10 10 s10 -4.48 10 -10 S17.52 2 12 2 z M9.29 16.29 L5.7 12.7 a.996 .996 0 1 1 1.41 -1.41 L10 14.17 l6.88 -6.88 a.996 .996 0 1 1 1.41 1.41 l-7.59 7.59 a.996 .996 0 0 1 -1.41 0 z" />
+</vector>

@@ -10,10 +10,29 @@
         <item>canto_sw</item>
     </string-array>
 
-    <!-- MVP: lista fixa de técnicas de varredura -->
+    <!-- MVP: lista fixa de técnicas de varredura. Estes códigos vão para o CSV e o
+         banco; não traduza. O operador vê spinner_tecnicas_rotulos, na mesma ordem. -->
     <string-array name="spinner_tecnicas">
         <item>estatica_porta</item>
         <item>movel_ambiente</item>
+    </string-array>
+    <string-array name="spinner_tecnicas_rotulos">
+        <item>Estática (da porta)</item>
+        <item>Móvel (pela sala)</item>
+    </string-array>
+
+    <!-- Área de desenvolvedor: na mesma ordem das abas 3 a 6 do TabHost (MainActivity) -->
+    <string-array name="devFerramentas">
+        <item>Localizar etiqueta (Find)</item>
+        <item>Ler e gravar etiqueta (R/W)</item>
+        <item>Máscara de leitura (MASK)</item>
+        <item>Parâmetros do rádio (PARAM)</item>
+    </string-array>
+    <string-array name="devNomesCurtos">
+        <item>Localizar</item>
+        <item>Ler/Gravar</item>
+        <item>Máscara</item>
+        <item>Parâmetros</item>
     </string-array>
 
     <string-array name="spinner_mask_area">

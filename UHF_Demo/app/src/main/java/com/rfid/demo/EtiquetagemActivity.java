@@ -100,8 +100,9 @@ public class EtiquetagemActivity extends Activity implements OnClickListener {
         btLimpar.setOnClickListener(this);
         btnTransmitirPc.setOnClickListener(this);
 
-        adaptador = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, linhasDaTela);
+        adaptador = new ArrayAdapter<>(this, R.layout.item_par, linhasDaTela);
         lvPares.setAdapter(adaptador);
+        lvPares.setEmptyView(findViewById(R.id.tv_pares_vazio));
 
         // Um EPC digitado ou vindo do QR não é o mesmo que um lido pelo rádio.
         etEpc.addTextChangedListener(new TextWatcher() {
@@ -199,13 +200,13 @@ public class EtiquetagemActivity extends Activity implements OnClickListener {
 
         transmitindoAoPc.set(true);
         capturandoEpc.set(true);
-        btnTransmitirPc.setText("Aguardando tag próxima...");
+        btnTransmitirPc.setText(R.string.btTransmitindo);
         Toast.makeText(this, R.string.msgTagTransmitindo, Toast.LENGTH_SHORT).show();
 
         timeoutTransmitirPc = () -> {
             if (transmitindoAoPc.get()) {
                 pararLeitura();
-                Toast.makeText(getApplicationContext(), "Tempo esgotado. Nenhuma tag detectada.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), getString(R.string.msgBancadaSemTag), Toast.LENGTH_LONG).show();
             }
         };
         handler.postDelayed(timeoutTransmitirPc, 6000);
@@ -290,9 +291,11 @@ public class EtiquetagemActivity extends Activity implements OnClickListener {
         pares.add(par);
         epcsUsados.add(epc);
         patrimoniosUsados.add(patrimonio);
-        linhasDaTela.add(0, patrimonio + "  <-  " + epc
-                + (par.metalico ? "  [metal]" : "")
-                + (ParEtiquetagem.ORIGEM_RFID.equals(par.origemEpc) ? "" : "  [qr]"));
+        // "digitado/QR": sem o rádio, o app não distingue o QR (que o leitor digita
+        // no campo) de um EPC digitado à mão.
+        linhasDaTela.add(0, getString(R.string.parLinha, patrimonio, epc)
+                + (par.metalico ? getString(R.string.parMetalico) : "")
+                + (ParEtiquetagem.ORIGEM_RFID.equals(par.origemEpc) ? "" : getString(R.string.parSemRadio)));
         adaptador.notifyDataSetChanged();
 
         limparCampos();

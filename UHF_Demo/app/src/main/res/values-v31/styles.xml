@@ -1,0 +1,9 @@
+<resources>
+    <!-- Android 12+: a abertura do sistema (ícone sobre uma cor) vem antes da
+         SplashActivity. Com o mesmo azul do fundo do ícone, aparece só a logo. -->
+    <style name="Theme.Fiea.Splash" parent="AppTheme">
+        <item name="android:windowBackground">@color/fiea_azul</item>
+        <item name="android:statusBarColor">@color/fiea_azul</item>
+        <item name="android:windowSplashScreenBackground">@color/fiea_azul</item>
+    </style>
+</resources>

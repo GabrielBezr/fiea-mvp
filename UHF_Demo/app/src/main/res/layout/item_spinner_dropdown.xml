@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Opção da lista aberta dos spinners: altura de toque cheia. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/text1"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:ellipsize="end"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/alvo_toque"
+    android:paddingStart="@dimen/espaco_16"
+    android:paddingEnd="@dimen/espaco_16"
+    android:singleLine="true"
+    android:textColor="@color/texto_primario"
+    android:textSize="15sp" />

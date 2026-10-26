@@ -6,4 +6,24 @@
 
     <dimen name="rm_6c_et_height">40dp</dimen>
 
+    <!-- Escala de espaçamento, em múltiplos de 4dp -->
+    <dimen name="espaco_4">4dp</dimen>
+    <dimen name="espaco_8">8dp</dimen>
+    <dimen name="espaco_12">12dp</dimen>
+    <dimen name="espaco_16">16dp</dimen>
+    <dimen name="espaco_24">24dp</dimen>
+    <dimen name="espaco_32">32dp</dimen>
+
+    <!-- O coletor é usado com uma mão na empunhadura, às vezes de luva -->
+    <dimen name="alvo_toque">48dp</dimen>
+    <dimen name="icone">24dp</dimen>
+
+    <dimen name="raio_botao">8dp</dimen>
+    <dimen name="raio_card">12dp</dimen>
+    <dimen name="raio_dialogo">16dp</dimen>
+
+    <dimen name="espessura_contorno">1dp</dimen>
+    <!-- Card com algo em andamento (leitura RFID) -->
+    <dimen name="espessura_contorno_destaque">2dp</dimen>
+
 </resources>

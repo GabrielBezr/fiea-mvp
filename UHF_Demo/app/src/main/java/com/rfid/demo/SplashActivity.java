@@ -55,11 +55,8 @@ public class SplashActivity extends AppCompatActivity {
         });
 
 
-        setStatusBarColor(this, getResources().getColor(R.color.white_title_status));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Window window = getWindow();
-            window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-        }
+        // Barra de status no azul da abertura, com ícones claros.
+        setStatusBarColor(this, getResources().getColor(R.color.fiea_azul));
 
         // Pede o acesso ao armazenamento antes de seguir. O init do RFID só começa
         // depois que o operador responde, para a tela de permissão não ser encoberta.
@@ -126,13 +123,14 @@ public class SplashActivity extends AppCompatActivity {
                         } else {
                             tvShow.setVisibility(View.VISIBLE);
                             tvShow.setText(getString(R.string.openport_failed));
-                            tvShow.setTextColor(getResources().getColor(R.color.red));
+                            // Vermelho claro: o vermelho comum some sobre o azul da abertura.
+                            tvShow.setTextColor(getResources().getColor(R.color.erro_fundo));
                             progress.setVisibility(View.INVISIBLE);
                             BtConnect.setVisibility(View.VISIBLE);
                         }
 
 
-                        Toast.makeText(SplashActivity.this," " + (status ? getResources().getString(R.string.rfid_successful_initialization) : getResources().getString(R.string.rfid_initialization_failure)),
+                        Toast.makeText(SplashActivity.this, status ? R.string.rfid_successful_initialization : R.string.rfid_initialization_failure,
                                 Toast.LENGTH_SHORT).show();
                     }
                 });

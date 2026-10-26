@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material Icons (Round) "warning", Apache 2.0, em 16dp e já na cor de alerta:
+     marca na lista as etiquetas lidas com sinal fraco (RSSI limítrofe). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="16dp"
+    android:height="16dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@color/alerta"
+        android:pathData="M4.47 21 h15.06 c1.54 0 2.5 -1.67 1.73 -3 L13.73 4.99 c-.77 -1.33 -2.69 -1.33 -3.46 0 L2.74 18 c-.77 1.33 .19 3 1.73 3 z M12 14 c-.55 0 -1 -.45 -1 -1 v-2 c0 -.55 .45 -1 1 -1 s1 .45 1 1 v2 c0 .55 -.45 1 -1 1 z m1 4 h-2 v-2 h2 v2 z" />
+</vector>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Linha de uma lista de salas: as com pendências (TagsSalaActivity.SalasAdapter) e as
+     da unidade no Inventário (ScanActivity.SalasAdapter). Mesmo desenho de item_bem.xml;
+     tudo é preenchido no adapter. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="64dp"
+    android:orientation="horizontal">
+
+    <View
+        android:id="@+id/v_sala_faixa"
+        android:layout_width="4dp"
+        android:layout_height="match_parent"
+        android:background="@color/alerta" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/espaco_12"
+        android:paddingTop="@dimen/espaco_12"
+        android:paddingEnd="@dimen/espaco_8"
+        android:paddingBottom="@dimen/espaco_12">
+
+        <TextView
+            android:id="@+id/tv_sala_nome"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Fiea.Subtitulo" />
+
+        <TextView
+            android:id="@+id/tv_sala_detalhe"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Fiea.Legenda" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_sala_status"
+        style="@style/Widget.Fiea.Selo"
+        android:layout_gravity="center_vertical"
+        android:layout_marginEnd="@dimen/espaco_4" />
+
+    <ImageView
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginEnd="@dimen/espaco_12"
+        android:importantForAccessibility="no"
+        android:rotation="180"
+        android:src="@drawable/ic_arrow_back"
+        android:tint="@color/texto_dica" />
+
+</LinearLayout>

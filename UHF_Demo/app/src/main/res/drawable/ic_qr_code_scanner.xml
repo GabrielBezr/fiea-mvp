@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material Icons (Round), Apache 2.0. A cor é aplicada por tint onde o ícone é usado. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@color/texto_secundario"
+        android:pathData="M9.5 6.5 v3 h-3 v-3 h3 M11 5 H5 v6 h6 V5 z m-1.5 9.5 v3 h-3 v-3 h3 M11 13 H5 v6 h6 v-6 z m6.5 -6.5 v3 h-3 v-3 h3 M19 5 h-6 v6 h6 V5 z m-6 8 h1.5 v1.5 H13 V13 z m1.5 1.5 H16 V16 h-1.5 v-1.5 z M16 13 h1.5 v1.5 H16 V13 z m-3 3 h1.5 v1.5 H13 V16 z m1.5 1.5 H16 V19 h-1.5 v-1.5 z M16 16 h1.5 v1.5 H16 V16 z m1.5 -1.5 H19 V16 h-1.5 v-1.5 z m0 3 H19 V19 h-1.5 v-1.5 z M21 7 c-.55 0 -1 -.45 -1 -1 V4 h-2 c-.55 0 -1 -.45 -1 -1 s.45 -1 1 -1 h3 c.55 0 1 .45 1 1 v3 c0 .55 -.45 1 -1 1 z m1 14 v-3 c0 -.55 -.45 -1 -1 -1 s-1 .45 -1 1 v2 h-2 c-.55 0 -1 .45 -1 1 s.45 1 1 1 h3 c.55 0 1 -.45 1 -1 z M3 22 h3 c.55 0 1 -.45 1 -1 s-.45 -1 -1 -1 H4 v-2 c0 -.55 -.45 -1 -1 -1 s-1 .45 -1 1 v3 c0 .55 .45 1 1 1 z M2 3 v3 c0 .55 .45 1 1 1 s1 -.45 1 -1 V4 h2 c.55 0 1 -.45 1 -1 s-.45 -1 -1 -1 H3 c-.55 0 -1 .45 -1 1 z" />
+</vector>

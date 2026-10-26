@@ -1,64 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Abertura: logo branca sobre o azul da marca, o mesmo fundo do tema
+     Theme.Fiea.Splash, para a troca da janela do sistema para esta tela não piscar. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/gradient_bg"
+    android:background="@color/fiea_azul"
     android:gravity="center"
     android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:layout_height="0dp"
         android:layout_weight="1"
         android:gravity="center"
         android:orientation="vertical">
 
+        <!-- Largura fixa e adjustViewBounds: a altura segue a proporção da logo -->
         <ImageView
-            android:layout_width="wrap_content"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_launcher" />
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/descLogo"
+            android:src="@drawable/logo_fiea" />
 
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:layout_height="0dp"
         android:layout_weight="1"
-        android:gravity="center|top"
-        android:orientation="vertical">
+        android:gravity="center_horizontal|top"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/espaco_24"
+        android:paddingEnd="@dimen/espaco_24">
 
         <ProgressBar
             android:id="@+id/progress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:indeterminateTint="@color/main_color" />
+            android:indeterminateTint="@color/white" />
 
         <TextView
             android:id="@+id/textview_show"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="20.0sp"
-            android:layout_marginTop="20.0sp"
-            android:layout_marginRight="20.0sp"
-            android:layout_marginBottom="5.0sp"
+            android:layout_marginTop="@dimen/espaco_16"
             android:gravity="center_horizontal"
-            android:paddingTop="10.0sp"
-            android:paddingBottom="10.0sp"
             android:text="@string/rfid_initialization"
-            android:textColor="@color/main_color"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-        <Button
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/BtConnect"
-            android:layout_width="200dp"
+            style="@style/Widget.Fiea.Botao.SobreAzul"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:background="@drawable/color_button_selector"
+            android:layout_marginTop="@dimen/espaco_16"
             android:text="@string/re_connect_init"
-            android:textColor="@color/white" />
+            app:icon="@drawable/ic_refresh" />
     </LinearLayout>
 </LinearLayout>
-

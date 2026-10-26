@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Desabilitado igual ao padrão do MaterialButton: 12% da cor do texto. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:alpha="0.12" android:color="@color/texto_primario" android:state_enabled="false" />
+    <item android:color="@color/fiea_azul" />
+</selector>
