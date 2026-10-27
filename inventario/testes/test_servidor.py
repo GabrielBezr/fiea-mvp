@@ -1,6 +1,8 @@
 """Testes das rotas do servidor que separam salas de mesmo nome em unidades diferentes."""
 
+import csv
 import importlib.util
+import io
 import sys
 import tempfile
 import unittest
@@ -73,6 +75,175 @@ class TestSalasPorUnidade(unittest.TestCase):
         self.assertEqual(resposta.status_code, 302)
         linha = self.con.execute("SELECT sala_esperada_id FROM bem WHERE patrimonio = '4'").fetchone()
         self.assertEqual(linha["sala_esperada_id"], self.salas[("UFAL", "Lab A")])
+
+
+@unittest.skipUnless(TEM_FLASK, "Flask não instalado (use o .venv do servidor)")
+class TestSincronizacao(unittest.TestCase):
+    """/api/sincronizar: o que o coletor manda pelo Wi-Fi tem de chegar inteiro."""
+
+    def setUp(self):
+        self._temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
+        self.addCleanup(self._temp.cleanup)
+        self._db_original = servidor.CAMINHO_DB
+        servidor.CAMINHO_DB = Path(self._temp.name) / "teste.db"
+        self.addCleanup(setattr, servidor, "CAMINHO_DB", self._db_original)
+
+        self.con = esquema.conectar(servidor.CAMINHO_DB)
+        self.addCleanup(self.con.close)
+        self.cliente = servidor.app.test_client()
+
+    def _enviar(self, leituras, pendencias=None):
+        # Mesmo formato do SyncManager.sincronizarVarredura: um evento por leitura.
+        resposta = self.cliente.post("/api/sincronizar", json={
+            "sessao": {"id": "S1", "unidade": "UFAL", "operador": "Ana"},
+            "varredura": {"id": "S1-v01", "sala": "Lab A", "tecnica": "movel_ambiente",
+                          "potencia_dbm": 25, "inicio": "2026-10-26 10:00:00.000",
+                          "fim": "2026-10-26 10:02:00.000", "duracao_s": 120},
+            "leituras": leituras,
+            "pendencias": pendencias or [],
+        })
+        self.assertEqual(resposta.status_code, 200)
+
+    @staticmethod
+    def _evento(epc, rssi, instante):
+        return {"epc": epc, "rssi": rssi, "metodo": "RFID",
+                "primeira_leitura": instante, "ultima_leitura": instante}
+
+    def _linhas(self):
+        return {
+            (r["epc"], r["metodo"]): dict(r)
+            for r in self.con.execute("SELECT * FROM leitura WHERE varredura_id = 'S1-v01'")
+        }
+
+    def test_eventos_da_mesma_etiqueta_viram_uma_linha_com_contagem_e_rssi(self):
+        self._enviar([
+            self._evento("aaa", 60, "2026-10-26 10:00:01.000"),
+            self._evento("AAA", 80, "2026-10-26 10:00:03.000"),
+            self._evento("AAA", 70, "2026-10-26 10:00:02.000"),
+            self._evento("BBB", 50, "2026-10-26 10:00:04.000"),
+        ])
+        linhas = self._linhas()
+
+        self.assertEqual(set(linhas), {("AAA", "RFID"), ("BBB", "RFID")})
+        aaa = linhas[("AAA", "RFID")]
+        self.assertEqual(aaa["leituras"], 3)
+        self.assertEqual((aaa["rssi_min"], aaa["rssi_medio"], aaa["rssi_max"]), (60, 70.0, 80))
+        self.assertEqual(aaa["primeira_leitura"], "2026-10-26 10:00:01.000")
+        self.assertEqual(aaa["ultima_leitura"], "2026-10-26 10:00:03.000")
+        self.assertEqual(linhas[("BBB", "RFID")]["leituras"], 1)
+
+    def test_leituras_ja_agregadas_continuam_aceitas(self):
+        self._enviar([{"epc": "AAA", "metodo": "RFID", "leituras": 10, "rssi_min": 60,
+                       "rssi_medio": 65.0, "rssi_max": 70,
+                       "primeira_leitura": "2026-10-26 10:00:01.000",
+                       "ultima_leitura": "2026-10-26 10:00:09.000"}])
+        aaa = self._linhas()[("AAA", "RFID")]
+
+        self.assertEqual((aaa["leituras"], aaa["rssi_min"], aaa["rssi_medio"], aaa["rssi_max"]),
+                         (10, 60, 65.0, 70))
+
+    def test_reenviar_a_mesma_varredura_nao_duplica(self):
+        eventos = [self._evento("AAA", 60, "2026-10-26 10:00:01.000"),
+                   self._evento("AAA", 80, "2026-10-26 10:00:02.000")]
+        self._enviar(eventos)
+        self._enviar(eventos)
+
+        self.assertEqual(self._linhas()[("AAA", "RFID")]["leituras"], 2)
+
+    def test_envio_antigo_sem_resolucoes_nao_apaga_as_ja_recebidas(self):
+        # A fila offline pode entregar o envio do fim da varredura depois do que levou
+        # as resoluções de Pendências.
+        eventos = [self._evento("AAA", 60, "2026-10-26 10:00:01.000")]
+        self._enviar(eventos, [{"patrimonio": "7", "epc": "BBB", "metodo": "MANUAL",
+                                "timestamp": "2026-10-26 10:05:00.000"}])
+        self._enviar(eventos)
+
+        self.assertEqual(set(self._linhas()), {("AAA", "RFID"), ("BBB", "MANUAL")})
+
+    def test_lista_nova_de_resolucoes_substitui_a_anterior(self):
+        eventos = [self._evento("AAA", 60, "2026-10-26 10:00:01.000")]
+        self._enviar(eventos, [{"patrimonio": "7", "epc": "BBB", "metodo": "MANUAL"}])
+        self._enviar(eventos, [{"patrimonio": "8", "epc": "CCC", "metodo": "FALTANTE"}])
+
+        self.assertEqual(set(self._linhas()), {("AAA", "RFID"), ("CCC", "FALTANTE")})
+
+
+@unittest.skipUnless(TEM_FLASK, "Flask não instalado (use o .venv do servidor)")
+class TestRelatorioSalaProvavel(unittest.TestCase):
+    """Relatório e CSV mostram a sala provável do bem lido em duas salas vizinhas."""
+
+    def setUp(self):
+        self._temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
+        self.addCleanup(self._temp.cleanup)
+        self._db_original = servidor.CAMINHO_DB
+        servidor.CAMINHO_DB = Path(self._temp.name) / "teste.db"
+        self.addCleanup(setattr, servidor, "CAMINHO_DB", self._db_original)
+
+        con = esquema.conectar(servidor.CAMINHO_DB)
+        self.addCleanup(con.close)
+        for nome in ("Lab A", "Lab B", "Lab C"):
+            con.execute("INSERT INTO sala (unidade, nome) VALUES ('UFAL', ?)", (nome,))
+        salas = {r["nome"]: r["id"] for r in con.execute("SELECT id, nome FROM sala")}
+        for patrimonio, sala, epc in (("1", "Lab A", "AAA"), ("2", "Lab C", "CCC"),
+                                      ("3", "Lab A", "DDD")):
+            con.execute(
+                "INSERT INTO bem (patrimonio, descricao, sala_esperada_id, epc, importado_em) "
+                "VALUES (?, ?, ?, ?, '2026-10-26')",
+                (patrimonio, "Bem " + patrimonio, salas[sala], epc),
+            )
+        con.commit()
+        self.cliente = servidor.app.test_client()
+
+        # Lab A e Lab B varridos do mesmo jeito; o Lab C fica sem varredura.
+        # AAA: mais forte no A (sala dele). CCC: parecido nos dois, e o Lab C nao foi
+        # varrido. DDD: mais forte no B. EEE: sem cadastro, mais forte no A.
+        sinais = {"Lab A": {"AAA": 82, "CCC": 61, "DDD": 60, "EEE": 80},
+                  "Lab B": {"AAA": 71, "CCC": 63, "DDD": 80, "EEE": 60}}
+        for numero, (sala, por_epc) in enumerate(sinais.items(), start=1):
+            leituras = [
+                {"epc": epc, "rssi": rssi, "metodo": "RFID",
+                 "primeira_leitura": f"2026-10-26 10:0{numero}:0{i}.000",
+                 "ultima_leitura": f"2026-10-26 10:0{numero}:0{i}.000"}
+                for epc, rssi in por_epc.items() for i in range(2)
+            ]
+            resposta = self.cliente.post("/api/sincronizar", json={
+                "sessao": {"id": "S4", "unidade": "UFAL", "operador": "Ana"},
+                "varredura": {"id": f"S4-v0{numero}", "sala": sala, "tecnica": "movel_ambiente",
+                              "potencia_dbm": 25, "inicio": "2026-10-26 10:00:00.000"},
+                "leituras": leituras,
+            })
+            self.assertEqual(resposta.status_code, 200)
+
+    def test_relatorio_mostra_sala_indeterminada_e_sala_provavel(self):
+        resposta = self.cliente.get("/relatorio?sessao=S4")
+        self.assertEqual(resposta.status_code, 200)
+        html = resposta.get_data(as_text=True)
+
+        self.assertIn("Sala Indeterminada (1)", html)
+        self.assertIn('data-situacao="indeterminado"', html)
+        self.assertIn("Varra a sala Lab C para decidir", html)
+        self.assertIn("Provável: <strong>Lab B</strong>", html)
+        self.assertIn("Transferência provável para Lab B", html)
+
+    def test_csv_traz_a_sala_provavel_nas_ultimas_colunas(self):
+        resposta = self.cliente.get("/relatorio/S4/exportar-csv")
+        self.assertEqual(resposta.status_code, 200)
+        linhas = list(csv.reader(io.StringIO(resposta.data.decode("utf-8-sig")), delimiter=";"))
+        cabecalho, dados = linhas[0], {linha[0] if linha[0] != "N/A" else linha[2]: linha
+                                       for linha in linhas[1:]}
+
+        # As colunas antigas continuam no mesmo lugar.
+        self.assertEqual(cabecalho[:9], ["Patrimonio", "Descricao", "EPC", "Sala_Esperada",
+                                         "Salas_Lidas", "Situacao", "Unidade", "Sessao_ID",
+                                         "Diagnostico"])
+        self.assertEqual(cabecalho[9:], ["Sala_Provavel", "Criterio", "Sinal_Por_Sala"])
+        self.assertEqual(dados["1"][5], "LOCALIZADO")
+        self.assertEqual(dados["1"][9:], ["Lab A", "Sinal mais forte", "Lab A: 82; Lab B: 71"])
+        self.assertEqual(dados["2"][5], "INDETERMINADO")
+        self.assertEqual(dados["2"][9:11], ["", "Sala esperada não varrida"])
+        self.assertEqual(dados["3"][5], "FORA DO LOCAL")
+        self.assertEqual(dados["3"][9:11], ["Lab B", "Sinal mais forte"])
+        self.assertEqual(dados["EEE"][9:11], ["Lab A", "Sinal mais forte"])
 
 
 if __name__ == "__main__":

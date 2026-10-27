@@ -127,6 +127,23 @@ class TestIdempotencia(BaseTemp):
             "SELECT epc FROM leitura ORDER BY epc")]
         self.assertEqual(epcs, ["AAA", "CCC"])
 
+    def test_reimportar_mantem_as_resolucoes_de_pendencias(self):
+        # O CSV so traz o radio; QR, manual e faltante chegam pelo Wi-Fi.
+        caminho = self.escrever("leituras_20261008090000_v01.csv", csv_varredura([
+            linha("2026-10-08 09:10:01.000", "AAA", 80),
+        ]))
+        importar_arquivo(caminho, self.conexao)
+        self.conexao.execute(
+            "INSERT INTO leitura (varredura_id, epc, metodo, leituras, primeira_leitura, "
+            "ultima_leitura) VALUES ('20261008090000-v01', 'BBB', 'MANUAL', 1, "
+            "'2026-10-08 09:20:00.000', '2026-10-08 09:20:00.000')"
+        )
+        importar_arquivo(caminho, self.conexao)
+
+        linhas = [tuple(r) for r in self.conexao.execute(
+            "SELECT epc, metodo FROM leitura ORDER BY epc")]
+        self.assertEqual(linhas, [("AAA", "RFID"), ("BBB", "MANUAL")])
+
 
 class TestAtribuicaoSala(BaseTemp):
     def test_associa_varredura_a_sala_da_primeira_tag_de_referencia(self):

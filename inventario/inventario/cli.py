@@ -15,8 +15,8 @@ from .cadastro import (
     bens_sem_sala, importar_bens, importar_salas, salas_com_poucas_tags,
 )
 from .conferencia import (
-    FORA_DO_LOCAL, LOCALIZADO, NAO_CADASTRADO, NAO_LOCALIZADO, SEM_COBERTURA,
-    SessaoNaoEncontrada, conferir_sessao,
+    FORA_DO_LOCAL, INDETERMINADO, LOCALIZADO, NAO_CADASTRADO, NAO_LOCALIZADO,
+    SEM_COBERTURA, SessaoNaoEncontrada, conferir_sessao,
 )
 from .etiquetagem import (
     EtiquetagemInvalida, bens_sem_etiqueta, importar_etiquetagem, progresso,
@@ -272,6 +272,7 @@ def _conferir(args, conexao):
         NAO_LOCALIZADO: 0,
         FORA_DO_LOCAL: 0,
         SEM_COBERTURA: 0,
+        INDETERMINADO: 0,
     }
     for bem in relatorio.bens:
         contagens[bem.situacao] += 1
@@ -280,16 +281,20 @@ def _conferir(args, conexao):
         f"Bens: {contagens[LOCALIZADO]} localizados, "
         f"{contagens[NAO_LOCALIZADO]} nao localizados, "
         f"{contagens[FORA_DO_LOCAL]} fora do local, "
-        f"{contagens[SEM_COBERTURA]} sem cobertura"
+        f"{contagens[SEM_COBERTURA]} sem cobertura, "
+        f"{contagens[INDETERMINADO]} com sala indeterminada"
     )
     print("\nDetalhe dos bens:")
     for bem in relatorio.bens:
         sala_esperada = bem.sala_esperada or "sem sala esperada"
         salas_lidas = ", ".join(bem.salas_lidas) or "nenhuma"
         observacao = ""
-        if bem.situacao == LOCALIZADO and any(
-                sala != bem.sala_esperada for sala in bem.salas_lidas):
-            observacao = " (tambem lido em outra sala)"
+        # Lido em mais de uma sala: diz qual ficou e por que (conferencia.CRITERIO_*).
+        if len(bem.salas_lidas) > 1 or bem.situacao == INDETERMINADO:
+            if bem.sala_provavel:
+                observacao = f" (provavel: {bem.sala_provavel}; criterio: {bem.criterio})"
+            else:
+                observacao = f" (criterio: {bem.criterio})"
         elif bem.situacao == SEM_COBERTURA:
             observacao = " (sala esperada sem varredura)"
         elif bem.situacao == NAO_LOCALIZADO and not bem.epc:
@@ -335,7 +340,8 @@ def _resumo(conexao):
         print(f"\nSessao {s['id']} | {s['unidade']} | {s['operador']} | {duracao}")
         for v in conexao.execute(
             "SELECT v.numero, v.duracao_s, v.linhas_brutas, s.nome AS sala, "
-            "COUNT(l.epc) AS etiquetas "
+            # So o radio: resolucoes de Pendencias nao sao etiquetas lidas.
+            "COUNT(CASE WHEN l.metodo = 'RFID' THEN 1 END) AS etiquetas "
             "FROM varredura v LEFT JOIN leitura l ON l.varredura_id = v.id "
             "LEFT JOIN sala s ON s.id = v.sala_id "
             "WHERE v.sessao_id = ? GROUP BY v.id ORDER BY v.numero",

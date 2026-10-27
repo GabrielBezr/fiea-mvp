@@ -1370,6 +1370,12 @@ HTML_RELATORIO_TEMPLATE = """
             border: 1px solid var(--contorno-forte);
             font-weight: 600;
         }
+        .badge-indeterminado {
+            background-color: var(--info-fundo);
+            color: var(--info-texto);
+            border: 1px solid #BAE6FD;
+            font-weight: 600;
+        }
         .badge-sobras {
             background-color: var(--ciano-fundo);
             color: var(--ciano-texto);
@@ -1810,7 +1816,7 @@ HTML_RELATORIO_TEMPLATE = """
         <!-- Indicadores / Cards de KPI -->
         <div class="row g-3 mb-4">
             <!-- Total de Bens -->
-            <div class="col-xl-2 col-md-4 col-6">
+            <div class="col-xl col-md-4 col-6">
                 <div class="card kpi-card bg-white h-100 p-3 border-start border-4 border-primary">
                     <div class="text-muted small fw-semibold text-uppercase">Total Esperado</div>
                     <div class="fs-2 fw-bold text-dark my-1">{{ relatorio.bens|length }}</div>
@@ -1818,7 +1824,7 @@ HTML_RELATORIO_TEMPLATE = """
                 </div>
             </div>
             <!-- Localizados -->
-            <div class="col-xl-2 col-md-4 col-6">
+            <div class="col-xl col-md-4 col-6">
                 <div class="card kpi-card bg-white h-100 p-3 border-start border-4" style="border-left-color: var(--sucesso) !important;">
                     <div class="small fw-semibold text-uppercase d-flex align-items-center gap-1" style="color: var(--sucesso-texto);">
                         <span class="status-dot online"></span> Localizados
@@ -1828,7 +1834,7 @@ HTML_RELATORIO_TEMPLATE = """
                 </div>
             </div>
             <!-- Fora do Local -->
-            <div class="col-xl-2 col-md-4 col-6">
+            <div class="col-xl col-md-4 col-6">
                 <div class="card kpi-card bg-white h-100 p-3 border-start border-4" style="border-left-color: var(--alerta) !important;">
                     <div class="small fw-semibold text-uppercase d-flex align-items-center gap-1" style="color: var(--alerta-texto);">
                         <span class="status-dot" style="background-color: var(--alerta);"></span> Fora do Local
@@ -1838,7 +1844,7 @@ HTML_RELATORIO_TEMPLATE = """
                 </div>
             </div>
             <!-- Não Localizados -->
-            <div class="col-xl-2 col-md-4 col-6">
+            <div class="col-xl col-md-4 col-6">
                 <div class="card kpi-card bg-white h-100 p-3 border-start border-4" style="border-left-color: var(--erro) !important;">
                     <div class="small fw-semibold text-uppercase d-flex align-items-center gap-1" style="color: var(--erro-texto);">
                         <span class="status-dot" style="background-color: var(--erro);"></span> Não Localizados
@@ -1847,8 +1853,18 @@ HTML_RELATORIO_TEMPLATE = """
                     <div class="text-muted small">Faltantes na sala</div>
                 </div>
             </div>
+            <!-- Sala Indeterminada: lido em mais de uma sala sem como dizer em qual está -->
+            <div class="col-xl col-md-4 col-6">
+                <div class="card kpi-card bg-white h-100 p-3 border-start border-4" style="border-left-color: var(--info) !important;">
+                    <div class="small fw-semibold text-uppercase d-flex align-items-center gap-1" style="color: var(--info-texto);">
+                        <span class="status-dot" style="background-color: var(--info);"></span> Sala Indeterminada
+                    </div>
+                    <div class="fs-2 fw-bold my-1" style="color: var(--info-texto);">{{ indeterminados|length }}</div>
+                    <div class="text-muted small">Procurar no local</div>
+                </div>
+            </div>
             <!-- Sem Cobertura -->
-            <div class="col-xl-2 col-md-4 col-6">
+            <div class="col-xl col-md-4 col-6">
                 <div class="card kpi-card bg-white h-100 p-3 border-start border-4" style="border-left-color: var(--texto-secundario) !important;">
                     <div class="small fw-semibold text-uppercase d-flex align-items-center gap-1" style="color: var(--texto-secundario);">
                         <span class="status-dot offline"></span> Sem Cobertura
@@ -1858,7 +1874,7 @@ HTML_RELATORIO_TEMPLATE = """
                 </div>
             </div>
             <!-- Tags Sobrando -->
-            <div class="col-xl-2 col-md-4 col-6">
+            <div class="col-xl col-md-4 col-6">
                 <div class="card kpi-card bg-white h-100 p-3 border-start border-4" style="border-left-color: var(--ciano) !important;">
                     <div class="small fw-semibold text-uppercase d-flex align-items-center gap-1" style="color: var(--ciano-texto);">
                         <span class="status-dot" style="background-color: var(--ciano);"></span> Tags Sobrando
@@ -1885,6 +1901,9 @@ HTML_RELATORIO_TEMPLATE = """
                         </button>
                         <button type="button" class="btn btn-sm btn-outline-secondary btn-filtro" onclick="filtrarTabela('nao localizado', this)">
                             Faltantes ({{ nao_localizados|length }})
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary btn-filtro" onclick="filtrarTabela('indeterminado', this)">
+                            Sala Indeterminada ({{ indeterminados|length }})
                         </button>
                         <button type="button" class="btn btn-sm btn-outline-secondary btn-filtro" onclick="filtrarTabela('sem cobertura', this)">
                             Sem Cobertura ({{ sem_cobertura|length }})
@@ -1946,10 +1965,13 @@ HTML_RELATORIO_TEMPLATE = """
                                 <td>
                                     {% if b.salas_lidas %}
                                         {% for sl in b.salas_lidas %}
-                                        <span class="badge {% if sl == b.sala_esperada %}badge-localizado{% else %}badge-fora-local{% endif %}">
-                                            {{ sl }}
+                                        <span class="badge {% if sl == b.sala_esperada %}badge-localizado{% else %}badge-fora-local{% endif %}"{% if sl in b.sinal_por_sala %} title="RSSI da melhor varredura nesta sala"{% endif %}>
+                                            {{ sl }}{% if sl in b.sinal_por_sala %} · {{ "%g"|format(b.sinal_por_sala[sl]) }}{% endif %}
                                         </span>
                                         {% endfor %}
+                                        {% if b.salas_lidas|length > 1 and b.sala_provavel %}
+                                        <div class="small text-muted mt-1">Provável: <strong>{{ b.sala_provavel }}</strong></div>
+                                        {% endif %}
                                     {% else %}
                                         <span class="text-muted fst-italic small">Não detectado</span>
                                     {% endif %}
@@ -1963,23 +1985,41 @@ HTML_RELATORIO_TEMPLATE = """
                                         <span class="badge badge-nao-localizado">Não Localizado</span>
                                     {% elif b.situacao == 'sem cobertura' %}
                                         <span class="badge badge-sem-cobertura">Sem Cobertura</span>
+                                    {% elif b.situacao == 'indeterminado' %}
+                                        <span class="badge badge-indeterminado">Sala Indeterminada</span>
                                     {% else %}
                                         <span class="badge bg-light text-dark border">{{ b.situacao }}</span>
                                     {% endif %}
                                 </td>
                                 <td class="small">
                                     {% if b.situacao == 'localizado' %}
-                                        {% if b.salas_lidas|length > 1 %}
-                                        <span class="text-success fw-semibold">Item confirmado na sala esperada</span> <span class="text-muted">(também detectado em outra sala)</span>
+                                        {% if b.criterio == 'confirmado' %}
+                                        <span class="text-success fw-semibold">Confirmado em campo na sala esperada.</span>
+                                        {% elif b.criterio == 'sinal' %}
+                                        <span class="text-success fw-semibold">Item na sala esperada:</span> o sinal foi mais forte nela.
+                                        {% elif b.criterio == 'cadastro' %}
+                                        <span class="text-success fw-semibold">Item na sala esperada</span> <span class="text-muted">(lido também em outra sala com sinal parecido; vale o cadastro)</span>
                                         {% else %}
                                         <span class="text-success fw-semibold">Item confirmado no local correto.</span>
                                         {% endif %}
                                     {% elif b.situacao == 'fora do local' %}
+                                        {% if b.criterio == 'confirmado' %}
+                                        <span class="text-warning-emphasis fw-bold">Confirmado em campo em {{ b.sala_provavel }}:</span> esperado em {{ b.sala_esperada }}.
+                                        {% elif b.criterio == 'sinal' %}
+                                        <span class="text-warning-emphasis fw-bold">Transferência provável para {{ b.sala_provavel }}:</span> esperado em {{ b.sala_esperada }}, com sinal mais forte em {{ b.sala_provavel }}.
+                                        {% else %}
                                         <span class="text-warning-emphasis fw-bold">Transferência não autorizada:</span> esperado em {{ b.sala_esperada }}, mas lido em {{ b.salas_lidas|join(', ') }}.
+                                        {% endif %}
                                     {% elif b.situacao == 'nao localizado' %}
                                         <span class="text-danger fw-semibold">Faltante na sala {{ b.sala_esperada }}.</span> Verificar extravio ou leitura manual.
                                     {% elif b.situacao == 'sem cobertura' %}
                                         <span class="text-muted">A sala {{ b.sala_esperada }} ainda não foi varrida nesta sessão.</span>
+                                    {% elif b.situacao == 'indeterminado' %}
+                                        {% if b.criterio == 'sala nao varrida' %}
+                                        <span class="text-info-emphasis fw-bold">Lido em {{ b.salas_lidas|join(', ') }}, mas a sala {{ b.sala_esperada }} não foi varrida.</span> Varra a sala {{ b.sala_esperada }} para decidir.
+                                        {% else %}
+                                        <span class="text-info-emphasis fw-bold">Lido em {{ b.salas_lidas|join(', ') }} com sinal parecido.</span> Procure o item no local.
+                                        {% endif %}
                                     {% endif %}
                                 </td>
                             </tr>
@@ -2028,8 +2068,11 @@ HTML_RELATORIO_TEMPLATE = """
                                 </td>
                                 <td>
                                     {% for s in item.salas_lidas %}
-                                    <span class="badge bg-light text-dark border">{{ s }}</span>
+                                    <span class="badge bg-light text-dark border">{{ s }}{% if s in item.sinal_por_sala %} · {{ "%g"|format(item.sinal_por_sala[s]) }}{% endif %}</span>
                                     {% endfor %}
+                                    {% if item.salas_lidas|length > 1 and item.sala_provavel %}
+                                    <div class="small text-muted mt-1">Provável: <strong>{{ item.sala_provavel }}</strong></div>
+                                    {% endif %}
                                 </td>
                                 <td>
                                     <span class="badge badge-sobras">Não Cadastrado</span>
@@ -2453,6 +2496,7 @@ def ver_relatorio():
     fora_do_local = []
     nao_localizados = []
     sem_cobertura = []
+    indeterminados = []
     nao_cadastrados = []
     pct_localizados = 0.0
 
@@ -2460,7 +2504,8 @@ def ver_relatorio():
         sessao_atual = con.execute("SELECT * FROM sessao WHERE id = ?", (sessao_id,)).fetchone()
         varreduras = con.execute(
             "SELECT v.numero, v.inicio, v.fim, v.duracao_s, v.linhas_brutas, s.nome AS sala, "
-            "       COUNT(l.epc) AS total_etiquetas "
+            # Etiquetas lidas pelo rádio; as resoluções de Pendências não são leituras.
+            "       COUNT(CASE WHEN l.metodo = 'RFID' THEN 1 END) AS total_etiquetas "
             "FROM varredura v "
             "LEFT JOIN sala s ON s.id = v.sala_id "
             "LEFT JOIN leitura l ON l.varredura_id = v.id "
@@ -2480,6 +2525,8 @@ def ver_relatorio():
                     nao_localizados.append(b)
                 elif b.situacao == conferencia.SEM_COBERTURA:
                     sem_cobertura.append(b)
+                elif b.situacao == conferencia.INDETERMINADO:
+                    indeterminados.append(b)
 
             nao_cadastrados = relatorio.epcs_nao_cadastrados
             if relatorio.bens:
@@ -2502,6 +2549,7 @@ def ver_relatorio():
         fora_do_local=fora_do_local,
         nao_localizados=nao_localizados,
         sem_cobertura=sem_cobertura,
+        indeterminados=indeterminados,
         nao_cadastrados=nao_cadastrados,
         pct_localizados=pct_localizados,
         ip_local=ip_local,
@@ -2565,6 +2613,22 @@ def importar_csv_offline():
     return redirect(url_for("ver_relatorio", **url_params))
 
 
+# Critério da sala provável (conferencia.CRITERIO_*), como sai no CSV exportado.
+ROTULOS_CRITERIO = {
+    conferencia.CRITERIO_CONFIRMADO: "Confirmado em campo (QR ou manual)",
+    conferencia.CRITERIO_UNICA: "Lido em uma sala só",
+    conferencia.CRITERIO_SINAL: "Sinal mais forte",
+    conferencia.CRITERIO_CADASTRO: "Sinal parecido; vale o cadastro",
+    conferencia.CRITERIO_EMPATE: "Sinal parecido entre as salas",
+    conferencia.CRITERIO_SALA_NAO_VARRIDA: "Sala esperada não varrida",
+}
+
+
+def _texto_sinais(sinal_por_sala):
+    """RSSI de cada sala (ex.: Lab A: 82; Lab B: 71), para conferir a decisão na planilha."""
+    return "; ".join(f"{sala}: {valor:g}" for sala, valor in sinal_por_sala.items())
+
+
 @app.route("/relatorio/<sessao_id>/exportar-csv")
 def exportar_relatorio_csv(sessao_id):
     """Gera um arquivo CSV/Excel compatível com formato pt-BR (ponto-e-vírgula e UTF-8 BOM)."""
@@ -2578,9 +2642,11 @@ def exportar_relatorio_csv(sessao_id):
     # Grava BOM para o Excel no Windows abrir com acentuação e caracteres especiais perfeitos
     output.write("\ufeff")
     writer = csv.writer(output, delimiter=";", quoting=csv.QUOTE_MINIMAL)
+    # As colunas da sala provável vão no fim, para não deslocar as que planilhas já leem.
     writer.writerow([
         "Patrimonio", "Descricao", "EPC", "Sala_Esperada", "Salas_Lidas",
-        "Situacao", "Unidade", "Sessao_ID", "Diagnostico"
+        "Situacao", "Unidade", "Sessao_ID", "Diagnostico",
+        "Sala_Provavel", "Criterio", "Sinal_Por_Sala",
     ])
 
     for b in rel.bens:
@@ -2590,11 +2656,21 @@ def exportar_relatorio_csv(sessao_id):
             if any(s != b.sala_esperada for s in b.salas_lidas):
                 obs += f" (também detectado em outra sala: {salas_lidas_str})"
         elif b.situacao == conferencia.FORA_DO_LOCAL:
-            obs = f"Transferência indevida: esperado em '{b.sala_esperada}', mas detectado em '{salas_lidas_str}'"
+            if b.criterio in (conferencia.CRITERIO_SINAL, conferencia.CRITERIO_CONFIRMADO):
+                obs = (f"Transferência provável: esperado em '{b.sala_esperada}', "
+                       f"provável em '{b.sala_provavel}' (lido em '{salas_lidas_str}')")
+            else:
+                obs = f"Transferência indevida: esperado em '{b.sala_esperada}', mas detectado em '{salas_lidas_str}'"
         elif b.situacao == conferencia.NAO_LOCALIZADO:
             obs = f"Faltante: não detectado na sala '{b.sala_esperada}' durante a varredura"
         elif b.situacao == conferencia.SEM_COBERTURA:
             obs = f"Sem cobertura: a sala '{b.sala_esperada}' não foi varrida nesta sessão"
+        elif b.situacao == conferencia.INDETERMINADO:
+            if b.criterio == conferencia.CRITERIO_SALA_NAO_VARRIDA:
+                obs = (f"Sala indeterminada: lido em '{salas_lidas_str}', mas a sala "
+                       f"'{b.sala_esperada}' não foi varrida nesta sessão")
+            else:
+                obs = f"Sala indeterminada: lido em '{salas_lidas_str}' com sinal parecido; procurar o item"
         else:
             obs = ""
 
@@ -2608,6 +2684,9 @@ def exportar_relatorio_csv(sessao_id):
             rel.unidade,
             rel.sessao_id,
             obs,
+            b.sala_provavel,
+            ROTULOS_CRITERIO.get(b.criterio, b.criterio),
+            _texto_sinais(b.sinal_por_sala),
         ])
 
     for item in rel.epcs_nao_cadastrados:
@@ -2621,6 +2700,9 @@ def exportar_relatorio_csv(sessao_id):
             rel.unidade,
             rel.sessao_id,
             "Etiqueta RFID lida pelo coletor sem correspondência no cadastro de bens",
+            item.sala_provavel,
+            ROTULOS_CRITERIO.get(item.criterio, item.criterio),
+            _texto_sinais(item.sinal_por_sala),
         ])
 
     csv_data = output.getvalue()
@@ -2756,6 +2838,68 @@ def api_bens():
     ])
 
 
+def _numero(valor, padrao):
+    try:
+        return float(valor)
+    except (TypeError, ValueError):
+        return padrao
+
+
+def agregar_leituras(leituras):
+    """Uma linha por EPC e método, como o leitor_csv faz com o CSV da varredura.
+
+    O coletor manda um evento por leitura ({"epc", "rssi", "primeira_leitura", ...}).
+    Gravados um a um, cada evento sobrescrevia o anterior e sobravam 1 leitura e RSSI 0,
+    justamente o que a conferência precisa para saber em que sala o sinal foi mais forte.
+    Itens já agregados (com "leituras" e "rssi_min/medio/max") também são aceitos.
+    """
+    agregadas = {}
+    for l in leituras:
+        epc = (l.get("epc") or "").strip().upper()
+        if not epc:
+            continue
+        metodo = (l.get("metodo") or "RFID").strip().upper()
+        quantidade = max(1, int(_numero(l.get("leituras", 1), 1)))
+        if any(chave in l for chave in ("rssi_min", "rssi_medio", "rssi_max")):
+            rssi_min = _numero(l.get("rssi_min"), 0)
+            rssi_max = _numero(l.get("rssi_max"), 0)
+            rssi_medio = _numero(l.get("rssi_medio"), (rssi_min + rssi_max) / 2)
+        else:
+            rssi_min = rssi_max = rssi_medio = _numero(l.get("rssi"), 0)
+        primeira = l.get("primeira_leitura") or datetime.now().strftime("%Y-%m-%d %H:%M:%S.000")
+        ultima = l.get("ultima_leitura") or primeira
+
+        atual = agregadas.get((epc, metodo))
+        if atual is None:
+            agregadas[(epc, metodo)] = {
+                "epc": epc, "metodo": metodo, "leituras": quantidade,
+                "soma": rssi_medio * quantidade, "rssi_min": rssi_min, "rssi_max": rssi_max,
+                "primeira_leitura": primeira, "ultima_leitura": ultima,
+            }
+        else:
+            atual["leituras"] += quantidade
+            atual["soma"] += rssi_medio * quantidade
+            atual["rssi_min"] = min(atual["rssi_min"], rssi_min)
+            atual["rssi_max"] = max(atual["rssi_max"], rssi_max)
+            # Mesmo formato de data do coletor, então a ordem do texto é a ordem do tempo.
+            atual["primeira_leitura"] = min(atual["primeira_leitura"], primeira)
+            atual["ultima_leitura"] = max(atual["ultima_leitura"], ultima)
+
+    resultado = []
+    for a in agregadas.values():
+        resultado.append({
+            "epc": a["epc"],
+            "metodo": a["metodo"],
+            "leituras": a["leituras"],
+            "rssi_min": int(a["rssi_min"]),
+            "rssi_medio": round(a["soma"] / a["leituras"], 2),
+            "rssi_max": int(a["rssi_max"]),
+            "primeira_leitura": a["primeira_leitura"],
+            "ultima_leitura": a["ultima_leitura"],
+        })
+    return resultado
+
+
 @app.route("/api/sincronizar", methods=["POST"])
 def api_sincronizar():
     """Recebe do Urovo uma varredura concluída com suas leituras e pendências resolvidas.
@@ -2856,31 +3000,37 @@ def api_sincronizar():
     )
 
     # 4. Grava Leituras RFID (deduplicadas)
-    con.execute("DELETE FROM leitura WHERE varredura_id = ?", (varredura_id,))
-    for l in leituras:
-        epc = l.get("epc", "").strip().upper()
-        if not epc:
-            continue
+    # Só as leituras do rádio são substituídas. As resoluções de Pendências ficam: um
+    # envio antigo da fila offline, só com leituras, pode chegar depois do que levou as
+    # resoluções, e antes as apagava.
+    con.execute(
+        "DELETE FROM leitura WHERE varredura_id = ? AND metodo = 'RFID'", (varredura_id,)
+    )
+    do_radio = [item for item in leituras if (item.get("metodo") or "RFID").upper() == "RFID"]
+    for l in agregar_leituras(do_radio):
         con.execute(
             "INSERT INTO leitura (varredura_id, epc, metodo, leituras, rssi_min, "
             "rssi_medio, rssi_max, primeira_leitura, ultima_leitura) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) "
-            "ON CONFLICT(varredura_id, epc, metodo) DO UPDATE SET "
-            "  leituras = excluded.leituras, rssi_medio = excluded.rssi_medio",
+            "VALUES (?, ?, 'RFID', ?, ?, ?, ?, ?, ?)",
             (
                 varredura_id,
-                epc,
-                l.get("metodo", "RFID"),
-                l.get("leituras", 1),
-                l.get("rssi_min", 0),
-                l.get("rssi_medio", 0.0),
-                l.get("rssi_max", 0),
-                l.get("primeira_leitura", datetime.now().isoformat()),
-                l.get("ultima_leitura", datetime.now().isoformat()),
+                l["epc"],
+                l["leituras"],
+                l["rssi_min"],
+                l["rssi_medio"],
+                l["rssi_max"],
+                l["primeira_leitura"],
+                l["ultima_leitura"],
             ),
         )
 
     # 5. Grava Resolução de Pendências (QR Code, Manual ou Faltante - RF10)
+    # O coletor manda a lista inteira de resoluções da varredura a cada envio; uma
+    # lista nova substitui a anterior, e um envio sem resoluções não mexe nelas.
+    if pendencias:
+        con.execute(
+            "DELETE FROM leitura WHERE varredura_id = ? AND metodo != 'RFID'", (varredura_id,)
+        )
     for p in pendencias:
         metodo = p.get("metodo", "MANUAL").upper()
         epc = p.get("epc", "").strip().upper()
