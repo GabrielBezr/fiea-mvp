@@ -1173,14 +1173,14 @@ HTML_SALAS_TEMPLATE = """
                                         </td>
                                         <td class="text-end">
                                             {% if s.total_bens > 0 or s.total_varreduras > 0 %}
-                                                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" disabled 
-                                                        title="Não pode ser excluída: possui {% if s.total_bens > 0 %}{{ s.total_bens }} bem(ns){% endif %}{% if s.total_bens > 0 and s.total_varreduras > 0 %} e {% endif %}{% if s.total_varreduras > 0 %}{{ s.total_varreduras }} varredura(s){% endif %} associada(s)."
-                                                        style="opacity: 0.45; cursor: not-allowed;">
-                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                                    </svg>
-                                                </button>
+                                                <span class="d-inline-block" tabindex="0" title="Não pode ser excluída: possui {% if s.total_bens > 0 %}{{ s.total_bens }} bem(ns){% endif %}{% if s.total_bens > 0 and s.total_varreduras > 0 %} e {% endif %}{% if s.total_varreduras > 0 %}{{ s.total_varreduras }} varredura(s){% endif %} associada(s)." style="cursor: not-allowed;">
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 disabled" tabindex="-1" style="pointer-events: none; opacity: 0.45;">
+                                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                        </svg>
+                                                    </button>
+                                                </span>
                                             {% else %}
                                                 <form method="POST" action="/salas/excluir/{{ s.id }}" onsubmit="return confirm('Deseja excluir a sala {{ s.nome }}?');" style="display:inline;">
                                                     <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" title="Excluir Sala">
