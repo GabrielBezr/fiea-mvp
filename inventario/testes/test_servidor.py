@@ -246,5 +246,83 @@ class TestRelatorioSalaProvavel(unittest.TestCase):
         self.assertEqual(dados["EEE"][9:11], ["Lab A", "Sinal mais forte"])
 
 
+@unittest.skipUnless(TEM_FLASK, "Flask não instalado (use o .venv do servidor)")
+class TestExclusaoSala(unittest.TestCase):
+    def setUp(self):
+        self._temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
+        self.addCleanup(self._temp.cleanup)
+        self._db_original = servidor.CAMINHO_DB
+        servidor.CAMINHO_DB = Path(self._temp.name) / "teste.db"
+        self.addCleanup(setattr, servidor, "CAMINHO_DB", self._db_original)
+
+        self.con = esquema.conectar(servidor.CAMINHO_DB)
+        self.addCleanup(self.con.close)
+        self.cliente = servidor.app.test_client()
+
+        # Cria salas
+        self.con.execute("INSERT INTO sala (unidade, nome) VALUES ('UFAL', 'Sala Vazia')")
+        self.con.execute("INSERT INTO sala (unidade, nome) VALUES ('UFAL', 'Sala Com Bens')")
+        self.con.execute("INSERT INTO sala (unidade, nome) VALUES ('UFAL', 'Sala Com Varreduras')")
+
+        salas = {r["nome"]: r["id"] for r in self.con.execute("SELECT id, nome FROM sala")}
+        self.id_vazia = salas["Sala Vazia"]
+        self.id_com_bens = salas["Sala Com Bens"]
+        self.id_com_varreduras = salas["Sala Com Varreduras"]
+
+        # Bem vinculado
+        self.con.execute(
+            "INSERT INTO bem (patrimonio, descricao, sala_esperada_id, importado_em) "
+            "VALUES ('B1', 'Item 1', ?, '2026-10-27')",
+            (self.id_com_bens,),
+        )
+
+        # Sessão e Varredura vinculada
+        self.con.execute(
+            "INSERT INTO sessao (id, unidade, operador, inicio) VALUES ('S_TESTE', 'UFAL', 'Op', '2026-10-27')"
+        )
+        self.con.execute(
+            "INSERT INTO varredura (id, sessao_id, numero, sala_id, inicio, arquivo_origem, importado_em, linhas_brutas) "
+            "VALUES ('S_TESTE-v01', 'S_TESTE', 1, ?, '2026-10-27', 'teste.csv', '2026-10-27', 0)",
+            (self.id_com_varreduras,),
+        )
+        self.con.commit()
+
+    def test_excluir_sala_vazia_tem_sucesso(self):
+        resposta = self.cliente.post(f"/salas/excluir/{self.id_vazia}", follow_redirects=True)
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn("excluída com sucesso", resposta.get_data(as_text=True))
+        linha = self.con.execute("SELECT id FROM sala WHERE id = ?", (self.id_vazia,)).fetchone()
+        self.assertIsNone(linha)
+
+    def test_excluir_sala_com_bens_e_bloqueado(self):
+        resposta = self.cliente.post(f"/salas/excluir/{self.id_com_bens}", follow_redirects=True)
+        self.assertEqual(resposta.status_code, 200)
+        texto = resposta.get_data(as_text=True)
+        self.assertIn("Não é possível excluir", texto)
+        self.assertIn("bem vinculado", texto)
+        linha = self.con.execute("SELECT id FROM sala WHERE id = ?", (self.id_com_bens,)).fetchone()
+        self.assertIsNotNone(linha)
+
+    def test_excluir_sala_com_varredura_e_bloqueado_sem_erro_500(self):
+        resposta = self.cliente.post(f"/salas/excluir/{self.id_com_varreduras}", follow_redirects=True)
+        self.assertEqual(resposta.status_code, 200)
+        texto = resposta.get_data(as_text=True)
+        self.assertIn("Não é possível excluir", texto)
+        self.assertIn("varredura registrada", texto)
+        linha = self.con.execute("SELECT id FROM sala WHERE id = ?", (self.id_com_varreduras,)).fetchone()
+        self.assertIsNotNone(linha)
+
+    def test_excluir_sala_inexistente(self):
+        resposta = self.cliente.post("/salas/excluir/99999", follow_redirects=True)
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn("Sala não encontrada", resposta.get_data(as_text=True))
+
+    def test_listagem_mostra_contagem_de_varreduras(self):
+        resposta = self.cliente.get("/salas")
+        self.assertEqual(resposta.status_code, 200)
+        texto = resposta.get_data(as_text=True)
+        self.assertIn("1 varredura", texto)
+
+
 if __name__ == "__main__":
     unittest.main()
