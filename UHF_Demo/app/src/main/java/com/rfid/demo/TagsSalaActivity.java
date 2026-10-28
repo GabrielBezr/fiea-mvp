@@ -30,6 +30,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -76,6 +78,86 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
     // Salas com pendências, a mais recente primeiro. Ficam na memória enquanto o app
     // estiver aberto; o que já foi resolvido vai ao PC (ou à fila) ao sair da sala.
     private static final List<SalaConferida> salasConferidas = new ArrayList<>();
+    // Mapeamento de EPC (maiúsculo) -> Conjunto de salas onde foi detectado via RFID nesta sessão
+    private static final Map<String, Set<String>> leiturasRfidPorEpc = new HashMap<>();
+
+    /**
+     * Registra os EPCs lidos via RFID em uma varredura para cruzar itens fora do local
+     * entre as salas da sessão.
+     */
+    public static void registrarLeiturasVarredura(String sala, Set<String> epcs) {
+        if (sala == null || sala.trim().isEmpty() || epcs == null) {
+            return;
+        }
+        String salaNorm = sala.trim();
+        synchronized (leiturasRfidPorEpc) {
+            for (String epc : epcs) {
+                if (epc != null && !epc.trim().isEmpty()) {
+                    String epcNorm = epc.trim().toUpperCase();
+                    Set<String> salas = leiturasRfidPorEpc.get(epcNorm);
+                    if (salas == null) {
+                        salas = new HashSet<>();
+                        leiturasRfidPorEpc.put(epcNorm, salas);
+                    }
+                    salas.add(salaNorm);
+                }
+            }
+        }
+    }
+
+    /**
+     * Retorna o nome das outras salas onde o EPC foi detectado via RFID nesta sessão,
+     * ou null se não foi lido em nenhuma outra sala.
+     */
+    public static String obterOutrasSalasOndeLido(String epc, String salaAtual) {
+        if (epc == null || epc.trim().isEmpty()) {
+            return null;
+        }
+        String epcNorm = epc.trim().toUpperCase();
+        String salaNorm = salaAtual != null ? salaAtual.trim() : "";
+        Set<String> outras = new HashSet<>();
+
+        synchronized (leiturasRfidPorEpc) {
+            Set<String> salas = leiturasRfidPorEpc.get(epcNorm);
+            if (salas != null) {
+                for (String s : salas) {
+                    if (!s.equalsIgnoreCase(salaNorm)) {
+                        outras.add(s);
+                    }
+                }
+            }
+        }
+
+        for (SalaConferida sc : salasConferidas) {
+            if (sc.varredura != null && sc.varredura.sala != null
+                    && !sc.varredura.sala.equalsIgnoreCase(salaNorm)
+                    && sc.epcsLidos != null && sc.epcsLidos.contains(epcNorm)) {
+                outras.add(sc.varredura.sala);
+            }
+        }
+
+        if (outras.isEmpty()) {
+            return null;
+        }
+
+        List<String> ordenadas = new ArrayList<>(outras);
+        Collections.sort(ordenadas);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < ordenadas.size(); i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(ordenadas.get(i));
+        }
+        return sb.toString();
+    }
+
+    /** Limpa o histórico de conferência ao iniciar uma nova sessão de inventário. */
+    public static void limparSessao() {
+        salasConferidas.clear();
+        synchronized (leiturasRfidPorEpc) {
+            leiturasRfidPorEpc.clear();
+        }
+        salaParaAbrir = null;
+    }
     // "Resolver agora" no Inventário: ao entrar na aba, abre direto esta sala.
     private static SalaConferida salaParaAbrir = null;
 
@@ -85,6 +167,9 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
      */
     public static void carregarParaConferencia(Sessao s, Varredura v, List<Leitura> leituras, Set<String> epcs,
                                                int total, int pendentes) {
+        if (v != null && epcs != null) {
+            registrarLeiturasVarredura(v.sala, epcs);
+        }
         if (v == null || pendentes <= 0) {
             return;
         }
@@ -200,13 +285,27 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
     /** Texto do bem escolhido; as ações só ficam ativas com um bem selecionado. */
     private void mostrarSelecionado() {
         boolean selecionado = bemSelecionado != null;
+        boolean bloqueadoFaltante = false;
         if (selecionado) {
-            tvItemSelecionado.setText(getString(R.string.itemSelecionado, bemSelecionado.patrimonio,
-                    bemSelecionado.descricao, formatarStatus(bemSelecionado.status)));
+            bloqueadoFaltante = "LOCALIZADO_RFID".equals(bemSelecionado.status)
+                    || "FORA_DO_LOCAL".equals(bemSelecionado.status)
+                    || (bemSelecionado.outrasSalas != null && !bemSelecionado.outrasSalas.isEmpty());
+
+            if ("FORA_DO_LOCAL".equals(bemSelecionado.status)
+                    || (bemSelecionado.outrasSalas != null && !bemSelecionado.outrasSalas.isEmpty()
+                        && estaPendente(bemSelecionado))) {
+                String salaOndeLido = bemSelecionado.outrasSalas != null ? bemSelecionado.outrasSalas : "";
+                tvItemSelecionado.setText(getString(R.string.itemSelecionadoForaDoLocal,
+                        bemSelecionado.patrimonio, bemSelecionado.descricao,
+                        getString(R.string.statusForaDoLocal), salaOndeLido));
+            } else {
+                tvItemSelecionado.setText(getString(R.string.itemSelecionado, bemSelecionado.patrimonio,
+                        bemSelecionado.descricao, formatarStatus(bemSelecionado.status)));
+            }
         }
         btResolverQr.setEnabled(selecionado);
         btResolverManual.setEnabled(selecionado);
-        btResolverFaltante.setEnabled(selecionado);
+        btResolverFaltante.setEnabled(selecionado && !bloqueadoFaltante);
     }
 
     /**
@@ -314,15 +413,29 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
             listaBens.clear();
             if (bens != null) {
                 for (SyncManager.BemEsperado b : bens) {
-                    // Cruzamento RF09: Se o EPC foi lido via RFID na varredura, marca como LOCALIZADO_RFID
+                    // Cruzamento RF09: Se o EPC foi lido via RFID na varredura desta sala, marca como LOCALIZADO_RFID
                     if (b.epc != null && !b.epc.isEmpty() && sala.epcsLidos.contains(b.epc.toUpperCase())) {
                         b.status = "LOCALIZADO_RFID";
+                    } else {
+                        // Verifica se o bem foi detectado via RFID em outra sala nesta sessão
+                        String outrasSalas = obterOutrasSalasOndeLido(b.epc, sala.varredura.sala);
+                        if (outrasSalas != null) {
+                            b.outrasSalas = outrasSalas;
+                            b.status = "FORA_DO_LOCAL";
+                        }
                     }
                     // Mantém resoluções já feitas nesta sala (a mais recente se houver múltiplas)
                     for (int i = sala.resolvidas.size() - 1; i >= 0; i--) {
                         SyncManager.PendenciaResolvida pr = sala.resolvidas.get(i);
                         if (pr.patrimonio != null && pr.patrimonio.equalsIgnoreCase(b.patrimonio)) {
-                            b.status = "LOCALIZADO_" + pr.metodo;
+                            if ("FALTANTE".equalsIgnoreCase(pr.metodo) && b.outrasSalas != null) {
+                                // Item lido via RFID em outra sala: resolução como faltante é inconsistente
+                                sala.resolvidas.remove(i);
+                                sala.resolucoesNaoEnviadas = true;
+                                b.status = "FORA_DO_LOCAL";
+                            } else {
+                                b.status = "LOCALIZADO_" + pr.metodo;
+                            }
                             break;
                         }
                     }
@@ -343,6 +456,7 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
 
             atualizarContadores();
             adaptador.notifyDataSetChanged();
+            mostrarSelecionado();
         });
     }
 
@@ -454,6 +568,14 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
 
         } else if (opcao == ACAO_FALTANTE) {
             // [3] Item Faltante / Desaparecido
+            if ("FORA_DO_LOCAL".equals(bemSelecionado.status)
+                    || (bemSelecionado.outrasSalas != null && !bemSelecionado.outrasSalas.isEmpty())
+                    || "LOCALIZADO_RFID".equals(bemSelecionado.status)) {
+                String salaOndeLido = bemSelecionado.outrasSalas != null ? bemSelecionado.outrasSalas : "";
+                Toast.makeText(this, getString(R.string.avisoItemForaDoLocal, salaOndeLido), Toast.LENGTH_LONG).show();
+                return;
+            }
+
             new AlertDialog.Builder(this)
                     .setTitle(R.string.faltanteTitulo)
                     .setMessage(getString(R.string.faltanteMensagem, bemSelecionado.patrimonio, bemSelecionado.descricao))
@@ -531,6 +653,7 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         if ("LOCALIZADO_QR".equals(status)) return getString(R.string.statusQr);
         if ("LOCALIZADO_MANUAL".equals(status)) return getString(R.string.statusManual);
         if ("LOCALIZADO_FALTANTE".equals(status) || "FALTANTE".equals(status)) return getString(R.string.statusFaltante);
+        if ("FORA_DO_LOCAL".equals(status)) return getString(R.string.statusForaDoLocal);
         return getString(R.string.statusPendente);
     }
 
@@ -550,6 +673,9 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         }
         if ("LOCALIZADO_FALTANTE".equals(status) || "FALTANTE".equals(status)) {
             return new int[]{R.string.situacaoFaltante, R.color.erro_fundo, R.color.erro_texto, R.color.erro};
+        }
+        if ("FORA_DO_LOCAL".equals(status)) {
+            return new int[]{R.string.situacaoForaDoLocal, R.color.alerta_fundo, R.color.alerta_texto, R.color.alerta};
         }
         return new int[]{R.string.situacaoPendente, R.color.alerta_fundo, R.color.alerta_texto, R.color.alerta};
     }
@@ -576,8 +702,14 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
                 titulo.setText(getString(R.string.bemTitulo, bem.patrimonio, bem.descricao));
                 String epcTxt = bem.epc != null && !bem.epc.isEmpty()
                         ? getString(R.string.bemEpc, bem.epc) : getString(R.string.bemSemEpc);
-                // Metálico ajuda a entender por que o RFID não leu (etiqueta sobre metal).
-                detalhe.setText(bem.metalico ? getString(R.string.bemMetalico, epcTxt) : epcTxt);
+                if (bem.outrasSalas != null && !bem.outrasSalas.isEmpty()) {
+                    detalhe.setText(bem.metalico
+                            ? getString(R.string.bemLidoOutraSalaMetalico, epcTxt, bem.outrasSalas)
+                            : getString(R.string.bemLidoOutraSala, epcTxt, bem.outrasSalas));
+                } else {
+                    // Metálico ajuda a entender por que o RFID não leu (etiqueta sobre metal).
+                    detalhe.setText(bem.metalico ? getString(R.string.bemMetalico, epcTxt) : epcTxt);
+                }
 
                 int[] estilo = estiloDaSituacao(bem.status);
                 selo.setText(estilo[0]);

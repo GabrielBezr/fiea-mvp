@@ -404,6 +404,7 @@ public class ScanActivity extends Activity implements OnClickListener {
                 .apply();
         sessaoAtual = new Sessao(unidade, operador, System.currentTimeMillis());
         sessaoAtualStatic = sessaoAtual;
+        TagsSalaActivity.limparSessao();
         ultimaSessaoEncerrada = null;
         ultimaVarreduraEncerrada = null;
         etUnidade.setEnabled(false);
@@ -496,6 +497,7 @@ public class ScanActivity extends Activity implements OnClickListener {
                 }
             }
         }
+        TagsSalaActivity.registrarLeiturasVarredura(v.sala, epcsLidos);
 
         // A sala passa a contar como varrida já agora, mesmo sem rede para conferir os bens.
         SalaDaSessao andamento = salaDaSessao(v.sala);
