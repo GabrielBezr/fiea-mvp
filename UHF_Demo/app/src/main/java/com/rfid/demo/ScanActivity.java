@@ -2,6 +2,7 @@ package com.rfid.demo;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.os.Handler;
@@ -240,6 +241,24 @@ public class ScanActivity extends Activity implements OnClickListener {
             btVarrerSala.setOnClickListener(this);
             BtEncerrarVarredura.setOnClickListener(this);
             BtExportCsv.setOnClickListener(this);
+
+            if (sessaoAtual == null && sessaoAtualStatic != null && !sessaoAtualStatic.encerrada()) {
+                sessaoAtual = sessaoAtualStatic;
+                if (etOperador != null && sessaoAtual.operador != null) {
+                    etOperador.setText(sessaoAtual.operador);
+                    etOperador.setEnabled(false);
+                }
+                if (etUnidade != null && sessaoAtual.unidade != null) {
+                    etUnidade.setText(sessaoAtual.unidade);
+                    etUnidade.setEnabled(false);
+                }
+            } else {
+                SharedPreferences prefs = getSharedPreferences("FieaColetaPrefs", MODE_PRIVATE);
+                String ultimoOp = prefs.getString("ultimo_operador", "");
+                if (!ultimoOp.isEmpty() && etOperador != null && etOperador.getText().toString().isEmpty()) {
+                    etOperador.setText(ultimoOp);
+                }
+            }
             atualizarStatus();
 
             if (RFIDSDKManager.getInstance().getRfidManager() != null) {
@@ -379,6 +398,10 @@ public class ScanActivity extends Activity implements OnClickListener {
             avisar(R.string.msgSessaoCamposVazios);
             return;
         }
+        getSharedPreferences("FieaColetaPrefs", MODE_PRIVATE)
+                .edit()
+                .putString("ultimo_operador", operador)
+                .apply();
         sessaoAtual = new Sessao(unidade, operador, System.currentTimeMillis());
         sessaoAtualStatic = sessaoAtual;
         ultimaSessaoEncerrada = null;
@@ -949,7 +972,20 @@ public class ScanActivity extends Activity implements OnClickListener {
     protected void onResume() {
         super.onResume();
         registrarCallback();
-        if (sessaoAtual == null && unidadeSugerida != null && !unidadeSugerida.isEmpty()) {
+        if (sessaoAtual == null && sessaoAtualStatic != null && !sessaoAtualStatic.encerrada()) {
+            sessaoAtual = sessaoAtualStatic;
+        }
+        if (sessaoAtual != null) {
+            if (etOperador != null && sessaoAtual.operador != null) {
+                etOperador.setText(sessaoAtual.operador);
+                etOperador.setEnabled(false);
+            }
+            if (etUnidade != null && sessaoAtual.unidade != null) {
+                etUnidade.setText(sessaoAtual.unidade);
+                etUnidade.setEnabled(false);
+            }
+            atualizarStatus();
+        } else if (unidadeSugerida != null && !unidadeSugerida.isEmpty()) {
             if (spinnerUnidade != null && spinnerUnidade.getVisibility() == View.VISIBLE) {
                 for (int i = 0; i < spinnerUnidade.getCount(); i++) {
                     if (unidadeSugerida.equalsIgnoreCase(String.valueOf(spinnerUnidade.getItemAtPosition(i)))) {
