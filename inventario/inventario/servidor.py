@@ -1148,6 +1148,7 @@ HTML_SALAS_TEMPLATE = """
                                         <th>Nome da Sala</th>
                                         <th>Unidade</th>
                                         <th>Bens Vinculados</th>
+                                        <th>Varreduras</th>
                                         <th class="text-end">Ações</th>
                                     </tr>
                                 </thead>
@@ -1163,20 +1164,38 @@ HTML_SALAS_TEMPLATE = """
                                                 <span class="text-muted small">Nenhum</span>
                                             {% endif %}
                                         </td>
+                                        <td>
+                                            {% if s.total_varreduras > 0 %}
+                                                <span class="badge bg-secondary-subtle text-secondary border border-secondary">{{ s.total_varreduras }} {% if s.total_varreduras == 1 %}varredura{% else %}varreduras{% endif %}</span>
+                                            {% else %}
+                                                <span class="text-muted small">Nenhuma</span>
+                                            {% endif %}
+                                        </td>
                                         <td class="text-end">
-                                            <form method="POST" action="/salas/excluir/{{ s.id }}" onsubmit="return confirm('Deseja excluir a sala {{ s.nome }}?');" style="display:inline;">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" title="Excluir Sala">
-                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                                    </svg>
-                                                </button>
-                                            </form>
+                                            {% if s.total_bens > 0 or s.total_varreduras > 0 %}
+                                                <span class="d-inline-block" tabindex="0" title="Não pode ser excluída: possui {% if s.total_bens > 0 %}{{ s.total_bens }} bem(ns){% endif %}{% if s.total_bens > 0 and s.total_varreduras > 0 %} e {% endif %}{% if s.total_varreduras > 0 %}{{ s.total_varreduras }} varredura(s){% endif %} associada(s)." style="cursor: not-allowed;">
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 disabled" tabindex="-1" style="pointer-events: none; opacity: 0.45;">
+                                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                        </svg>
+                                                    </button>
+                                                </span>
+                                            {% else %}
+                                                <form method="POST" action="/salas/excluir/{{ s.id }}" onsubmit="return confirm('Deseja excluir a sala {{ s.nome }}?');" style="display:inline;">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" title="Excluir Sala">
+                                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                        </svg>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                     {% else %}
                                     <tr>
-                                        <td colspan="4" class="text-center py-5">
+                                        <td colspan="5" class="text-center py-5">
                                             <div class="text-muted mb-2">
                                                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-50">
                                                     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -2426,8 +2445,12 @@ def listar_salas():
     """Página dedicada à gestão e cadastro de salas."""
     con = get_db()
     salas = con.execute(
-        "SELECT s.id, s.nome, s.unidade, COUNT(b.patrimonio) AS total_bens "
-        "FROM sala s LEFT JOIN bem b ON b.sala_esperada_id = s.id "
+        "SELECT s.id, s.nome, s.unidade, "
+        "       COUNT(DISTINCT b.patrimonio) AS total_bens, "
+        "       COUNT(DISTINCT v.id) AS total_varreduras "
+        "FROM sala s "
+        "LEFT JOIN bem b ON b.sala_esperada_id = s.id "
+        "LEFT JOIN varredura v ON v.sala_id = s.id "
         "GROUP BY s.id, s.nome, s.unidade "
         "ORDER BY s.nome"
     ).fetchall()
@@ -2462,16 +2485,35 @@ def cadastrar_sala():
 
 @app.route("/salas/excluir/<int:sala_id>", methods=["POST"])
 def excluir_sala(sala_id):
-    """Exclui uma sala caso não haja bens associados."""
+    """Exclui uma sala caso não haja bens ou varreduras associados."""
     con = get_db()
-    row = con.execute("SELECT COUNT(*) FROM bem WHERE sala_esperada_id = ?", (sala_id,)).fetchone()
-    bens_vinculados = row[0] if row else 0
-    if bens_vinculados > 0:
-        return redirect(url_for("listar_salas", msg=f"Não é possível excluir: existem {bens_vinculados} bens vinculados a esta sala.", tipo="danger"))
+    sala = con.execute("SELECT id, nome FROM sala WHERE id = ?", (sala_id,)).fetchone()
+    if not sala:
+        return redirect(url_for("listar_salas", msg="Sala não encontrada.", tipo="warning"))
+    nome_sala = sala["nome"]
 
-    con.execute("DELETE FROM sala WHERE id = ?", (sala_id,))
-    con.commit()
-    return redirect(url_for("listar_salas", msg="Sala excluída com sucesso.", tipo="warning"))
+    # 1. Verifica se existem bens vinculados a esta sala
+    row_bem = con.execute("SELECT COUNT(*) FROM bem WHERE sala_esperada_id = ?", (sala_id,)).fetchone()
+    bens_vinculados = row_bem[0] if row_bem else 0
+    if bens_vinculados > 0:
+        texto = "1 bem vinculado" if bens_vinculados == 1 else f"{bens_vinculados} bens vinculados"
+        return redirect(url_for("listar_salas", msg=f"Não é possível excluir: existe {texto} à sala '{nome_sala}'.", tipo="danger"))
+
+    # 2. Verifica se existem varreduras de inventário registradas nesta sala
+    row_var = con.execute("SELECT COUNT(*) FROM varredura WHERE sala_id = ?", (sala_id,)).fetchone()
+    varreduras_vinculadas = row_var[0] if row_var else 0
+    if varreduras_vinculadas > 0:
+        texto = "1 varredura registrada" if varreduras_vinculadas == 1 else f"{varreduras_vinculadas} varreduras registradas"
+        return redirect(url_for("listar_salas", msg=f"Não é possível excluir: existe {texto} nesta sala no histórico de auditoria.", tipo="danger"))
+
+    # 3. Tenta a exclusão com tratamento de integridade referencial
+    try:
+        con.execute("DELETE FROM sala WHERE id = ?", (sala_id,))
+        con.commit()
+    except sqlite3.IntegrityError:
+        return redirect(url_for("listar_salas", msg=f"Não é possível excluir a sala '{nome_sala}': ela possui vínculos no sistema.", tipo="danger"))
+
+    return redirect(url_for("listar_salas", msg=f"Sala '{nome_sala}' excluída com sucesso.", tipo="warning"))
 
 
 @app.route("/relatorio")
