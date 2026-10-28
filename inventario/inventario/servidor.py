@@ -616,22 +616,60 @@ HTML_TEMPLATE = """
         </div>
         {% endif %}
 
+        {% if conflito %}
+        <div class="alert alert-warning border-warning shadow-sm mb-4" role="alert">
+            <div class="d-flex align-items-start gap-3">
+                <div class="pt-1">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-warning">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                </div>
+                <div class="flex-grow-1">
+                    <h6 class="fw-bold mb-1">Tag RFID já associada a outro bem</h6>
+                    <p class="mb-1 small">
+                        A tag <code>{{ conflito.epc }}</code> já está cadastrada no bem <strong>{{ conflito.dono_pat }}</strong> ({{ conflito.dono_desc }}) na sala <strong>{{ conflito.dono_sala }}</strong>.
+                    </p>
+                    <p class="mb-3 small text-muted">
+                        Deseja transferir esta tag para o bem <strong>{{ conflito.novo_pat }}</strong> ({{ conflito.novo_desc }})? O bem anterior ({{ conflito.dono_pat }}) ficará sem tag RFID.
+                    </p>
+                    <div class="d-flex gap-2">
+                        <form method="POST" action="/cadastrar">
+                            <input type="hidden" name="patrimonio" value="{{ conflito.novo_pat }}">
+                            <input type="hidden" name="descricao" value="{{ conflito.novo_desc }}">
+                            <input type="hidden" name="sala" value="{{ conflito.novo_sala }}">
+                            <input type="hidden" name="epc" value="{{ conflito.epc }}">
+                            <input type="hidden" name="metalico" value="{{ conflito.novo_metal }}">
+                            <input type="hidden" name="editando" value="{{ conflito.editando }}">
+                            <input type="hidden" name="confirmar_transferencia" value="1">
+                            <button type="submit" class="btn btn-warning btn-sm fw-bold">Transferir Tag para este Bem</button>
+                        </form>
+                        <a href="/bens" class="btn btn-outline-secondary btn-sm">Cancelar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <div class="row">
-            <!-- Formulário de Cadastro -->
+            <!-- Formulário de Cadastro de Novo Bem -->
             <div class="col-lg-4 mb-4">
                 <div class="card h-100">
                     <div class="card-header bg-white py-3">
                         <h6 class="mb-0 fw-bold">Cadastrar Novo Bem</h6>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="/cadastrar">
+                        <form method="POST" action="/cadastrar" id="formNovoBem">
+                            <input type="hidden" name="editando" value="0">
                             <div class="mb-3">
                                 <label class="form-label small fw-semibold">Patrimônio / Tombo *</label>
-                                <input type="text" name="patrimonio" class="form-control" placeholder="Ex: 10001" required>
+                                <input type="text" name="patrimonio" id="campoPatrimonio" class="form-control" placeholder="Ex: 10001" required>
+                                <div id="statusPatrimonio" class="form-text small text-muted">O patrimônio é único por bem.</div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label small fw-semibold">Descrição do Bem *</label>
-                                <input type="text" name="descricao" class="form-control" placeholder="Ex: Notebook Dell Latitude" required>
+                                <input type="text" name="descricao" id="campoDescricao" class="form-control" placeholder="Ex: Notebook Dell Latitude" required>
                             </div>
                             <div class="mb-3">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
@@ -640,15 +678,20 @@ HTML_TEMPLATE = """
                                         Capturar do Urovo
                                     </button>
                                 </div>
-                                <input type="text" name="epc" id="campoEpc" class="form-control font-monospace" placeholder="Ex: E2801160600002162A7A1C57">
-                                <div id="statusCaptura" class="form-text small">Deixe em branco se ainda não foi etiquetado.</div>
+                                <div class="input-group">
+                                    <input type="text" name="epc" id="campoEpc" class="form-control font-monospace" placeholder="Ex: E2801160600002162A7A1C57">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnLimparCampoEpc" title="Limpar tag">
+                                        Limpar
+                                    </button>
+                                </div>
+                                <div id="statusCaptura" class="form-text small text-muted">Deixe em branco se ainda não foi etiquetado.</div>
                             </div>
                             <div class="mb-3">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <label class="form-label small fw-semibold mb-0">Sala Esperada *</label>
                                     <a href="/salas" class="text-decoration-none small text-primary fw-medium" style="font-size: 0.76rem;">+ Nova Sala</a>
                                 </div>
-                                <select name="sala" class="form-select" required>
+                                <select name="sala" id="campoSala" class="form-select" required>
                                     <option value="" disabled selected>Selecione uma sala...</option>
                                     {% for s in salas %}
                                     <option value="{{ s.id }}">{{ s.nome }} ({{ s.unidade }})</option>
@@ -656,12 +699,12 @@ HTML_TEMPLATE = """
                                 </select>
                             </div>
                             <div class="form-check mb-4">
-                                <input class="form-check-input" type="checkbox" name="metalico" id="checkMetal">
+                                <input class="form-check-input" type="checkbox" name="metalico" id="checkMetal" value="1">
                                 <label class="form-check-label small" for="checkMetal">
                                     Bem metálico (requer tag on-metal)
                                 </label>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100 py-2">Salvar Bem no Cadastro</button>
+                            <button type="submit" id="btnSubmitForm" class="btn btn-primary w-100 py-2">Salvar Bem no Cadastro</button>
                         </form>
                     </div>
                 </div>
@@ -715,7 +758,20 @@ HTML_TEMPLATE = """
                                                 <span class="text-muted small">Não</span>
                                             {% endif %}
                                         </td>
-                                        <td class="text-center">
+                                        <td class="text-center text-nowrap">
+                                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 me-1 btn-editar-bem"
+                                                    data-bs-toggle="modal" data-bs-target="#modalEditarBem"
+                                                    data-patrimonio="{{ b.patrimonio }}"
+                                                    data-descricao="{{ b.descricao or '' }}"
+                                                    data-sala="{{ b.sala_esperada_id or '' }}"
+                                                    data-epc="{{ b.epc or '' }}"
+                                                    data-metalico="{{ 1 if b.metalico else 0 }}"
+                                                    title="Editar bem">
+                                                <svg style="pointer-events: none;" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                            </button>
                                             <form method="POST" action="/excluir/{{ b.patrimonio }}" onsubmit="return confirm('Excluir o bem {{ b.patrimonio }}?');" style="display:inline;">
                                                 <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" title="Excluir">
                                                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -750,6 +806,70 @@ HTML_TEMPLATE = """
         </div>
     </div>
 
+    <!-- Modal: Editar Bem -->
+    <div class="modal fade" id="modalEditarBem" tabindex="-1" aria-labelledby="modalEditarBemLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold" id="modalEditarBemLabel">Editar Bem</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <form method="POST" action="/cadastrar" id="formModalEditarBem">
+                    <input type="hidden" name="editando" value="1">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Patrimônio / Tombo</label>
+                            <input type="text" name="patrimonio" id="modalEditPatrimonio" class="form-control font-monospace bg-light" readonly required>
+                            <div class="form-text small text-muted">O patrimônio é o identificador único do bem e não pode ser alterado.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Descrição do Bem *</label>
+                            <input type="text" name="descricao" id="modalEditDescricao" class="form-control" placeholder="Ex: Notebook Dell Latitude" required>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label small fw-semibold mb-0">Sala Esperada *</label>
+                                <a href="/salas" class="text-decoration-none small text-primary fw-medium" style="font-size: 0.76rem;">+ Nova Sala</a>
+                            </div>
+                            <select name="sala" id="modalEditSala" class="form-select" required>
+                                <option value="" disabled>Selecione uma sala...</option>
+                                {% for s in salas %}
+                                <option value="{{ s.id }}">{{ s.nome }} ({{ s.unidade }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label small fw-semibold mb-0">EPC da Tag RFID</label>
+                                <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" id="btnModalCapturarTag" style="font-size: 0.78rem;">
+                                    Capturar do Urovo
+                                </button>
+                            </div>
+                            <div class="input-group">
+                                <input type="text" name="epc" id="modalEditEpc" class="form-control font-monospace" placeholder="Ex: E2801160600002162A7A1C57">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="btnModalLimparEpc" title="Limpar tag">
+                                    Limpar
+                                </button>
+                            </div>
+                            <div id="modalEditStatusCaptura" class="form-text small text-muted">Deixe em branco para desvincular a tag RFID.</div>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="metalico" id="modalEditMetal" value="1">
+                            <label class="form-check-label small" for="modalEditMetal">
+                                Bem metálico (requer tag on-metal)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light py-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" id="btnModalSalvar" class="btn btn-success btn-sm fw-semibold px-3">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.getElementById('filtro').addEventListener('keyup', function() {
             let valor = this.value.toLowerCase();
@@ -760,12 +880,120 @@ HTML_TEMPLATE = """
             });
         });
 
-        // Captura rápida de tag RFID via Urovo (Ponte Coletor -> PC)
-        let pollingCaptura = null;
-        const btnCapturar = document.getElementById('btnCapturarTag');
+        // Elementos do formulário de cadastro de novo bem
+        const campoPatrimonio = document.getElementById('campoPatrimonio');
+        const statusPatrimonio = document.getElementById('statusPatrimonio');
+        const campoDescricao = document.getElementById('campoDescricao');
+        const campoSala = document.getElementById('campoSala');
         const campoEpc = document.getElementById('campoEpc');
         const statusCaptura = document.getElementById('statusCaptura');
+        const btnCapturar = document.getElementById('btnCapturarTag');
+        const btnLimparCampoEpc = document.getElementById('btnLimparCampoEpc');
+        const btnSubmitForm = document.getElementById('btnSubmitForm');
+        const checkMetal = document.getElementById('checkMetal');
 
+        // Elementos do modal de edição
+        const modalEditarBemElement = document.getElementById('modalEditarBem');
+        const modalEditPatrimonio = document.getElementById('modalEditPatrimonio');
+        const modalEditDescricao = document.getElementById('modalEditDescricao');
+        const modalEditSala = document.getElementById('modalEditSala');
+        const modalEditEpc = document.getElementById('modalEditEpc');
+        const modalEditMetal = document.getElementById('modalEditMetal');
+        const modalEditStatusCaptura = document.getElementById('modalEditStatusCaptura');
+        const btnModalLimparEpc = document.getElementById('btnModalLimparEpc');
+        const btnModalCapturarTag = document.getElementById('btnModalCapturarTag');
+
+        // Verificação de patrimônio duplicado em tempo real no cadastro
+        let debouncePatrimonioTimer = null;
+        function verificarPatrimonioDebounced() {
+            clearTimeout(debouncePatrimonioTimer);
+            debouncePatrimonioTimer = setTimeout(verificarPatrimonio, 250);
+        }
+
+        function verificarPatrimonio() {
+            const pat = campoPatrimonio.value.trim();
+            if (!pat) {
+                campoPatrimonio.classList.remove('is-valid', 'is-invalid');
+                statusPatrimonio.innerHTML = 'O patrimônio é único por bem.';
+                statusPatrimonio.className = 'form-text small text-muted';
+                btnSubmitForm.disabled = false;
+                return;
+            }
+
+            fetch('/api/verificar-patrimonio?patrimonio=' + encodeURIComponent(pat))
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'disponivel') {
+                        campoPatrimonio.classList.remove('is-invalid');
+                        campoPatrimonio.classList.add('is-valid');
+                        statusPatrimonio.innerHTML = 'Patrimônio disponível para cadastro.';
+                        statusPatrimonio.className = 'form-text small text-success fw-semibold';
+                        btnSubmitForm.disabled = false;
+                    } else if (data.status === 'em_uso') {
+                        campoPatrimonio.classList.remove('is-valid');
+                        campoPatrimonio.classList.add('is-invalid');
+                        statusPatrimonio.innerHTML = 'Atenção: Patrimônio já cadastrado (' + (data.descricao || 'Sem descrição') + ' na sala ' + (data.sala || 'Sem sala') + '). Cada bem deve ser único. Para editar este bem, utilize o botão Editar na tabela.';
+                        statusPatrimonio.className = 'form-text small text-danger fw-bold';
+                        btnSubmitForm.disabled = true;
+                    }
+                })
+                .catch(() => {});
+        }
+
+        campoPatrimonio.addEventListener('input', verificarPatrimonioDebounced);
+
+        // Verificação de EPC em tempo real no cadastro
+        let debounceTimer = null;
+        function verificarEpcDebounced() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(verificarEpc, 250);
+        }
+
+        function verificarEpc() {
+            const epc = campoEpc.value.trim().toUpperCase();
+            const pat = campoPatrimonio.value.trim();
+            if (!epc) {
+                campoEpc.classList.remove('is-valid', 'is-invalid');
+                statusCaptura.innerHTML = 'Deixe em branco se ainda não foi etiquetado.';
+                statusCaptura.className = 'form-text small text-muted';
+                return;
+            }
+
+            fetch('/api/verificar-epc?epc=' + encodeURIComponent(epc) + '&patrimonio=' + encodeURIComponent(pat))
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'disponivel') {
+                        campoEpc.classList.remove('is-invalid');
+                        campoEpc.classList.add('is-valid');
+                        statusCaptura.innerHTML = 'Tag disponível para cadastro.';
+                        statusCaptura.className = 'form-text small text-success fw-bold';
+                    } else if (data.status === 'proprio_bem') {
+                        campoEpc.classList.remove('is-invalid', 'is-valid');
+                        statusCaptura.innerHTML = 'Tag atualmente vinculada a este bem.';
+                        statusCaptura.className = 'form-text small text-muted';
+                    } else if (data.status === 'em_uso') {
+                        campoEpc.classList.remove('is-valid');
+                        campoEpc.classList.add('is-invalid');
+                        statusCaptura.innerHTML = 'Atenção: Tag já vinculada ao bem <strong>' + data.patrimonio + '</strong> (' + data.descricao + ') em <strong>' + data.sala + '</strong>. Ao salvar, você poderá transferi-la.';
+                        statusCaptura.className = 'form-text small text-danger fw-bold';
+                    }
+                })
+                .catch(() => {});
+        }
+
+        campoEpc.addEventListener('input', verificarEpcDebounced);
+
+        if (btnLimparCampoEpc) {
+            btnLimparCampoEpc.addEventListener('click', function() {
+                campoEpc.value = '';
+                campoEpc.classList.remove('is-valid', 'is-invalid');
+                statusCaptura.innerHTML = 'Deixe em branco se ainda não foi etiquetado.';
+                statusCaptura.className = 'form-text small text-muted';
+            });
+        }
+
+        // Captura rápida de tag RFID via Urovo (Ponte Coletor -> PC) no cadastro
+        let pollingCaptura = null;
         if (btnCapturar) {
             btnCapturar.addEventListener('click', function() {
                 if (pollingCaptura) {
@@ -789,9 +1017,7 @@ HTML_TEMPLATE = """
                         .then(data => {
                             if (data && data.epc) {
                                 campoEpc.value = data.epc;
-                                campoEpc.classList.add('is-valid');
-                                statusCaptura.innerHTML = 'Tag capturada com sucesso: <code>' + data.epc + '</code>';
-                                statusCaptura.className = 'form-text small text-success fw-bold';
+                                verificarEpc();
                                 clearInterval(pollingCaptura);
                                 pollingCaptura = null;
                                 btnCapturar.innerText = 'Capturar do Urovo';
@@ -800,6 +1026,140 @@ HTML_TEMPLATE = """
                         })
                         .catch(() => {});
                 }, 800);
+            });
+        }
+
+        // Abertura e preenchimento do Modal de Edição de Bem
+        document.querySelectorAll('.btn-editar-bem').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const targetBtn = this.closest('.btn-editar-bem') || this;
+                const pat = targetBtn.dataset.patrimonio;
+                const desc = targetBtn.dataset.descricao || '';
+                const sala = targetBtn.dataset.sala || '';
+                const epc = targetBtn.dataset.epc || '';
+                const metal = (targetBtn.dataset.metalico === '1' || targetBtn.dataset.metalico === 1);
+
+                if (modalEditPatrimonio) modalEditPatrimonio.value = pat;
+                if (modalEditDescricao) modalEditDescricao.value = desc;
+                if (modalEditSala) modalEditSala.value = sala;
+                if (modalEditEpc) {
+                    modalEditEpc.value = epc;
+                    modalEditEpc.classList.remove('is-valid', 'is-invalid');
+                }
+                if (modalEditMetal) modalEditMetal.checked = metal;
+
+                if (modalEditStatusCaptura) {
+                    if (epc) {
+                        modalEditStatusCaptura.innerHTML = 'Tag associada: <code>' + epc + '</code>. Use "Limpar" para desvincular.';
+                        modalEditStatusCaptura.className = 'form-text small text-muted';
+                    } else {
+                        modalEditStatusCaptura.innerHTML = 'Este bem está sem tag RFID associada.';
+                        modalEditStatusCaptura.className = 'form-text small text-muted';
+                    }
+                }
+
+                if (window.bootstrap && modalEditarBemElement) {
+                    const modalObj = bootstrap.Modal.getOrCreateInstance(modalEditarBemElement);
+                    modalObj.show();
+                }
+            });
+        });
+
+        // Verificação de EPC no Modal de Edição
+        let debounceModalEpcTimer = null;
+        function verificarModalEpcDebounced() {
+            clearTimeout(debounceModalEpcTimer);
+            debounceModalEpcTimer = setTimeout(verificarModalEpc, 250);
+        }
+
+        function verificarModalEpc() {
+            const epc = modalEditEpc.value.trim().toUpperCase();
+            const pat = modalEditPatrimonio.value.trim();
+            if (!epc) {
+                modalEditEpc.classList.remove('is-valid', 'is-invalid');
+                modalEditStatusCaptura.innerHTML = 'Tag removida. Ao salvar, o item ficará sem tag RFID.';
+                modalEditStatusCaptura.className = 'form-text small text-warning fw-semibold';
+                return;
+            }
+
+            fetch('/api/verificar-epc?epc=' + encodeURIComponent(epc) + '&patrimonio=' + encodeURIComponent(pat))
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'disponivel') {
+                        modalEditEpc.classList.remove('is-invalid');
+                        modalEditEpc.classList.add('is-valid');
+                        modalEditStatusCaptura.innerHTML = 'Tag disponível para este bem.';
+                        modalEditStatusCaptura.className = 'form-text small text-success fw-bold';
+                    } else if (data.status === 'proprio_bem') {
+                        modalEditEpc.classList.remove('is-invalid', 'is-valid');
+                        modalEditStatusCaptura.innerHTML = 'Tag atualmente vinculada a este bem.';
+                        modalEditStatusCaptura.className = 'form-text small text-muted';
+                    } else if (data.status === 'em_uso') {
+                        modalEditEpc.classList.remove('is-valid');
+                        modalEditEpc.classList.add('is-invalid');
+                        modalEditStatusCaptura.innerHTML = 'Atenção: Tag já vinculada ao bem <strong>' + data.patrimonio + '</strong> (' + data.descricao + ') em <strong>' + data.sala + '</strong>. Ao salvar, você poderá transferi-la.';
+                        modalEditStatusCaptura.className = 'form-text small text-danger fw-bold';
+                    }
+                })
+                .catch(() => {});
+        }
+
+        modalEditEpc.addEventListener('input', verificarModalEpcDebounced);
+
+        if (btnModalLimparEpc) {
+            btnModalLimparEpc.addEventListener('click', function() {
+                modalEditEpc.value = '';
+                modalEditEpc.classList.remove('is-valid', 'is-invalid');
+                modalEditStatusCaptura.innerHTML = 'Tag removida. Ao salvar, o item ficará sem tag RFID.';
+                modalEditStatusCaptura.className = 'form-text small text-warning fw-semibold';
+            });
+        }
+
+        // Captura rápida de tag RFID no Modal de Edição
+        let modalPollingCaptura = null;
+        if (btnModalCapturarTag) {
+            btnModalCapturarTag.addEventListener('click', function() {
+                if (modalPollingCaptura) {
+                    clearInterval(modalPollingCaptura);
+                    modalPollingCaptura = null;
+                    btnModalCapturarTag.innerText = 'Capturar do Urovo';
+                    btnModalCapturarTag.className = 'btn btn-sm btn-outline-primary py-0 px-2';
+                    modalEditStatusCaptura.innerHTML = 'Deixe em branco para manter ou desvincular.';
+                    modalEditStatusCaptura.className = 'form-text small text-muted';
+                    return;
+                }
+
+                btnModalCapturarTag.innerText = 'Aguardando leitura... (Cancelar)';
+                btnModalCapturarTag.className = 'btn btn-sm btn-warning py-0 px-2';
+                modalEditStatusCaptura.innerHTML = '<span class="spinner-border spinner-border-sm text-primary me-1"></span> Aproxime o Urovo e clique em <strong>"Transmitir Tag ao PC"</strong>...';
+                modalEditStatusCaptura.className = 'form-text small text-primary fw-semibold';
+
+                modalPollingCaptura = setInterval(() => {
+                    fetch('/api/tag-capturada')
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data && data.epc) {
+                                modalEditEpc.value = data.epc;
+                                verificarModalEpc();
+                                clearInterval(modalPollingCaptura);
+                                modalPollingCaptura = null;
+                                btnModalCapturarTag.innerText = 'Capturar do Urovo';
+                                btnModalCapturarTag.className = 'btn btn-sm btn-outline-success py-0 px-2';
+                            }
+                        })
+                        .catch(() => {});
+                }, 800);
+            });
+        }
+
+        if (modalEditarBemElement) {
+            modalEditarBemElement.addEventListener('hidden.bs.modal', function () {
+                if (modalPollingCaptura) {
+                    clearInterval(modalPollingCaptura);
+                    modalPollingCaptura = null;
+                    btnModalCapturarTag.innerText = 'Capturar do Urovo';
+                    btnModalCapturarTag.className = 'btn btn-sm btn-outline-primary py-0 px-2';
+                }
             });
         }
 
@@ -842,7 +1202,6 @@ HTML_TEMPLATE = """
             });
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 """
@@ -2365,7 +2724,7 @@ def gerenciar_bens():
     """Gestão da Relação Patrimonial de Bens e Vínculo de Tags RFID."""
     con = get_db()
     bens = con.execute(
-        "SELECT b.patrimonio, b.descricao, b.epc, b.metalico, s.nome AS sala "
+        "SELECT b.patrimonio, b.descricao, b.epc, b.metalico, b.sala_esperada_id, s.nome AS sala "
         "FROM bem b LEFT JOIN sala s ON s.id = b.sala_esperada_id "
         "ORDER BY s.nome, b.patrimonio"
     ).fetchall()
@@ -2373,8 +2732,29 @@ def gerenciar_bens():
     ip_local = obter_ip_local()
     msg = request.args.get("msg")
     tipo_msg = request.args.get("tipo", "info")
+
+    conflito = None
+    if request.args.get("conflito_epc"):
+        conflito = {
+            "epc": request.args.get("conflito_epc"),
+            "dono_pat": request.args.get("conflito_dono_pat"),
+            "dono_desc": request.args.get("conflito_dono_desc"),
+            "dono_sala": request.args.get("conflito_dono_sala"),
+            "novo_pat": request.args.get("novo_pat"),
+            "novo_desc": request.args.get("novo_desc"),
+            "novo_sala": request.args.get("novo_sala"),
+            "novo_metal": "1" if request.args.get("novo_metal") in ("1", "on", "true") else "0",
+            "editando": "1" if request.args.get("conflito_editando") == "1" else "0",
+        }
+
     return render_template_string(
-        HTML_TEMPLATE, bens=bens, salas=salas, ip_local=ip_local, mensagem=msg, tipo_msg=tipo_msg
+        HTML_TEMPLATE,
+        bens=bens,
+        salas=salas,
+        ip_local=ip_local,
+        mensagem=msg,
+        tipo_msg=tipo_msg,
+        conflito=conflito,
     )
 
 
@@ -2384,12 +2764,31 @@ def cadastrar_bem():
     descricao = request.form.get("descricao", "").strip()
     epc = request.form.get("epc", "").strip().upper() or None
     sala_escolhida = request.form.get("sala", "").strip()
-    metalico = 1 if request.form.get("metalico") else 0
+    metalico = 1 if str(request.form.get("metalico", "")).strip().lower() in ("1", "on", "true") else 0
+    confirmar_transferencia = request.form.get("confirmar_transferencia") == "1"
+    editando = request.form.get("editando") == "1"
 
     if not patrimonio or not descricao or not sala_escolhida:
         return redirect(url_for("gerenciar_bens", msg="Patrimônio, descrição e sala são obrigatórios.", tipo="danger"))
 
     con = get_db()
+    # Verifica se o patrimônio já existe no banco
+    bem_existente = con.execute(
+        "SELECT b.patrimonio, b.descricao, b.epc, b.metalico, s.nome AS sala "
+        "FROM bem b LEFT JOIN sala s ON s.id = b.sala_esperada_id "
+        "WHERE b.patrimonio = ?",
+        (patrimonio,),
+    ).fetchone()
+
+    # Se for um cadastro novo (não editando), bloqueia duplicação de patrimônio
+    if not editando and bem_existente:
+        sala_nome = bem_existente["sala"] or "Sem sala"
+        msg_erro = (
+            f"O patrimônio '{patrimonio}' já está cadastrado ({bem_existente['descricao']} na sala {sala_nome}). "
+            f"Cada patrimônio deve ser único. Para editar este bem, utilize o botão 'Editar' na tabela."
+        )
+        return redirect(url_for("gerenciar_bens", msg=msg_erro, tipo="danger"))
+
     # O formulário manda o id da sala: o nome sozinho é ambíguo quando duas unidades
     # têm uma sala com o mesmo nome. O nome continua aceito para página aberta antes.
     if sala_escolhida.isdigit():
@@ -2406,30 +2805,68 @@ def cadastrar_bem():
 
     sala_id = sala["id"]
 
-    # Insere ou atualiza o bem
+    msg_sucesso_extra = ""
+    # Verifica se a tag EPC já está cadastrada em outro bem
+    if epc:
+        dono = con.execute(
+            "SELECT b.patrimonio, b.descricao, s.nome AS sala "
+            "FROM bem b LEFT JOIN sala s ON s.id = b.sala_esperada_id "
+            "WHERE b.epc = ? AND b.patrimonio != ?",
+            (epc, patrimonio),
+        ).fetchone()
+
+        if dono is not None:
+            if not confirmar_transferencia:
+                sala_nome = dono["sala"] or "Sem sala"
+                msg_conflito = (
+                    f"A tag EPC {epc} já está vinculada ao bem {dono['patrimonio']} "
+                    f"({dono['descricao']}) na sala {sala_nome}."
+                )
+                return redirect(url_for(
+                    "gerenciar_bens",
+                    msg=msg_conflito,
+                    tipo="warning",
+                    conflito_epc=epc,
+                    conflito_dono_pat=dono["patrimonio"],
+                    conflito_dono_desc=dono["descricao"] or "",
+                    conflito_dono_sala=sala_nome,
+                    novo_pat=patrimonio,
+                    novo_desc=descricao,
+                    novo_sala=str(sala_id),
+                    novo_metal=str(metalico),
+                    conflito_editando="1" if editando else "0",
+                ))
+            else:
+                con.execute("UPDATE bem SET epc = NULL WHERE epc = ?", (epc,))
+                msg_sucesso_extra = f" Tag {epc} transferida do bem {dono['patrimonio']}."
+
+    # Insere novo bem ou atualiza bem existente
     try:
-        con.execute(
-            "INSERT INTO bem (patrimonio, descricao, sala_esperada_id, epc, metalico, importado_em) "
-            "VALUES (?, ?, ?, ?, ?, ?) "
-            "ON CONFLICT(patrimonio) DO UPDATE SET "
-            "  descricao = excluded.descricao, "
-            "  sala_esperada_id = excluded.sala_esperada_id, "
-            "  epc = COALESCE(excluded.epc, bem.epc), "
-            "  metalico = excluded.metalico",
-            (
-                patrimonio,
-                descricao,
-                sala_id,
-                epc,
-                metalico,
-                datetime.now().isoformat(timespec="seconds"),
-            ),
-        )
+        if editando:
+            con.execute(
+                "UPDATE bem SET descricao = ?, sala_esperada_id = ?, epc = ?, metalico = ? "
+                "WHERE patrimonio = ?",
+                (descricao, sala_id, epc, metalico, patrimonio),
+            )
+        else:
+            con.execute(
+                "INSERT INTO bem (patrimonio, descricao, sala_esperada_id, epc, metalico, importado_em) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (
+                    patrimonio,
+                    descricao,
+                    sala_id,
+                    epc,
+                    metalico,
+                    datetime.now().isoformat(timespec="seconds"),
+                ),
+            )
         con.commit()
     except sqlite3.IntegrityError as e:
         return redirect(url_for("gerenciar_bens", msg=f"Erro ao salvar: {e}", tipo="danger"))
 
-    return redirect(url_for("gerenciar_bens", msg=f"Bem {patrimonio} salvo com sucesso!", tipo="success"))
+    msg_final = f"Bem {patrimonio} salvo com sucesso!{msg_sucesso_extra}"
+    return redirect(url_for("gerenciar_bens", msg=msg_final, tipo="success"))
 
 
 @app.route("/excluir/<patrimonio>", methods=["POST"])
@@ -2820,6 +3257,67 @@ def api_obter_tag_capturada():
         tag_capturada_recente = {"epc": None, "timestamp": 0}
         return jsonify({"epc": epc})
     return jsonify({"epc": None})
+
+
+@app.route("/api/verificar-patrimonio", methods=["GET"])
+def api_verificar_patrimonio():
+    """Consulta em tempo real se um patrimônio já está cadastrado no sistema."""
+    patrimonio = request.args.get("patrimonio", "").strip()
+    if not patrimonio:
+        return jsonify({"status": "vazio"})
+
+    con = get_db()
+    bem = con.execute(
+        "SELECT b.patrimonio, b.descricao, s.nome AS sala "
+        "FROM bem b LEFT JOIN sala s ON s.id = b.sala_esperada_id "
+        "WHERE b.patrimonio = ?",
+        (patrimonio,),
+    ).fetchone()
+
+    if not bem:
+        return jsonify({"status": "disponivel", "patrimonio": patrimonio})
+    else:
+        return jsonify({
+            "status": "em_uso",
+            "patrimonio": bem["patrimonio"],
+            "descricao": bem["descricao"] or "",
+            "sala": bem["sala"] or "Sem sala",
+        })
+
+
+@app.route("/api/verificar-epc", methods=["GET"])
+def api_verificar_epc():
+    """Consulta em tempo real se um EPC já está cadastrado em outro bem."""
+    epc = request.args.get("epc", "").strip().upper()
+    patrimonio_atual = request.args.get("patrimonio", "").strip()
+    if not epc:
+        return jsonify({"status": "vazio"})
+
+    con = get_db()
+    dono = con.execute(
+        "SELECT b.patrimonio, b.descricao, s.nome AS sala "
+        "FROM bem b LEFT JOIN sala s ON s.id = b.sala_esperada_id "
+        "WHERE b.epc = ?",
+        (epc,),
+    ).fetchone()
+
+    if not dono:
+        return jsonify({"status": "disponivel", "epc": epc})
+    elif dono["patrimonio"] == patrimonio_atual:
+        return jsonify({
+            "status": "proprio_bem",
+            "epc": epc,
+            "patrimonio": dono["patrimonio"],
+            "descricao": dono["descricao"] or "",
+        })
+    else:
+        return jsonify({
+            "status": "em_uso",
+            "epc": epc,
+            "patrimonio": dono["patrimonio"],
+            "descricao": dono["descricao"] or "",
+            "sala": dono["sala"] or "Sem sala",
+        })
 
 
 @app.route("/api/salas", methods=["GET"])

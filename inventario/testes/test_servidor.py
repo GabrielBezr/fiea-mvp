@@ -324,5 +324,118 @@ class TestExclusaoSala(unittest.TestCase):
         self.assertIn("1 varredura", texto)
 
 
+@unittest.skipUnless(TEM_FLASK, "Flask não instalado (use o .venv do servidor)")
+class TestAssociacaoTagEBens(unittest.TestCase):
+    def setUp(self):
+        self._temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
+        self.addCleanup(self._temp.cleanup)
+        self._db_original = servidor.CAMINHO_DB
+        servidor.CAMINHO_DB = Path(self._temp.name) / "teste.db"
+        self.addCleanup(setattr, servidor, "CAMINHO_DB", self._db_original)
+
+        con = esquema.conectar(servidor.CAMINHO_DB)
+        self.addCleanup(con.close)
+        con.execute("INSERT INTO sala (unidade, nome) VALUES ('SENAI', 'Almoxarifado')")
+        self.sala_id = con.execute("SELECT id FROM sala").fetchone()["id"]
+        con.execute(
+            "INSERT INTO bem (patrimonio, descricao, sala_esperada_id, epc, metalico, importado_em) "
+            "VALUES ('101', 'Monitor Dell', ?, 'E28011111111', 0, '2026-10-28')",
+            (self.sala_id,)
+        )
+        con.commit()
+        self.con = con
+        self.cliente = servidor.app.test_client()
+
+    def test_cadastro_bem_com_tag_duplicada_avisa_conflito(self):
+        # Tenta cadastrar bem '102' com a mesma tag do bem '101'
+        resposta = self.cliente.post("/cadastrar", data={
+            "patrimonio": "102", "descricao": "Teclado", "sala": str(self.sala_id),
+            "epc": "E28011111111"
+        }, follow_redirects=True)
+        self.assertEqual(resposta.status_code, 200)
+        html = resposta.get_data(as_text=True)
+        self.assertIn("já está vinculada ao bem 101", html)
+        self.assertIn("Transferir Tag para este Bem", html)
+
+        # O bem 101 ainda tem a tag
+        b101 = self.con.execute("SELECT epc FROM bem WHERE patrimonio = '101'").fetchone()
+        self.assertEqual(b101["epc"], "E28011111111")
+        # O bem 102 não foi criado com essa tag
+        b102 = self.con.execute("SELECT epc FROM bem WHERE patrimonio = '102'").fetchone()
+        self.assertIsNone(b102)
+
+    def test_transferencia_de_tag_entre_bens_com_confirmacao(self):
+        # Transfere a tag do bem '101' para o bem '102' sem marcar metalico
+        resposta = self.cliente.post("/cadastrar", data={
+            "patrimonio": "102", "descricao": "Teclado", "sala": str(self.sala_id),
+            "epc": "E28011111111", "metalico": "0", "confirmar_transferencia": "1"
+        }, follow_redirects=True)
+        self.assertEqual(resposta.status_code, 200)
+        html = resposta.get_data(as_text=True)
+        self.assertIn("Tag E28011111111 transferida do bem 101", html)
+
+        # O bem 101 ficou sem tag
+        b101 = self.con.execute("SELECT epc FROM bem WHERE patrimonio = '101'").fetchone()
+        self.assertIsNone(b101["epc"])
+        # O bem 102 agora tem a tag e NÃO é metálico
+        b102 = self.con.execute("SELECT epc, metalico FROM bem WHERE patrimonio = '102'").fetchone()
+        self.assertEqual(b102["epc"], "E28011111111")
+        self.assertEqual(b102["metalico"], 0)
+
+    def test_bloqueio_patrimonio_duplicado_no_cadastro(self):
+        # Tenta cadastrar um novo bem usando o patrimônio '101' já existente
+        resposta = self.cliente.post("/cadastrar", data={
+            "patrimonio": "101", "descricao": "Tentativa Sobrescrever",
+            "sala": str(self.sala_id), "editando": "0"
+        }, follow_redirects=True)
+        self.assertEqual(resposta.status_code, 200)
+        html = resposta.get_data(as_text=True)
+        self.assertIn("já está cadastrado", html)
+        self.assertIn("Cada patrimônio deve ser único", html)
+
+        # Garante que os dados originais do bem 101 não foram sobrescritos
+        b101 = self.con.execute("SELECT descricao FROM bem WHERE patrimonio = '101'").fetchone()
+        self.assertEqual(b101["descricao"], "Monitor Dell")
+
+    def test_api_verificar_patrimonio(self):
+        # Patrimônio disponível
+        r1 = self.cliente.get("/api/verificar-patrimonio?patrimonio=999")
+        self.assertEqual(r1.get_json()["status"], "disponivel")
+
+        # Patrimônio já em uso
+        r2 = self.cliente.get("/api/verificar-patrimonio?patrimonio=101")
+        dados = r2.get_json()
+        self.assertEqual(dados["status"], "em_uso")
+        self.assertEqual(dados["patrimonio"], "101")
+        self.assertEqual(dados["descricao"], "Monitor Dell")
+        self.assertEqual(dados["sala"], "Almoxarifado")
+
+    def test_edicao_de_bem_permite_remover_epc(self):
+        # Edita bem 101 com editando=1 e epc vazio: deve remover a tag
+        resposta = self.cliente.post("/cadastrar", data={
+            "patrimonio": "101", "descricao": "Monitor Dell Atualizado",
+            "sala": str(self.sala_id), "epc": "", "editando": "1"
+        }, follow_redirects=True)
+        self.assertEqual(resposta.status_code, 200)
+        b101 = self.con.execute("SELECT epc, descricao FROM bem WHERE patrimonio = '101'").fetchone()
+        self.assertIsNone(b101["epc"])
+        self.assertEqual(b101["descricao"], "Monitor Dell Atualizado")
+
+    def test_api_verificar_epc(self):
+        # Tag disponível
+        r1 = self.cliente.get("/api/verificar-epc?epc=E28099999999")
+        self.assertEqual(r1.get_json()["status"], "disponivel")
+
+        # Tag em uso por outro bem
+        r2 = self.cliente.get("/api/verificar-epc?epc=E28011111111&patrimonio=102")
+        self.assertEqual(r2.get_json()["status"], "em_uso")
+        self.assertEqual(r2.get_json()["patrimonio"], "101")
+        self.assertEqual(r2.get_json()["sala"], "Almoxarifado")
+
+        # Tag do próprio bem
+        r3 = self.cliente.get("/api/verificar-epc?epc=E28011111111&patrimonio=101")
+        self.assertEqual(r3.get_json()["status"], "proprio_bem")
+
+
 if __name__ == "__main__":
     unittest.main()
