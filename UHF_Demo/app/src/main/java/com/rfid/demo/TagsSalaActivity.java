@@ -318,9 +318,10 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
                     if (b.epc != null && !b.epc.isEmpty() && sala.epcsLidos.contains(b.epc.toUpperCase())) {
                         b.status = "LOCALIZADO_RFID";
                     }
-                    // Mantém resoluções já feitas nesta sala
-                    for (SyncManager.PendenciaResolvida pr : sala.resolvidas) {
-                        if (pr.patrimonio.equalsIgnoreCase(b.patrimonio)) {
+                    // Mantém resoluções já feitas nesta sala (a mais recente se houver múltiplas)
+                    for (int i = sala.resolvidas.size() - 1; i >= 0; i--) {
+                        SyncManager.PendenciaResolvida pr = sala.resolvidas.get(i);
+                        if (pr.patrimonio != null && pr.patrimonio.equalsIgnoreCase(b.patrimonio)) {
                             b.status = "LOCALIZADO_" + pr.metodo;
                             break;
                         }
@@ -469,6 +470,16 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
 
     /** Guarda a resolução na sala aberta e atualiza contagem e lista. */
     private void registrarResolucao(SyncManager.PendenciaResolvida resolucao) {
+        if (salaAberta == null || resolucao == null) {
+            return;
+        }
+        // Remove qualquer resolução anterior para o mesmo patrimônio nesta sala
+        for (int i = salaAberta.resolvidas.size() - 1; i >= 0; i--) {
+            SyncManager.PendenciaResolvida pr = salaAberta.resolvidas.get(i);
+            if (pr.patrimonio != null && pr.patrimonio.equalsIgnoreCase(resolucao.patrimonio)) {
+                salaAberta.resolvidas.remove(i);
+            }
+        }
         salaAberta.resolvidas.add(resolucao);
         salaAberta.resolucoesNaoEnviadas = true;
         atualizarContadores();
