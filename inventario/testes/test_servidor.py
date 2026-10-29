@@ -436,6 +436,25 @@ class TestAssociacaoTagEBens(unittest.TestCase):
         r3 = self.cliente.get("/api/verificar-epc?epc=E28011111111&patrimonio=101")
         self.assertEqual(r3.get_json()["status"], "proprio_bem")
 
+    def test_rota_qrcode_js(self):
+        # Entrega do script qrcode.min.js localmente
+        resp = self.cliente.get("/js/qrcode.min.js")
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("application/javascript", resp.headers.get("Content-Type", ""))
+        self.assertIn("QRCode", resp.get_data(as_text=True))
+
+    def test_cadastro_bem_sugere_impressao_etiqueta(self):
+        # Cadastra bem novo e verifica que a tela sugere impressão com QR Code
+        resp = self.cliente.post("/cadastrar", data={
+            "patrimonio": "105", "descricao": "Cadeira Giratória",
+            "sala": str(self.sala_id), "epc": "E28055555555"
+        }, follow_redirects=True)
+        self.assertEqual(resp.status_code, 200)
+        html = resp.get_data(as_text=True)
+        self.assertIn("Imprimir Etiqueta / QR Code", html)
+        self.assertIn("modalEtiqueta", html)
+        self.assertIn("btn-abrir-etiqueta", html)
+
 
 if __name__ == "__main__":
     unittest.main()

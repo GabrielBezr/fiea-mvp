@@ -510,6 +510,89 @@ HTML_TEMPLATE = """
             font-weight: 500;
         }
 
+        /* Estilos da Etiqueta Patrimonial e Impressao */
+        .etiqueta-patrimonial-box {
+            background: #ffffff;
+            border: 2px solid #1E293B;
+            border-radius: 8px;
+            padding: 14px 16px;
+            color: #0f172a;
+            max-width: 450px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        .etiqueta-header {
+            border-bottom: 2px solid #004EA6;
+            padding-bottom: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .etiqueta-brand {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #004EA6;
+            letter-spacing: 0.04em;
+        }
+        .etiqueta-qrcode-wrapper {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 6px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            min-width: 122px;
+            min-height: 122px;
+        }
+        .etiqueta-qrcode-wrapper img, .etiqueta-qrcode-wrapper canvas {
+            display: block;
+            margin: 0 auto;
+        }
+
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+            }
+            body > *:not(#areaImpressaoEtiquetaContainer) {
+                display: none !important;
+            }
+            .modal-backdrop, .modal {
+                display: none !important;
+            }
+            #areaImpressaoEtiquetaContainer {
+                display: block !important;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                margin: 0;
+                padding: 4mm;
+            }
+            .etiqueta-patrimonial-box {
+                border: 2px solid #000000 !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+                width: 90mm;
+                max-width: 90mm;
+                padding: 4mm;
+                margin: 0 auto;
+            }
+            .etiqueta-header {
+                border-bottom: 2px solid #000000 !important;
+            }
+            .etiqueta-brand {
+                color: #000000 !important;
+            }
+        }
+        @media screen {
+            #areaImpressaoEtiquetaContainer {
+                display: none !important;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -610,9 +693,34 @@ HTML_TEMPLATE = """
         </div>
 
         {% if mensagem %}
-        <div class="alert alert-{{ tipo_msg or 'info' }} alert-dismissible fade show" role="alert">
-            {{ mensagem }}
+        <div class="alert alert-{{ tipo_msg or 'info' }} alert-dismissible fade show d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4" role="alert">
+            <div class="d-flex align-items-center gap-2">
+                {% if tipo_msg == 'success' %}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-success flex-shrink-0">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                {% endif %}
+                <div>{{ mensagem }}</div>
+            </div>
+            {% if bem_etiqueta %}
+            <div>
+                <button type="button" class="btn btn-success btn-sm fw-bold d-inline-flex align-items-center gap-2 shadow-sm text-nowrap btn-abrir-etiqueta"
+                        data-patrimonio="{{ bem_etiqueta.patrimonio }}"
+                        data-descricao="{{ bem_etiqueta.descricao or '' }}"
+                        data-sala="{{ bem_etiqueta.sala or 'Sem sala' }}"
+                        data-epc="{{ bem_etiqueta.epc or '' }}"
+                        data-metalico="{{ 1 if bem_etiqueta.metalico else 0 }}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                        <rect x="6" y="14" width="12" height="8"></rect>
+                    </svg>
+                    Imprimir Etiqueta / QR Code
+                </button>
+            </div>
+            {% else %}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+            {% endif %}
         </div>
         {% endif %}
 
@@ -759,6 +867,19 @@ HTML_TEMPLATE = """
                                             {% endif %}
                                         </td>
                                         <td class="text-center text-nowrap">
+                                            <button type="button" class="btn btn-sm btn-outline-dark py-0 px-2 me-1 btn-abrir-etiqueta"
+                                                    data-patrimonio="{{ b.patrimonio }}"
+                                                    data-descricao="{{ b.descricao or '' }}"
+                                                    data-sala="{{ b.sala or 'Sem sala' }}"
+                                                    data-epc="{{ b.epc or '' }}"
+                                                    data-metalico="{{ 1 if b.metalico else 0 }}"
+                                                    title="Imprimir Etiqueta / QR Code">
+                                                <svg style="pointer-events: none;" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                                    <rect x="6" y="14" width="12" height="8"></rect>
+                                                </svg>
+                                            </button>
                                             <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 me-1 btn-editar-bem"
                                                     data-bs-toggle="modal" data-bs-target="#modalEditarBem"
                                                     data-patrimonio="{{ b.patrimonio }}"
@@ -860,16 +981,128 @@ HTML_TEMPLATE = """
                             </label>
                         </div>
                     </div>
-                    <div class="modal-footer bg-light py-2">
-                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" id="btnModalSalvar" class="btn btn-success btn-sm fw-semibold px-3">Salvar Alterações</button>
+                    <div class="modal-footer bg-light py-2 d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-dark btn-sm d-inline-flex align-items-center gap-1" id="btnModalImprimirEtiqueta" title="Visualizar e imprimir etiqueta patrimonial com QR Code">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                <rect x="6" y="14" width="12" height="8"></rect>
+                            </svg>
+                            Imprimir Etiqueta
+                        </button>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" id="btnModalSalvar" class="btn btn-success btn-sm fw-semibold px-3">Salvar Alterações</button>
+                        </div>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
+    <!-- Modal: Pré-visualização e Impressão de Etiqueta com QR Code -->
+    <div class="modal fade" id="modalEtiqueta" tabindex="-1" aria-labelledby="modalEtiquetaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold" id="modalEtiquetaLabel">
+                        Etiqueta Patrimonial · <span class="font-monospace text-primary" id="etiquetaModalPatrimonio"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body p-4 bg-light bg-opacity-50">
+                    <div class="text-center mb-3">
+                        <small class="text-muted fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">
+                            Pré-visualização da Etiqueta
+                        </small>
+                    </div>
+
+                    <!-- Cartão da Etiqueta -->
+                    <div id="etiquetaCard" class="etiqueta-patrimonial-box mx-auto">
+                        <div class="etiqueta-header">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="etiqueta-brand">SISTEMA FIEA</span>
+                                <span class="badge bg-secondary text-white py-1 px-2" style="font-size: 0.65rem;">PATRIMÔNIO</span>
+                            </div>
+                            <div id="etiquetaTagMetalBadge" class="badge bg-warning text-dark border border-dark fw-bold d-none" style="font-size: 0.68rem;">
+                                TAG ON-METAL
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="text-center">
+                                <div id="etiquetaQrcodeContainer" class="etiqueta-qrcode-wrapper"></div>
+                                <div class="text-muted font-monospace mt-1" style="font-size: 0.62rem; letter-spacing: 0.05em;">SCAN QR / RFID</div>
+                            </div>
+
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="mb-1">
+                                    <span class="text-muted text-uppercase fw-semibold" style="font-size: 0.65rem;">Patrimônio</span>
+                                    <div id="etiquetaTextoPatrimonio" class="fs-4 fw-bold font-monospace text-dark lh-1"></div>
+                                </div>
+                                <div class="mb-1">
+                                    <span class="text-muted text-uppercase fw-semibold" style="font-size: 0.65rem;">Descrição</span>
+                                    <div id="etiquetaTextoDescricao" class="fw-semibold text-dark text-truncate" style="font-size: 0.85rem;"></div>
+                                </div>
+                                <div class="mb-1">
+                                    <span class="text-muted text-uppercase fw-semibold" style="font-size: 0.65rem;">Localização</span>
+                                    <div id="etiquetaTextoSala" class="text-secondary small text-truncate"></div>
+                                </div>
+                                <div>
+                                    <span class="text-muted text-uppercase fw-semibold" style="font-size: 0.62rem;">EPC Tag</span>
+                                    <div id="etiquetaTextoEpc" class="font-monospace text-muted text-break" style="font-size: 0.68rem; line-height: 1.2;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Explicação Didática -->
+                    <div class="alert alert-info border-info mt-4 mb-0 py-2 px-3 small d-flex align-items-start gap-2" role="alert">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-info mt-1 flex-shrink-0">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        <div id="etiquetaDicaQr" class="small">
+                            O QR Code codifica o <strong>código EPC</strong> da tag RFID. Aponte a câmera do leitor Urovo DT50 para leitura instantânea no inventário.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-2 d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="baixarImagemQrCode()" title="Baixar imagem do QR Code em PNG">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Baixar QR Code (PNG)
+                    </button>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+                        <button type="button" class="btn btn-primary btn-sm fw-semibold px-3 d-inline-flex align-items-center gap-2" onclick="dispararImpressaoEtiqueta()">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                <rect x="6" y="14" width="12" height="8"></rect>
+                            </svg>
+                            Imprimir Etiqueta
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container isolado para impressao da etiqueta patrimonial -->
+    <div id="areaImpressaoEtiquetaContainer"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/qrcode.min.js"></script>
+    <script>
+        if (typeof QRCode === 'undefined') {
+            document.write('<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"><' + '/script>');
+        }
+    </script>
     <script>
         document.getElementById('filtro').addEventListener('keyup', function() {
             let valor = this.value.toLowerCase();
@@ -1161,6 +1394,131 @@ HTML_TEMPLATE = """
                     btnModalCapturarTag.className = 'btn btn-sm btn-outline-primary py-0 px-2';
                 }
             });
+        }
+
+        // Gestao e Impressao de Etiqueta com QR Code
+        let qrcodeInstance = null;
+
+        function abrirModalEtiqueta(patrimonio, descricao, sala, epc, metalico) {
+            const elPatrimonio = document.getElementById('etiquetaTextoPatrimonio');
+            const elDescricao = document.getElementById('etiquetaTextoDescricao');
+            const elSala = document.getElementById('etiquetaTextoSala');
+            const elEpc = document.getElementById('etiquetaTextoEpc');
+            const elModalPatrimonio = document.getElementById('etiquetaModalPatrimonio');
+            const badgeMetal = document.getElementById('etiquetaTagMetalBadge');
+            const containerQr = document.getElementById('etiquetaQrcodeContainer');
+            const dicaQr = document.getElementById('etiquetaDicaQr');
+
+            if (elModalPatrimonio) elModalPatrimonio.innerText = patrimonio;
+            if (elPatrimonio) elPatrimonio.innerText = patrimonio;
+            if (elDescricao) {
+                elDescricao.innerText = descricao || 'Sem descrição';
+                elDescricao.title = descricao || '';
+            }
+            if (elSala) elSala.innerText = sala || 'Sem sala';
+            if (elEpc) elEpc.innerText = epc || 'Sem tag RFID vinculada';
+
+            if (badgeMetal) {
+                if (metalico === 1 || metalico === '1') {
+                    badgeMetal.classList.remove('d-none');
+                } else {
+                    badgeMetal.classList.add('d-none');
+                }
+            }
+
+            // O conteudo do QR Code e o EPC da tag RFID (ou identificador de contingencia PAT_<patrimonio>)
+            const valorQr = (epc && epc.trim()) ? epc.trim() : ('PAT_' + String(patrimonio).trim());
+
+            if (dicaQr) {
+                if (epc && epc.trim()) {
+                    dicaQr.innerHTML = 'O QR Code codifica o <strong>código EPC (' + valorQr + ')</strong> da tag RFID. Aponte a câmera do leitor Urovo DT50 para leitura instantânea no inventário.';
+                } else {
+                    dicaQr.innerHTML = 'Atenção: Este bem não possui tag RFID cadastrada. O QR Code foi gerado com o identificador de contingência <code>' + valorQr + '</code>.';
+                }
+            }
+
+            if (containerQr) {
+                containerQr.innerHTML = '';
+                try {
+                    if (typeof QRCode !== 'undefined') {
+                        qrcodeInstance = new QRCode(containerQr, {
+                            text: valorQr,
+                            width: 110,
+                            height: 110,
+                            colorDark: "#000000",
+                            colorLight: "#ffffff",
+                            correctLevel: QRCode.CorrectLevel.M
+                        });
+                    } else {
+                        containerQr.innerHTML = '<span class="text-danger small">QR Code indisponível</span>';
+                    }
+                } catch (e) {
+                    containerQr.innerHTML = '<span class="text-danger small">Erro ao gerar QR</span>';
+                }
+            }
+
+            const modalEl = document.getElementById('modalEtiqueta');
+            if (modalEl && window.bootstrap) {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            }
+        }
+
+        // Listener para abrir etiqueta atraves dos botoes da tabela e do alerta de sucesso
+        document.querySelectorAll('.btn-abrir-etiqueta').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const targetBtn = this.closest('.btn-abrir-etiqueta') || this;
+                const pat = targetBtn.dataset.patrimonio;
+                const desc = targetBtn.dataset.descricao || '';
+                const sala = targetBtn.dataset.sala || '';
+                const epc = targetBtn.dataset.epc || '';
+                const metal = (targetBtn.dataset.metalico === '1' || targetBtn.dataset.metalico === 1) ? 1 : 0;
+                abrirModalEtiqueta(pat, desc, sala, epc, metal);
+            });
+        });
+
+        // Botao de imprimir etiqueta dentro do modalEditarBem
+        const btnModalImprimirEtiqueta = document.getElementById('btnModalImprimirEtiqueta');
+        if (btnModalImprimirEtiqueta) {
+            btnModalImprimirEtiqueta.addEventListener('click', function() {
+                const pat = modalEditPatrimonio.value;
+                const desc = modalEditDescricao.value;
+                const salaTexto = modalEditSala.options[modalEditSala.selectedIndex]?.text || '';
+                const epc = modalEditEpc.value;
+                const metal = modalEditMetal.checked ? 1 : 0;
+                abrirModalEtiqueta(pat, desc, salaTexto, epc, metal);
+            });
+        }
+
+        function dispararImpressaoEtiqueta() {
+            const containerImpressao = document.getElementById('areaImpressaoEtiquetaContainer');
+            const cardOriginal = document.getElementById('etiquetaCard');
+            if (containerImpressao && cardOriginal) {
+                containerImpressao.innerHTML = cardOriginal.outerHTML;
+            }
+            window.print();
+        }
+
+        function baixarImagemQrCode() {
+            const containerQr = document.getElementById('etiquetaQrcodeContainer');
+            if (!containerQr) return;
+            const canvas = containerQr.querySelector('canvas');
+            const img = containerQr.querySelector('img');
+            const pat = document.getElementById('etiquetaTextoPatrimonio')?.innerText || 'etiqueta';
+
+            let dataUrl = null;
+            if (canvas) {
+                dataUrl = canvas.toDataURL('image/png');
+            } else if (img && img.src) {
+                dataUrl = img.src;
+            }
+
+            if (dataUrl) {
+                const link = document.createElement('a');
+                link.download = `etiqueta_qrcode_${pat}.png`;
+                link.href = dataUrl;
+                link.click();
+            }
         }
 
         // Monitoramento em tempo real do status de conexão com o coletor Urovo
@@ -2699,6 +3057,17 @@ def favicon_png():
     return resp
 
 
+@app.route("/js/qrcode.min.js")
+def rota_qrcode_js():
+    """Entrega a biblioteca leve de geração de QR Code localmente."""
+    caminho = Path(__file__).parent / "static" / "qrcode.min.js"
+    if caminho.exists():
+        resp = make_response(caminho.read_text(encoding="utf-8"))
+        resp.headers["Content-Type"] = "application/javascript; charset=utf-8"
+        return resp
+    return make_response("", 404)
+
+
 
 
 
@@ -2733,6 +3102,16 @@ def gerenciar_bens():
     msg = request.args.get("msg")
     tipo_msg = request.args.get("tipo", "info")
 
+    etiqueta_pat = request.args.get("etiqueta_pat")
+    bem_etiqueta = None
+    if etiqueta_pat:
+        bem_etiqueta = con.execute(
+            "SELECT b.patrimonio, b.descricao, b.epc, b.metalico, s.nome AS sala, s.unidade "
+            "FROM bem b LEFT JOIN sala s ON s.id = b.sala_esperada_id "
+            "WHERE b.patrimonio = ?",
+            (etiqueta_pat,),
+        ).fetchone()
+
     conflito = None
     if request.args.get("conflito_epc"):
         conflito = {
@@ -2755,6 +3134,7 @@ def gerenciar_bens():
         mensagem=msg,
         tipo_msg=tipo_msg,
         conflito=conflito,
+        bem_etiqueta=bem_etiqueta,
     )
 
 
@@ -2866,7 +3246,7 @@ def cadastrar_bem():
         return redirect(url_for("gerenciar_bens", msg=f"Erro ao salvar: {e}", tipo="danger"))
 
     msg_final = f"Bem {patrimonio} salvo com sucesso!{msg_sucesso_extra}"
-    return redirect(url_for("gerenciar_bens", msg=msg_final, tipo="success"))
+    return redirect(url_for("gerenciar_bens", msg=msg_final, tipo="success", etiqueta_pat=patrimonio))
 
 
 @app.route("/excluir/<patrimonio>", methods=["POST"])
