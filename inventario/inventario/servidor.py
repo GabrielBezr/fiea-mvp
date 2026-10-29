@@ -30,15 +30,22 @@ app = Flask(__name__)
 tag_capturada_recente = {"epc": None, "timestamp": 0}
 
 # Rastreamento de conexão do coletor Urovo
-ultimo_contato_coletor = {"timestamp": None, "ip": None, "acao": None}
+ultimo_contato_coletor = {"timestamp": None, "ip": None, "acao": None, "fila_pendente": 0}
 
 
-def registrar_contato_coletor(acao="comunicacao"):
+def registrar_contato_coletor(acao="comunicacao", fila=None):
     global ultimo_contato_coletor
+    fila_val = ultimo_contato_coletor.get("fila_pendente", 0)
+    if fila is not None:
+        try:
+            fila_val = max(0, int(fila))
+        except (ValueError, TypeError):
+            pass
     ultimo_contato_coletor = {
         "timestamp": time.time(),
         "ip": request.remote_addr,
         "acao": acao,
+        "fila_pendente": fila_val,
     }
 
 
@@ -166,6 +173,10 @@ HTML_HOME_TEMPLATE = """
         }
         .status-dot.offline {
             background-color: var(--texto-dica);
+        }
+        .status-dot.warning {
+            background-color: var(--alerta);
+            box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.2);
         }
         .btn-primary {
             background-color: var(--fiea-azul);
@@ -331,9 +342,15 @@ HTML_HOME_TEMPLATE = """
                     if (!badge) return;
 
                     if (data && data.conectado) {
-                        badge.className = 'badge bg-success-subtle text-success border border-success p-2 d-flex align-items-center gap-2';
-                        dot.className = 'status-dot online';
-                        texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'} · há ${data.segundos_atras}s)`;
+                        if (data.fila_pendente && data.fila_pendente > 0) {
+                            badge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning p-2 d-flex align-items-center gap-2';
+                            dot.className = 'status-dot warning';
+                            texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'}) · ${data.fila_pendente} pendência(s) na fila`;
+                        } else {
+                            badge.className = 'badge bg-success-subtle text-success border border-success p-2 d-flex align-items-center gap-2';
+                            dot.className = 'status-dot online';
+                            texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'} · há ${data.segundos_atras}s)`;
+                        }
                     } else {
                         badge.className = 'badge bg-light text-secondary border p-2 d-flex align-items-center gap-2';
                         dot.className = 'status-dot offline';
@@ -466,6 +483,10 @@ HTML_TEMPLATE = """
         }
         .status-dot.offline {
             background-color: var(--texto-dica);
+        }
+        .status-dot.warning {
+            background-color: var(--alerta);
+            box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.2);
         }
         .badge-localizado {
             background-color: var(--sucesso-fundo);
@@ -1532,9 +1553,15 @@ HTML_TEMPLATE = """
                     if (!badge) return;
 
                     if (data && data.conectado) {
-                        badge.className = 'badge bg-success-subtle text-success border border-success p-2 d-flex align-items-center gap-2';
-                        dot.className = 'status-dot online';
-                        texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'} · há ${data.segundos_atras}s)`;
+                        if (data.fila_pendente && data.fila_pendente > 0) {
+                            badge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning p-2 d-flex align-items-center gap-2';
+                            dot.className = 'status-dot warning';
+                            texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'}) · ${data.fila_pendente} pendência(s) na fila`;
+                        } else {
+                            badge.className = 'badge bg-success-subtle text-success border border-success p-2 d-flex align-items-center gap-2';
+                            dot.className = 'status-dot online';
+                            texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'} · há ${data.segundos_atras}s)`;
+                        }
                     } else {
                         badge.className = 'badge bg-light text-secondary border p-2 d-flex align-items-center gap-2';
                         dot.className = 'status-dot offline';
@@ -1682,6 +1709,10 @@ HTML_SALAS_TEMPLATE = """
         }
         .status-dot.offline {
             background-color: var(--texto-dica);
+        }
+        .status-dot.warning {
+            background-color: var(--alerta);
+            box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.2);
         }
         .badge-localizado {
             background-color: var(--sucesso-fundo);
@@ -1945,9 +1976,15 @@ HTML_SALAS_TEMPLATE = """
                     if (!badge) return;
 
                     if (data && data.conectado) {
-                        badge.className = 'badge bg-success-subtle text-success border border-success p-2 d-flex align-items-center gap-2';
-                        dot.className = 'status-dot online';
-                        texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'} · há ${data.segundos_atras}s)`;
+                        if (data.fila_pendente && data.fila_pendente > 0) {
+                            badge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning p-2 d-flex align-items-center gap-2';
+                            dot.className = 'status-dot warning';
+                            texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'}) · ${data.fila_pendente} pendência(s) na fila`;
+                        } else {
+                            badge.className = 'badge bg-success-subtle text-success border border-success p-2 d-flex align-items-center gap-2';
+                            dot.className = 'status-dot online';
+                            texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'} · há ${data.segundos_atras}s)`;
+                        }
                     } else {
                         badge.className = 'badge bg-light text-secondary border p-2 d-flex align-items-center gap-2';
                         dot.className = 'status-dot offline';
@@ -2081,6 +2118,10 @@ HTML_RELATORIO_TEMPLATE = """
         }
         .status-dot.offline {
             background-color: var(--texto-dica);
+        }
+        .status-dot.warning {
+            background-color: var(--alerta);
+            box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.2);
         }
         .badge-localizado {
             background-color: var(--sucesso-fundo);
@@ -3019,9 +3060,15 @@ HTML_RELATORIO_TEMPLATE = """
                     if (!badge) return;
 
                     if (data && data.conectado) {
-                        badge.className = 'badge bg-success-subtle text-success border border-success p-2 d-flex align-items-center gap-2';
-                        dot.className = 'status-dot online';
-                        texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'} · há ${data.segundos_atras}s)`;
+                        if (data.fila_pendente && data.fila_pendente > 0) {
+                            badge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning p-2 d-flex align-items-center gap-2';
+                            dot.className = 'status-dot warning';
+                            texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'}) · ${data.fila_pendente} pendência(s) na fila`;
+                        } else {
+                            badge.className = 'badge bg-success-subtle text-success border border-success p-2 d-flex align-items-center gap-2';
+                            dot.className = 'status-dot online';
+                            texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'} · há ${data.segundos_atras}s)`;
+                        }
                     } else {
                         badge.className = 'badge bg-light text-secondary border p-2 d-flex align-items-center gap-2';
                         dot.className = 'status-dot offline';
@@ -3590,7 +3637,8 @@ def excluir_sessao(sessao_id):
 @app.route("/api/status", methods=["GET"])
 def api_status():
     """Health-check para o Urovo detectar que o servidor está online."""
-    registrar_contato_coletor("health-check")
+    fila = request.args.get("fila")
+    registrar_contato_coletor("health-check", fila=fila)
     return jsonify({
         "status": "online",
         "servidor": "FIEA Coleta Local",
@@ -3605,11 +3653,13 @@ def api_status_coletor():
     ts = ultimo_contato_coletor.get("timestamp")
     conectado = bool(ts and (time.time() - ts < 45))
     segundos = int(time.time() - ts) if ts else None
+    fila = ultimo_contato_coletor.get("fila_pendente", 0)
     return jsonify({
         "conectado": conectado,
         "ip": ultimo_contato_coletor.get("ip"),
         "acao": ultimo_contato_coletor.get("acao"),
         "segundos_atras": segundos,
+        "fila_pendente": fila,
     })
 
 
@@ -3837,6 +3887,8 @@ def api_sincronizar():
         return jsonify({"erro": "JSON inválido ou vazio"}), 400
 
     registrar_contato_coletor("sincronizacao")
+    if ultimo_contato_coletor.get("fila_pendente", 0) > 0:
+        ultimo_contato_coletor["fila_pendente"] -= 1
 
     sessao_info = dados.get("sessao", {})
     varredura_info = dados.get("varredura", {})

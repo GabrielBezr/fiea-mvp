@@ -3448,9 +3448,10 @@ int menu navegacao_principal 0x7f0d0001
 int mipmap ic_launcher 0x7f0e0000
 int mipmap ic_launcher_foreground 0x7f0e0001
 int plurals mtrl_badge_content_description 0x7f0f0000
-int plurals progressoSalas 0x7f0f0001
-int plurals salasFaltando 0x7f0f0002
-int plurals seloPendentes 0x7f0f0003
+int plurals painelFilaSessoes 0x7f0f0001
+int plurals progressoSalas 0x7f0f0002
+int plurals salasFaltando 0x7f0f0003
+int plurals seloPendentes 0x7f0f0004
 int raw scan_new 0x7f100000
 int raw zxing_beep 0x7f100001
 int string CardCount 0x7f110000
