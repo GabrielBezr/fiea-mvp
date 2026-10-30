@@ -1,6 +1,7 @@
 package com.rfid.demo;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -148,6 +149,7 @@ public class EtiquetagemActivity extends Activity implements OnClickListener {
         };
 
         atualizarStatus();
+        restaurarRascunho();
     }
 
     @Override
@@ -302,7 +304,61 @@ public class EtiquetagemActivity extends Activity implements OnClickListener {
         atualizarStatus();
     }
 
+    private static final String PREFS_RASCUNHO = "FieaEtiquetagemRascunho";
+    private static final String KEY_EPC = "rascunho_epc";
+    private static final String KEY_PATRIMONIO = "rascunho_patrimonio";
+    private static final String KEY_METALICO = "rascunho_metalico";
+    private static final String KEY_ORIGEM = "rascunho_origem";
+
+    private void salvarRascunho() {
+        if (etEpc == null || etPatrimonio == null || cbMetalico == null) return;
+        String epc = etEpc.getText().toString().trim();
+        String patrimonio = etPatrimonio.getText().toString().trim();
+        boolean metalico = cbMetalico.isChecked();
+
+        SharedPreferences sp = getSharedPreferences(PREFS_RASCUNHO, MODE_PRIVATE);
+        if (!epc.isEmpty() || !patrimonio.isEmpty() || metalico) {
+            sp.edit()
+                    .putString(KEY_EPC, epc)
+                    .putString(KEY_PATRIMONIO, patrimonio)
+                    .putBoolean(KEY_METALICO, metalico)
+                    .putString(KEY_ORIGEM, origemEpc)
+                    .apply();
+        } else {
+            sp.edit().clear().apply();
+        }
+    }
+
+    private void restaurarRascunho() {
+        if (etEpc == null || etPatrimonio == null || cbMetalico == null) return;
+        if (!etEpc.getText().toString().trim().isEmpty() || !etPatrimonio.getText().toString().trim().isEmpty()) {
+            return;
+        }
+
+        SharedPreferences sp = getSharedPreferences(PREFS_RASCUNHO, MODE_PRIVATE);
+        String epcSalvo = sp.getString(KEY_EPC, "");
+        String patSalvo = sp.getString(KEY_PATRIMONIO, "");
+        boolean metSalvo = sp.getBoolean(KEY_METALICO, false);
+        String origemSalva = sp.getString(KEY_ORIGEM, ParEtiquetagem.ORIGEM_MANUAL);
+
+        if (!epcSalvo.isEmpty() || !patSalvo.isEmpty() || metSalvo) {
+            if (!epcSalvo.isEmpty()) {
+                preencherEpc(epcSalvo, origemSalva);
+            }
+            if (!patSalvo.isEmpty()) {
+                etPatrimonio.setText(patSalvo);
+            }
+            cbMetalico.setChecked(metSalvo);
+        }
+    }
+
+    private void limparRascunho() {
+        SharedPreferences sp = getSharedPreferences(PREFS_RASCUNHO, MODE_PRIVATE);
+        sp.edit().clear().apply();
+    }
+
     private void limparCampos() {
+        limparRascunho();
         preencherEpc("", ParEtiquetagem.ORIGEM_MANUAL);
         etPatrimonio.setText("");
         cbMetalico.setChecked(false);
@@ -358,11 +414,13 @@ public class EtiquetagemActivity extends Activity implements OnClickListener {
             // Regista o callback da TagsSalaActivity toda a vez que a aba for focada
             RFIDSDKManager.getInstance().getRfidManager().registerCallback(callback);
         }
+        restaurarRascunho();
     }
-    
+
     @Override
     protected void onPause() {
         super.onPause();
         pararLeitura();
+        salvarRascunho();
     }
 }
