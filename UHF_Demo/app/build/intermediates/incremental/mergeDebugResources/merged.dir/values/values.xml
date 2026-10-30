@@ -1868,6 +1868,10 @@
     <item quantity="one"><ns2:g id="count">%d</ns2:g> new notification</item>
     <item quantity="other"><ns2:g id="count">%d</ns2:g> new notifications</item>
   </plurals>
+    <plurals name="painelFilaSessoes">
+        <item quantity="one">%1$d sessão offline (%2$d envio)</item>
+        <item quantity="other">%1$d sessões offline (%2$d envios)</item>
+    </plurals>
     <plurals name="progressoSalas">
         <item quantity="one">%1$d de %2$d sala varrida</item>
         <item quantity="other">%1$d de %2$d salas varridas</item>

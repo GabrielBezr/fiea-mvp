@@ -432,6 +432,21 @@ public class ScanActivity extends Activity implements OnClickListener {
         etOperador.setEnabled(true);
         atualizarStatus();
         exportarSessao(s, true);
+
+        // Se há itens na fila offline e o servidor estiver acessível, sincroniza automaticamente
+        SyncManager sm = SyncManager.getInstance(this);
+        if (sm.totalPendenciasNaFila() > 0) {
+            sm.testarConexao(online -> {
+                if (online) {
+                    sm.sincronizarFilaOffline(sucessos -> {
+                        if (sucessos > 0) {
+                            Toast.makeText(getApplicationContext(),
+                                    getString(R.string.msgFilaSincronizada, sucessos), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            });
+        }
     }
 
     private void iniciarVarredura(String nomeSala) {

@@ -133,6 +133,20 @@ public class PainelActivity extends Activity {
         atualizarFilaOffline();
         atualizarUltimaVarredura();
         sincronizarBase(false);
+
+        // Se houver pendências na fila offline e o servidor estiver acessível, sincroniza automaticamente
+        SyncManager sm = SyncManager.getInstance(this);
+        if (sm.totalPendenciasNaFila() > 0) {
+            sm.testarConexao(online -> {
+                if (online) {
+                    sm.sincronizarFilaOffline(sucessos -> {
+                        if (sucessos > 0) {
+                            atualizarFilaOffline();
+                        }
+                    });
+                }
+            });
+        }
     }
 
     private void atualizarSessaoECabecalho() {
@@ -171,14 +185,15 @@ public class PainelActivity extends Activity {
         atualizarMetricas(unidadeSelecionada);
     }
 
-    private void atualizarFilaOffline() {
+    public void atualizarFilaOffline() {
         int pendentes = SyncManager.getInstance(this).totalPendenciasNaFila();
         tvFilaNum.setText(String.valueOf(pendentes));
         if (pendentes == 0) {
             tvFilaStatus.setText(R.string.painelTudoSincronizado);
             tvFilaStatus.setTextColor(ContextCompat.getColor(this, R.color.sucesso_texto));
         } else {
-            tvFilaStatus.setText(R.string.painelAguardandoWifi);
+            int sessoes = SyncManager.getInstance(this).totalSessoesNaFila();
+            tvFilaStatus.setText(getResources().getQuantityString(R.plurals.painelFilaSessoes, sessoes, sessoes, pendentes));
             tvFilaStatus.setTextColor(ContextCompat.getColor(this, R.color.alerta_texto));
         }
     }

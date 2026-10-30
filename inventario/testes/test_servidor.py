@@ -456,5 +456,31 @@ class TestAssociacaoTagEBens(unittest.TestCase):
         self.assertIn("btn-abrir-etiqueta", html)
 
 
+    def test_api_status_com_fila_offline_rastreia_coletor(self):
+        # Health-check sem fila
+        resp = self.cliente.get("/api/status")
+        self.assertEqual(resp.status_code, 200)
+        dados = resp.get_json()
+        self.assertEqual(dados.get("status"), "online")
+
+        # Status do coletor sem fila
+        resp_coletor = self.cliente.get("/api/status-coletor")
+        self.assertEqual(resp_coletor.status_code, 200)
+        dados_coletor = resp_coletor.get_json()
+        self.assertTrue(dados_coletor.get("conectado"))
+        self.assertEqual(dados_coletor.get("fila_pendente"), 0)
+
+        # Health-check com fila=3
+        resp = self.cliente.get("/api/status?fila=3")
+        self.assertEqual(resp.status_code, 200)
+
+        # Status do coletor agora reporta fila_pendente = 3
+        resp_coletor = self.cliente.get("/api/status-coletor")
+        self.assertEqual(resp_coletor.status_code, 200)
+        dados_coletor = resp_coletor.get_json()
+        self.assertTrue(dados_coletor.get("conectado"))
+        self.assertEqual(dados_coletor.get("fila_pendente"), 3)
+
+
 if __name__ == "__main__":
     unittest.main()

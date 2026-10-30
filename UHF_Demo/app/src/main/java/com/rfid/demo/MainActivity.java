@@ -254,7 +254,22 @@ public class MainActivity extends TabActivity   {
 		sm.testarConexao(online -> {
 			if (layoutConexaoServidor == null || tvStatusConexao == null) return;
 			// A fila aparece também offline: é quando o operador mais precisa saber dela.
-			mostrarConexao(online ? CONEXAO_ONLINE : CONEXAO_OFFLINE, sm.totalPendenciasNaFila());
+			int pendentes = sm.totalPendenciasNaFila();
+			mostrarConexao(online ? CONEXAO_ONLINE : CONEXAO_OFFLINE, pendentes);
+
+			// Se o servidor estiver online e houver pendências na fila offline, sincroniza automaticamente
+			if (online && pendentes > 0) {
+				sm.sincronizarFilaOffline(sucessos -> {
+					if (sucessos > 0) {
+						int restante = sm.totalPendenciasNaFila();
+						mostrarConexao(CONEXAO_ONLINE, restante);
+						Activity cur = getCurrentActivity();
+						if (cur instanceof PainelActivity) {
+							((PainelActivity) cur).atualizarFilaOffline();
+						}
+					}
+				});
+			}
 		});
 	}
 

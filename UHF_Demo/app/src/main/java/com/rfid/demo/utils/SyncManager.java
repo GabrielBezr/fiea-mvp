@@ -57,6 +57,7 @@ public class SyncManager {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private final AtomicBoolean monitorandoReconexao = new AtomicBoolean(false);
+    private final AtomicBoolean sincronizandoFila = new AtomicBoolean(false);
     private boolean estavaOffline = false;
 
     public interface Callback<T> {
@@ -199,7 +200,8 @@ public class SyncManager {
         executor.execute(() -> {
             boolean online = false;
             try {
-                URL url = new URL(getServerUrl() + "/api/status");
+                int filaCount = totalPendenciasNaFila();
+                URL url = new URL(getServerUrl() + "/api/status?fila=" + filaCount);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setConnectTimeout(2500);
                 conn.setReadTimeout(2500);
@@ -515,6 +517,12 @@ public class SyncManager {
      * Envia todos os pacotes acumulados na fila offline.
      */
     public void sincronizarFilaOffline(Callback<Integer> callback) {
+        if (!sincronizandoFila.compareAndSet(false, true)) {
+            if (callback != null) {
+                mainHandler.post(() -> callback.onResult(0));
+            }
+            return;
+        }
         executor.execute(() -> {
             File filaFile = new File(context.getFilesDir(), "fila_offline.json");
             if (!filaFile.exists() || filaFile.length() == 0) {
@@ -569,6 +577,8 @@ public class SyncManager {
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Erro ao processar fila offline", e);
+            } finally {
+                sincronizandoFila.set(false);
             }
 
             final int total = sucessos;
@@ -581,9 +591,37 @@ public class SyncManager {
     public int totalPendenciasNaFila() {
         try {
             File filaFile = new File(context.getFilesDir(), "fila_offline.json");
-            if (!filaFile.exists()) return 0;
+            if (!filaFile.exists() || filaFile.length() == 0) return 0;
             String content = lerArquivo(filaFile);
             return new JSONArray(content).length();
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Retorna o total de sessões distintas acumuladas na fila offline.
+     */
+    public int totalSessoesNaFila() {
+        try {
+            File filaFile = new File(context.getFilesDir(), "fila_offline.json");
+            if (!filaFile.exists() || filaFile.length() == 0) return 0;
+            String content = lerArquivo(filaFile);
+            JSONArray fila = new JSONArray(content);
+            Set<String> sessoes = new HashSet<>();
+            for (int i = 0; i < fila.length(); i++) {
+                JSONObject payload = fila.optJSONObject(i);
+                if (payload != null && payload.has("sessao")) {
+                    JSONObject sObj = payload.optJSONObject("sessao");
+                    if (sObj != null) {
+                        String sId = sObj.optString("id");
+                        if (!sId.isEmpty()) {
+                            sessoes.add(sId);
+                        }
+                    }
+                }
+            }
+            return sessoes.isEmpty() ? (fila.length() > 0 ? 1 : 0) : sessoes.size();
         } catch (Exception e) {
             return 0;
         }

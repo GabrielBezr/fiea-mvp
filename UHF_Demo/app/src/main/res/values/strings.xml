@@ -63,6 +63,10 @@
     <string name="painelEnviosPendentes">Envios pendentes</string>
     <string name="painelTudoSincronizado">Tudo sincronizado</string>
     <string name="painelAguardandoWifi">Aguardando Wi-Fi</string>
+    <plurals name="painelFilaSessoes">
+        <item quantity="one">%1$d sessão offline (%2$d envio)</item>
+        <item quantity="other">%1$d sessões offline (%2$d envios)</item>
+    </plurals>
     <string name="painelItensNoCatalogo">Itens no catálogo</string>
     <string name="painelComRfidSub">%1$d com RFID</string>
     <string name="painelUltimaContagem">Última contagem</string>

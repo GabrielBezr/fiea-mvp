@@ -3449,6 +3449,7 @@ menu navegacao_principal
 mipmap ic_launcher
 mipmap ic_launcher_foreground
 plurals mtrl_badge_content_description
+plurals painelFilaSessoes
 plurals progressoSalas
 plurals salasFaltando
 plurals seloPendentes
