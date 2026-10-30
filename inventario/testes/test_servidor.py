@@ -481,6 +481,24 @@ class TestAssociacaoTagEBens(unittest.TestCase):
         self.assertTrue(dados_coletor.get("conectado"))
         self.assertEqual(dados_coletor.get("fila_pendente"), 3)
 
+    def test_paginas_cadastro_contem_script_persistencia_rascunho(self):
+        resp_bens = self.cliente.get("/bens")
+        self.assertEqual(resp_bens.status_code, 200)
+        html_bens = resp_bens.get_data(as_text=True)
+        self.assertIn("CHAVE_RASCUNHO_BEM", html_bens)
+        self.assertIn("btnLimparFormNovoBem", html_bens)
+        self.assertIn("salvarRascunhoBem", html_bens)
+        self.assertIn("restaurarRascunhoBem", html_bens)
+
+        resp_salas = self.cliente.get("/salas")
+        self.assertEqual(resp_salas.status_code, 200)
+        html_salas = resp_salas.get_data(as_text=True)
+        self.assertIn("CHAVE_RASCUNHO_SALA", html_salas)
+        self.assertIn("campoNomeSala", html_salas)
+        self.assertIn("btnLimparFormNovaSala", html_salas)
+        self.assertIn("salvarRascunhoSala", html_salas)
+        self.assertIn("restaurarRascunhoSala", html_salas)
+
 
 if __name__ == "__main__":
     unittest.main()

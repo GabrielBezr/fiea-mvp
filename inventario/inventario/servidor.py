@@ -834,6 +834,7 @@ HTML_TEMPLATE = """
                                 </label>
                             </div>
                             <button type="submit" id="btnSubmitForm" class="btn btn-primary w-100 py-2">Salvar Bem no Cadastro</button>
+                            <button type="button" id="btnLimparFormNovoBem" class="btn btn-link btn-sm text-secondary w-100 text-decoration-none mt-1">Limpar campos</button>
                         </form>
                     </div>
                 </div>
@@ -1243,8 +1244,97 @@ HTML_TEMPLATE = """
                 campoEpc.classList.remove('is-valid', 'is-invalid');
                 statusCaptura.innerHTML = 'Deixe em branco se ainda não foi etiquetado.';
                 statusCaptura.className = 'form-text small text-muted';
+                salvarRascunhoBem();
             });
         }
+
+        // Rascunho automático em sessionStorage para manter campos preenchidos ao trocar de página
+        const CHAVE_RASCUNHO_BEM = 'rascunho_novo_bem';
+
+        function salvarRascunhoBem() {
+            const rascunho = {
+                patrimonio: campoPatrimonio ? campoPatrimonio.value : '',
+                descricao: campoDescricao ? campoDescricao.value : '',
+                epc: campoEpc ? campoEpc.value : '',
+                sala: campoSala ? campoSala.value : '',
+                metalico: checkMetal ? checkMetal.checked : false
+            };
+            if (rascunho.patrimonio || rascunho.descricao || rascunho.epc || rascunho.sala || rascunho.metalico) {
+                sessionStorage.setItem(CHAVE_RASCUNHO_BEM, JSON.stringify(rascunho));
+            } else {
+                sessionStorage.removeItem(CHAVE_RASCUNHO_BEM);
+            }
+        }
+
+        function restaurarRascunhoBem() {
+            {% if tipo_msg == 'success' %}
+            sessionStorage.removeItem(CHAVE_RASCUNHO_BEM);
+            return;
+            {% endif %}
+
+            const salvo = sessionStorage.getItem(CHAVE_RASCUNHO_BEM);
+            if (!salvo) return;
+            try {
+                const dados = JSON.parse(salvo);
+                if (campoPatrimonio && !campoPatrimonio.value && dados.patrimonio) {
+                    campoPatrimonio.value = dados.patrimonio;
+                    verificarPatrimonio();
+                }
+                if (campoDescricao && !campoDescricao.value && dados.descricao) {
+                    campoDescricao.value = dados.descricao;
+                }
+                if (campoEpc && !campoEpc.value && dados.epc) {
+                    campoEpc.value = dados.epc;
+                    verificarEpc();
+                }
+                if (campoSala && (!campoSala.value || campoSala.value === '') && dados.sala) {
+                    campoSala.value = dados.sala;
+                }
+                if (checkMetal && dados.metalico !== undefined) {
+                    checkMetal.checked = !!dados.metalico;
+                }
+            } catch (e) {
+                sessionStorage.removeItem(CHAVE_RASCUNHO_BEM);
+            }
+        }
+
+        if (campoPatrimonio) campoPatrimonio.addEventListener('input', salvarRascunhoBem);
+        if (campoDescricao) campoDescricao.addEventListener('input', salvarRascunhoBem);
+        if (campoEpc) campoEpc.addEventListener('input', salvarRascunhoBem);
+        if (campoSala) campoSala.addEventListener('change', salvarRascunhoBem);
+        if (checkMetal) checkMetal.addEventListener('change', salvarRascunhoBem);
+
+        const formNovoBem = document.getElementById('formNovoBem');
+        if (formNovoBem) {
+            formNovoBem.addEventListener('submit', function() {
+                sessionStorage.removeItem(CHAVE_RASCUNHO_BEM);
+            });
+        }
+
+        const btnLimparFormNovoBem = document.getElementById('btnLimparFormNovoBem');
+        if (btnLimparFormNovoBem) {
+            btnLimparFormNovoBem.addEventListener('click', function() {
+                if (campoPatrimonio) {
+                    campoPatrimonio.value = '';
+                    campoPatrimonio.classList.remove('is-valid', 'is-invalid');
+                    statusPatrimonio.innerHTML = 'O patrimônio é único por bem.';
+                    statusPatrimonio.className = 'form-text small text-muted';
+                }
+                if (campoDescricao) campoDescricao.value = '';
+                if (campoEpc) {
+                    campoEpc.value = '';
+                    campoEpc.classList.remove('is-valid', 'is-invalid');
+                    statusCaptura.innerHTML = 'Deixe em branco se ainda não foi etiquetado.';
+                    statusCaptura.className = 'form-text small text-muted';
+                }
+                if (campoSala) campoSala.selectedIndex = 0;
+                if (checkMetal) checkMetal.checked = false;
+                if (btnSubmitForm) btnSubmitForm.disabled = false;
+                sessionStorage.removeItem(CHAVE_RASCUNHO_BEM);
+            });
+        }
+
+        restaurarRascunhoBem();
 
         // Captura rápida de tag RFID via Urovo (Ponte Coletor -> PC) no cadastro
         let pollingCaptura = null;
@@ -1272,6 +1362,7 @@ HTML_TEMPLATE = """
                             if (data && data.epc) {
                                 campoEpc.value = data.epc;
                                 verificarEpc();
+                                salvarRascunhoBem();
                                 clearInterval(pollingCaptura);
                                 pollingCaptura = null;
                                 btnCapturar.innerText = 'Capturar do Urovo';
@@ -1864,17 +1955,18 @@ HTML_SALAS_TEMPLATE = """
                         <h6 class="mb-0 fw-bold">Cadastrar Nova Sala</h6>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="/salas/cadastrar">
+                        <form method="POST" action="/salas/cadastrar" id="formNovaSala">
                             <div class="mb-3">
                                 <label class="form-label small fw-semibold">Nome da Sala *</label>
-                                <input type="text" name="nome" class="form-control" placeholder="Ex: EASY, Lab 1, Almoxarifado" required autofocus>
+                                <input type="text" name="nome" id="campoNomeSala" class="form-control" placeholder="Ex: EASY, Lab 1, Almoxarifado" required autofocus>
                                 <div class="form-text small">Nome exato como será selecionado no inventário.</div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label small fw-semibold">Unidade *</label>
-                                <input type="text" name="unidade" class="form-control" value="UFAL" placeholder="Ex: UFAL" required>
+                                <input type="text" name="unidade" id="campoUnidadeSala" class="form-control" placeholder="Ex: UFAL, SENAI, FIEA" required>
                             </div>
                             <button type="submit" class="btn btn-primary w-100 py-2">Salvar Sala</button>
+                            <button type="button" id="btnLimparFormNovaSala" class="btn btn-link btn-sm text-secondary w-100 text-decoration-none mt-1">Limpar campos</button>
                             <a href="/bens" class="btn btn-link w-100 text-center text-muted small mt-2 text-decoration-none">Voltar para Cadastro de Bens</a>
                         </form>
                     </div>
@@ -1995,6 +2087,69 @@ HTML_SALAS_TEMPLATE = """
         }
         setInterval(atualizarStatusColetor, 3000);
         atualizarStatusColetor();
+
+        // Rascunho automático em sessionStorage para formulário de salas
+        const CHAVE_RASCUNHO_SALA = 'rascunho_nova_sala';
+        const campoNomeSala = document.getElementById('campoNomeSala');
+        const campoUnidadeSala = document.getElementById('campoUnidadeSala');
+        const formNovaSala = document.getElementById('formNovaSala');
+
+        function salvarRascunhoSala() {
+            const rascunho = {
+                nome: campoNomeSala ? campoNomeSala.value : '',
+                unidade: campoUnidadeSala ? campoUnidadeSala.value : ''
+            };
+            if (rascunho.nome || rascunho.unidade) {
+                sessionStorage.setItem(CHAVE_RASCUNHO_SALA, JSON.stringify(rascunho));
+            } else {
+                sessionStorage.removeItem(CHAVE_RASCUNHO_SALA);
+            }
+        }
+
+        function restaurarRascunhoSala() {
+            {% if tipo_msg == 'success' %}
+            sessionStorage.removeItem(CHAVE_RASCUNHO_SALA);
+            return;
+            {% endif %}
+
+            const salvo = sessionStorage.getItem(CHAVE_RASCUNHO_SALA);
+            if (!salvo) return;
+            try {
+                const dados = JSON.parse(salvo);
+                if (campoNomeSala && dados.nome !== undefined) {
+                    campoNomeSala.value = dados.nome;
+                }
+                if (campoUnidadeSala && dados.unidade !== undefined) {
+                    campoUnidadeSala.value = dados.unidade;
+                }
+            } catch (e) {
+                sessionStorage.removeItem(CHAVE_RASCUNHO_SALA);
+            }
+        }
+
+        if (campoNomeSala) campoNomeSala.addEventListener('input', salvarRascunhoSala);
+        if (campoUnidadeSala) campoUnidadeSala.addEventListener('input', salvarRascunhoSala);
+        if (formNovaSala) {
+            formNovaSala.addEventListener('submit', function() {
+                sessionStorage.removeItem(CHAVE_RASCUNHO_SALA);
+            });
+        }
+
+        const btnLimparFormNovaSala = document.getElementById('btnLimparFormNovaSala');
+        if (btnLimparFormNovaSala) {
+            btnLimparFormNovaSala.addEventListener('click', function() {
+                if (campoNomeSala) {
+                    campoNomeSala.value = '';
+                    campoNomeSala.focus();
+                }
+                if (campoUnidadeSala) {
+                    campoUnidadeSala.value = '';
+                }
+                sessionStorage.removeItem(CHAVE_RASCUNHO_SALA);
+            });
+        }
+
+        restaurarRascunhoSala();
     </script>
 </body>
 </html>
