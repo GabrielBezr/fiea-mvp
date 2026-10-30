@@ -154,6 +154,20 @@ public class MainActivity extends TabActivity   {
 			return true;
 		});
 
+		// Ao tocar novamente na aba já aberta (ex: Pendências), volta à tela inicial dela
+		navegacao.setOnItemReselectedListener(item -> {
+			int aba = abaDoItem(item.getItemId());
+			if (aba == ABA_PENDENCIAS) {
+				Activity pendencias = getCurrentActivity();
+				if (!(pendencias instanceof TagsSalaActivity)) {
+					pendencias = getLocalActivityManager().getActivity(getString(R.string.tab_pendencias));
+				}
+				if (pendencias instanceof TagsSalaActivity) {
+					((TagsSalaActivity) pendencias).voltarParaSalas();
+				}
+			}
+		});
+
 		// Escondida de propósito: o operador não precisa das ferramentas do demo.
 		View areaTitulo = findViewById(R.id.area_titulo);
 		areaTitulo.setOnLongClickListener(v -> {
