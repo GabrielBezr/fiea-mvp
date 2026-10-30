@@ -53,6 +53,7 @@
     <string name="statusManual">Conferido manualmente</string>
     <string name="statusFaltante">Faltante</string>
     <string name="statusPendente">Pendente</string>
+    <string name="statusForaDoLocal">Fora do local</string>
     <string name="msgBancadaSemTag">Nenhuma tag perto do leitor. Encoste a etiqueta e toque em Transmitir de novo.</string>
 
     <!-- Painel (Home Page) -->
@@ -303,10 +304,13 @@
     <string name="situacaoManual">Manual</string>
     <string name="situacaoFaltante">Faltante</string>
     <string name="situacaoPendente">Pendente</string>
+    <string name="situacaoForaDoLocal">Fora Local</string>
     <string name="statFaltantes">Faltantes</string>
     <string name="statPendentes">Pendentes</string>
     <string name="itemNenhum">Toque em um bem da lista para resolvê-lo.</string>
     <string name="itemSelecionado">%1$s · %2$s\nSituação: %3$s</string>
+    <string name="itemSelecionadoForaDoLocal">%1$s · %2$s\nSituação: %3$s (detectado em %4$s)\nBloqueado para Faltante: a tag já foi lida via RFID.</string>
+    <string name="avisoItemForaDoLocal">Este item foi detectado em %1$s via RFID (Fora do Local). Não pode ser marcado como Faltante. Para confirmar a presença nesta sala, utilize Conferência Manual ou QR Code.</string>
     <string name="btResolverQr">Ler QR</string>
     <string name="btResolverManual">Manual</string>
     <string name="btResolverFaltante">Faltante</string>
@@ -327,6 +331,8 @@
     <string name="bemEpc">EPC %1$s</string>
     <string name="bemSemEpc">Sem EPC</string>
     <string name="bemMetalico">%1$s · metálico</string>
+    <string name="bemLidoOutraSala">%1$s · Lido em %2$s</string>
+    <string name="bemLidoOutraSalaMetalico">%1$s · Lido em %2$s · metálico</string>
     <string name="metodoQr">Ler QR Code (Câmera)</string>
     <string name="metodoManual">Conferência Manual</string>
     <string name="metodoFaltante">Item Faltante / Desaparecido</string>

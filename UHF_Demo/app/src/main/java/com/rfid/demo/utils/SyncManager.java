@@ -84,7 +84,8 @@ public class SyncManager {
         public String epc;
         public String sala;
         public boolean metalico;
-        public String status = "PENDENTE"; // PENDENTE, LOCALIZADO_RFID, LOCALIZADO_QR, LOCALIZADO_MANUAL, FALTANTE
+        public String status = "PENDENTE"; // PENDENTE, LOCALIZADO_RFID, LOCALIZADO_QR, LOCALIZADO_MANUAL, FALTANTE, FORA_DO_LOCAL
+        public String outrasSalas = null;
 
         public BemEsperado(String patrimonio, String descricao, String epc, String sala, boolean metalico) {
             this.patrimonio = patrimonio;
@@ -103,6 +104,9 @@ public class SyncManager {
                 obj.put("sala", sala);
                 obj.put("metalico", metalico);
                 obj.put("status", status);
+                if (outrasSalas != null) {
+                    obj.put("outrasSalas", outrasSalas);
+                }
                 return obj;
             } catch (Exception e) {
                 return new JSONObject();
@@ -118,6 +122,9 @@ public class SyncManager {
                     obj.optBoolean("metalico")
             );
             b.status = obj.optString("status", "PENDENTE");
+            if (obj.has("outrasSalas")) {
+                b.outrasSalas = obj.optString("outrasSalas");
+            }
             return b;
         }
     }

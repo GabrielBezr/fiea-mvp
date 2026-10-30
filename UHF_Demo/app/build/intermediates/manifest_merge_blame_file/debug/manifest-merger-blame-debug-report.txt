@@ -2,7 +2,7 @@
 2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
 3    package="br.fiea.mvp.rfid"
 4    android:versionCode="1"
-5    android:versionName="2.5.202610281205" >
+5    android:versionName="2.5.202610281305" >
 6
 7    <uses-sdk
 8        android:minSdkVersion="26"

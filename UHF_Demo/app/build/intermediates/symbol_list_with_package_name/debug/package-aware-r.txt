@@ -3501,6 +3501,7 @@ string app_need_read_all_file
 string app_titulo
 string app_version
 string appbar_scrolling_view_behavior
+string avisoItemForaDoLocal
 string band
 string bankid
 string basicparam
@@ -3509,6 +3510,8 @@ string battery_level
 string baty_value
 string beep_volume
 string bemEpc
+string bemLidoOutraSala
+string bemLidoOutraSalaMetalico
 string bemMetalico
 string bemSemEpc
 string bemTitulo
@@ -3669,6 +3672,7 @@ string isChangeing
 string ischange_status
 string itemNenhum
 string itemSelecionado
+string itemSelecionadoForaDoLocal
 string item_view_role_description
 string keyboard_imei
 string kill_failed
@@ -3949,6 +3953,7 @@ string set_success
 string setstr
 string short_press_inv
 string situacaoFaltante
+string situacaoForaDoLocal
 string situacaoManual
 string situacaoPendente
 string situacaoQr
@@ -3958,6 +3963,7 @@ string start_tranfer
 string statFaltantes
 string statPendentes
 string statusFaltante
+string statusForaDoLocal
 string statusManual
 string statusPendente
 string statusQr
