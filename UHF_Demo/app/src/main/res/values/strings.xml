@@ -23,9 +23,14 @@
 
     <!-- Mensagens que antes estavam escritas direto no Java -->
     <string name="msgFilaSincronizada">%1$d envios da fila chegaram ao PC</string>
-    <string name="tituloConfigServidor">Endereço do PC</string>
-    <string name="msgConfigServidor">Digite o endereço do computador na mesma rede Wi-Fi do coletor.</string>
-    <string name="hintConfigServidor">Ex.: 192.168.1.100:5000</string>
+    <string name="tituloConfigServidor">Token de Conexão</string>
+    <string name="msgConfigServidor">Digite o Token de 8 caracteres exibido no computador (sem hífen).</string>
+    <string name="hintConfigServidor">Ex.: C0A80196</string>
+    <string name="ajudaTokenConexao">Dica: digite apenas o Token de 8 caracteres (sem hífen) para conectar rapidamente.</string>
+    <string name="descMostrarOcultarEndereco">Mostrar ou ocultar endereço</string>
+    <string name="btPreencherUrlCompleta">http://...:5000</string>
+    <string name="btLimparCampo">Limpar</string>
+    <string name="msgTokenInvalido">Valor inválido. Digite um Token (ex: C0A80196) ou endereço IP válido.</string>
     <string name="btSalvarTestar">Salvar e testar</string>
     <string name="msgVarreduraSincronizada">Varredura enviada ao PC</string>
     <string name="tituloVarreduraEncerrada">Varredura encerrada</string>

@@ -17,8 +17,10 @@ import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.InputType;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TabHost;
 import android.widget.TabWidget;
 import android.widget.TextView;
@@ -307,27 +309,118 @@ public class MainActivity extends TabActivity   {
 
 	private void abrirDialogoConfigIp() {
 		com.rfid.demo.utils.SyncManager sm = com.rfid.demo.utils.SyncManager.getInstance(this);
+
+		LinearLayout container = new LinearLayout(this);
+		container.setOrientation(LinearLayout.VERTICAL);
+
+		LinearLayout linhaCampo = new LinearLayout(this);
+		linhaCampo.setOrientation(LinearLayout.HORIZONTAL);
+		linhaCampo.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
 		EditText input = new EditText(this);
 		input.setSingleLine(true);
-		input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
+		input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+		input.setTransformationMethod(android.text.method.PasswordTransformationMethod.getInstance());
 		input.setHint(R.string.hintConfigServidor);
-		input.setText(sm.getServerUrl());
+
+		String urlAtual = sm.getServerUrl();
+		String tokenAtual = com.rfid.demo.utils.SyncManager.gerarToken(urlAtual);
+		if (!tokenAtual.isEmpty()) {
+			input.setText(tokenAtual);
+		} else {
+			String host = urlAtual.replaceAll("^https?://", "").replaceAll("(:\\d+)?(/.*)?$", "").trim();
+			if (host.matches("^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$")) {
+				input.setText(urlAtual);
+			} else if (!host.isEmpty() && !host.equalsIgnoreCase("localhost") && !host.equals("127.0.0.1")) {
+				input.setText(host);
+			} else {
+				input.setText("");
+			}
+		}
+		input.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f));
+
+		ImageView btnOlho = new ImageView(this);
+		btnOlho.setImageResource(R.drawable.ic_visibility);
+		btnOlho.setContentDescription(getString(R.string.descMostrarOcultarEndereco));
+		int pad = (int) (10 * getResources().getDisplayMetrics().density);
+		btnOlho.setPadding(pad, pad, pad, pad);
+
+		final boolean[] visivel = {false};
+		btnOlho.setOnClickListener(v -> {
+			visivel[0] = !visivel[0];
+			if (visivel[0]) {
+				input.setTransformationMethod(null);
+				btnOlho.setImageResource(R.drawable.ic_visibility_off);
+			} else {
+				input.setTransformationMethod(android.text.method.PasswordTransformationMethod.getInstance());
+				btnOlho.setImageResource(R.drawable.ic_visibility);
+			}
+			input.setSelection(input.getText().length());
+		});
+
+		linhaCampo.addView(input);
+		linhaCampo.addView(btnOlho);
+		container.addView(linhaCampo);
+
+		// Ações rápidas: auto-preencher formato de endereço completo ou limpar
+		LinearLayout linhaAcoes = new LinearLayout(this);
+		linhaAcoes.setOrientation(LinearLayout.HORIZONTAL);
+		linhaAcoes.setGravity(android.view.Gravity.CENTER_VERTICAL);
+		linhaAcoes.setPadding(0, pad / 3, 0, pad / 3);
+
+		Button btnPreencherUrl = new Button(this, null, android.R.attr.buttonStyleSmall);
+		btnPreencherUrl.setText(R.string.btPreencherUrlCompleta);
+		btnPreencherUrl.setTextSize(11);
+		LinearLayout.LayoutParams lpPreencher = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
+		lpPreencher.setMargins(0, 0, pad / 2, 0);
+		btnPreencherUrl.setLayoutParams(lpPreencher);
+		btnPreencherUrl.setOnClickListener(v -> {
+			input.setText("http://:5000");
+			input.setSelection(7);
+			visivel[0] = true;
+			input.setTransformationMethod(null);
+			btnOlho.setImageResource(R.drawable.ic_visibility_off);
+			input.requestFocus();
+		});
+
+		Button btnLimpar = new Button(this, null, android.R.attr.buttonStyleSmall);
+		btnLimpar.setText(R.string.btLimparCampo);
+		btnLimpar.setTextSize(11);
+		LinearLayout.LayoutParams lpLimpar = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+		btnLimpar.setLayoutParams(lpLimpar);
+		btnLimpar.setOnClickListener(v -> {
+			input.setText("");
+			input.requestFocus();
+		});
+
+		linhaAcoes.addView(btnPreencherUrl);
+		linhaAcoes.addView(btnLimpar);
+		container.addView(linhaAcoes);
+
+		TextView tvAjuda = new TextView(this);
+		tvAjuda.setText(R.string.ajudaTokenConexao);
+		tvAjuda.setTextSize(12);
+		tvAjuda.setTextColor(ContextCompat.getColor(this, R.color.texto_secundario));
+		tvAjuda.setPadding(0, pad / 2, 0, 0);
+		container.addView(tvAjuda);
 
 		new AlertDialog.Builder(this)
 				.setTitle(R.string.tituloConfigServidor)
 				.setMessage(R.string.msgConfigServidor)
-				.setView(Dialogos.comMargem(this, input))
+				.setView(Dialogos.comMargem(this, container))
 				.setPositiveButton(R.string.btSalvarTestar, (dialog, which) -> {
-					String novaUrl = input.getText().toString().trim();
-					if (!novaUrl.isEmpty()) {
-						if (!novaUrl.startsWith("http://") && !novaUrl.startsWith("https://")) {
-							novaUrl = "http://" + novaUrl;
+					String entrada = input.getText().toString().trim();
+					if (!entrada.isEmpty()) {
+						String novaUrl = com.rfid.demo.utils.SyncManager.resolverEnderecoServidor(entrada, MainActivity.this);
+						if (!novaUrl.isEmpty()) {
+							sm.setServerUrl(novaUrl);
+							if (tvStatusConexao != null) {
+								mostrarConexao(CONEXAO_VERIFICANDO, 0);
+							}
+							verificarStatusServidor();
+						} else {
+							Toast.makeText(MainActivity.this, R.string.msgTokenInvalido, Toast.LENGTH_LONG).show();
 						}
-						sm.setServerUrl(novaUrl);
-						if (tvStatusConexao != null) {
-							mostrarConexao(CONEXAO_VERIFICANDO, 0);
-						}
-						verificarStatusServidor();
 					}
 				})
 				.setNegativeButton(R.string.btCancelar, null)
