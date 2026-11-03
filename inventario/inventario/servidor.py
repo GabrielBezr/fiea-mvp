@@ -68,6 +68,17 @@ def obter_ip_local():
     except Exception:
         return "127.0.0.1"
 
+
+def gerar_token_conexao(ip):
+    """Gera um token curto de conexão a partir do IP local (ex: 192.168.1.150 -> C0A80196)."""
+    try:
+        partes = [int(p) for p in ip.split(".")]
+        if len(partes) == 4:
+            return f"{partes[0]:02X}{partes[1]:02X}{partes[2]:02X}{partes[3]:02X}"
+    except Exception:
+        pass
+    return "00000000"
+
 import base64
 
 FAVICON_ICO_BYTES = base64.b64decode("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")
@@ -221,28 +232,103 @@ HTML_HOME_TEMPLATE = """
                         <span id="textoColetor">Coletor: Aguardando Conexão Wi-Fi</span>
                     </span>
                 </div>
-                <h5 class="fw-bold text-primary mb-1">Endereço do Servidor para o Leitor Urovo DT50</h5>
+                <h5 class="fw-bold text-primary mb-1">Conexão com o Leitor Urovo DT50</h5>
                 <p class="text-muted small mb-3">
-                    Certifique-se de que o leitor e este computador estejam na <strong>mesma rede Wi-Fi</strong>. Digite o endereço abaixo no aplicativo:
+                    Certifique-se de que o leitor e este computador estejam na <strong>mesma rede Wi-Fi</strong>. Digite o <strong>Token</strong> no aplicativo:
                 </p>
 
-                <!-- IP com fonte grande e nítida para digitação no Urovo -->
-                <div class="d-inline-block py-2 px-4 bg-white rounded-3 border border-primary border-opacity-50 shadow-sm mb-3">
-                    <span class="display-6 font-monospace fw-bold text-primary" style="letter-spacing: 2px;">
-                        http://{{ ip_local }}:5000
-                    </span>
+                <!-- Apenas Token de conexão mascarável com botão de visualização -->
+                <div class="d-inline-flex flex-column align-items-center py-3 px-4 bg-white rounded-3 border border-primary border-opacity-50 shadow-sm mb-3">
+                    <div class="small fw-semibold text-muted mb-1 text-uppercase" style="letter-spacing: 0.5px; font-size: 0.75rem;">Token de Conexão</div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fs-3 font-monospace fw-bold text-primary px-3 py-1 bg-light rounded border campo-token-mascaravel" data-real="{{ token_conexao }}" data-mascarado="••••••••••" style="letter-spacing: 2px;">••••••••••</span>
+                        <button type="button" class="btn btn-outline-secondary py-1 px-2 btn-toggle-token" title="Mostrar ou ocultar token" aria-label="Mostrar ou ocultar token">
+                            <svg class="icone-olho-aberto" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            <svg class="icone-olho-fechado" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="row justify-content-center">
                     <div class="col-md-9 text-start">
                         <div class="p-3 bg-light rounded border small">
-                            <strong class="d-block mb-1 text-dark">Como configurar no leitor Urovo DT50:</strong>
+                            <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                                <strong class="text-dark">Como configurar no leitor Urovo DT50:</strong>
+                                <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 fw-medium" style="font-size: 0.78rem;" data-bs-toggle="modal" data-bs-target="#modalComoConectarHome">
+                                    Ajuda e Endereço Completo
+                                </button>
+                            </div>
                             <ol class="mb-0 ps-3 text-secondary">
-                                <li>No aplicativo do Urovo, abra o menu lateral e toque em <strong>Configurações</strong>.</li>
-                                <li>No campo <strong>Servidor / IP</strong>, digite exatamente o endereço acima: <code>http://{{ ip_local }}:5000</code>.</li>
-                                <li>Toque no botão <strong>Testar Conexão</strong>. Ao confirmar o sucesso, o leitor já estará pronto para coletar e sincronizar.</li>
+                                <li>No aplicativo do Urovo, toque na barra de conexão no topo da tela.</li>
+                                <li>Digite os 8 caracteres do Token acima (sem hífen).</li>
+                                <li>Toque em <strong>Salvar e testar</strong> para sincronizar com o computador.</li>
                             </ol>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Didático: Ajuda e Conexão Manual com o Leitor Urovo DT50 (Home) -->
+        <div class="modal fade modal-conexao-ajuda" id="modalComoConectarHome" tabindex="-1" aria-labelledby="modalComoConectarHomeLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-light">
+                        <h6 class="modal-title fw-bold text-primary" id="modalComoConectarHomeLabel">
+                            Ajuda de Conexão com o Leitor Urovo DT50
+                        </h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <ol class="list-group list-group-numbered list-group-flush mb-3">
+                            <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">Conecte o Leitor na Mesma Rede Wi-Fi</div>
+                                    <span class="text-muted small">O leitor Urovo DT50 e este computador precisam estar na mesma rede.</span>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">Abra a Configuração no Leitor</div>
+                                    <span class="text-muted small">No aplicativo Urovo, toque na barra de conexão no topo ou no menu lateral em <strong>Configurações</strong>.</span>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
+                                <div class="ms-2 me-auto w-100">
+                                    <div class="fw-bold">Opção 1: Token Rápido (Recomendada)</div>
+                                    <span class="text-muted small">Digite diretamente os 8 caracteres (sem hífen):</span>
+                                    <div class="mt-2 p-2 bg-light rounded border d-flex align-items-center justify-content-between">
+                                        <span class="font-monospace fw-bold text-dark fs-5 campo-token-mascaravel" data-real="{{ token_conexao }}" data-mascarado="••••••••••" style="letter-spacing: 1px;">••••••••••</span>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2 btn-toggle-token" title="Mostrar ou ocultar token" aria-label="Mostrar ou ocultar token">
+                                            <svg class="icone-olho-aberto" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                            <svg class="icone-olho-fechado" style="display:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
+                                <div class="ms-2 me-auto w-100">
+                                    <div class="fw-bold">Opção 2: Conexão Direta (Endereço Completo)</div>
+                                    <span class="text-muted small">Se preferir digitar o endereço completo, clique no olho para revelar:</span>
+                                    <div class="mt-2 p-2 bg-light rounded border d-flex align-items-center justify-content-between">
+                                        <span class="font-monospace fw-bold text-primary fs-6 campo-endereco-mascaravel" data-real="http://{{ ip_local }}:5000" data-mascarado="••••••••••••••••" style="letter-spacing: 1px;">••••••••••••••••</span>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2 btn-toggle-endereco" title="Mostrar ou ocultar endereço completo" aria-label="Mostrar ou ocultar endereço completo">
+                                            <svg class="icone-olho-aberto" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                            <svg class="icone-olho-fechado" style="display:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">Toque em "Salvar e testar"</div>
+                                    <span class="text-muted small">Ao confirmar a mensagem de sucesso, o status ficará verde e os dados estarão sincronizados.</span>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                    <div class="modal-footer bg-light py-2">
+                        <button type="button" class="btn btn-primary btn-sm px-4" data-bs-dismiss="modal">Entendi</button>
                     </div>
                 </div>
             </div>
@@ -332,6 +418,56 @@ HTML_HOME_TEMPLATE = """
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Monitoramento e alternância de máscara (Token e Endereço Completo)
+        let tokenVisivel = false;
+        let enderecoVisivel = false;
+
+        function alternarMascaraToken() {
+            tokenVisivel = !tokenVisivel;
+            document.querySelectorAll('.campo-token-mascaravel').forEach(el => {
+                el.innerText = tokenVisivel ? el.getAttribute('data-real') : el.getAttribute('data-mascarado');
+            });
+            document.querySelectorAll('.btn-toggle-token').forEach(btn => {
+                const olhoAberto = btn.querySelector('.icone-olho-aberto');
+                const olhoFechado = btn.querySelector('.icone-olho-fechado');
+                if (olhoAberto && olhoFechado) {
+                    olhoAberto.style.display = tokenVisivel ? 'none' : 'inline-block';
+                    olhoFechado.style.display = tokenVisivel ? 'inline-block' : 'none';
+                }
+            });
+        }
+
+        function alternarMascaraEndereco() {
+            enderecoVisivel = !enderecoVisivel;
+            document.querySelectorAll('.campo-endereco-mascaravel').forEach(el => {
+                el.innerText = enderecoVisivel ? el.getAttribute('data-real') : el.getAttribute('data-mascarado');
+            });
+            document.querySelectorAll('.btn-toggle-endereco').forEach(btn => {
+                const olhoAberto = btn.querySelector('.icone-olho-aberto');
+                const olhoFechado = btn.querySelector('.icone-olho-fechado');
+                if (olhoAberto && olhoFechado) {
+                    olhoAberto.style.display = enderecoVisivel ? 'none' : 'inline-block';
+                    olhoFechado.style.display = enderecoVisivel ? 'inline-block' : 'none';
+                }
+            });
+        }
+
+        document.querySelectorAll('.btn-toggle-token').forEach(btn => {
+            btn.addEventListener('click', alternarMascaraToken);
+        });
+        document.querySelectorAll('.btn-toggle-endereco').forEach(btn => {
+            btn.addEventListener('click', alternarMascaraEndereco);
+        });
+
+        // Ao fechar qualquer modal de conexão/ajuda, reoculta o endereço completo por privacidade
+        document.querySelectorAll('.modal-conexao-ajuda').forEach(modalEl => {
+            modalEl.addEventListener('hidden.bs.modal', () => {
+                if (enderecoVisivel) {
+                    alternarMascaraEndereco();
+                }
+            });
+        });
+
         function atualizarStatusColetor() {
             fetch('/api/status-coletor')
                 .then(r => r.json())
@@ -345,11 +481,12 @@ HTML_HOME_TEMPLATE = """
                         if (data.fila_pendente && data.fila_pendente > 0) {
                             badge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning p-2 d-flex align-items-center gap-2';
                             dot.className = 'status-dot warning';
-                            texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'}) · ${data.fila_pendente} pendência(s) na fila`;
+                            texto.innerText = `Coletor Conectado · ${data.fila_pendente} pendência(s) na fila`;
                         } else {
                             badge.className = 'badge bg-success-subtle text-success border border-success p-2 d-flex align-items-center gap-2';
                             dot.className = 'status-dot online';
-                            texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'} · há ${data.segundos_atras}s)`;
+                            const tempo = (data.segundos_atras !== null && data.segundos_atras !== undefined) ? `há ${data.segundos_atras}s` : 'ativo';
+                            texto.innerText = `Coletor Conectado (${tempo})`;
                         }
                     } else {
                         badge.className = 'badge bg-light text-secondary border p-2 d-flex align-items-center gap-2';
@@ -648,9 +785,13 @@ HTML_TEMPLATE = """
                         Como Conectar o Leitor?
                     </button>
                 </div>
-                <p class="mb-0 text-muted small">
-                    Endereço configurado no leitor: 
-                    <strong class="text-dark fs-6 font-monospace px-2 py-1 bg-white rounded border">http://{{ ip_local }}:5000</strong>
+                <p class="mb-0 text-muted small d-flex flex-wrap align-items-center gap-2">
+                    <span>Token de Conexão:</span>
+                    <strong class="text-dark small font-monospace px-2 py-1 bg-white rounded border campo-token-mascaravel" data-real="{{ token_conexao }}" data-mascarado="••••••••••" style="letter-spacing: 1px;">••••••••••</strong>
+                    <button type="button" class="btn btn-link btn-sm p-0 text-secondary btn-toggle-token" title="Mostrar ou ocultar token" aria-label="Mostrar ou ocultar token">
+                        <svg class="icone-olho-aberto" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        <svg class="icone-olho-fechado" style="display:none;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                    </button>
                 </p>
             </div>
             <div class="d-flex align-items-center gap-3">
@@ -666,7 +807,7 @@ HTML_TEMPLATE = """
         </div>
 
         <!-- Modal Didático: Como Conectar o Leitor Urovo DT50 (Bens) -->
-        <div class="modal fade" id="modalComoConectarBens" tabindex="-1" aria-labelledby="modalComoConectarBensLabel" aria-hidden="true">
+        <div class="modal fade modal-conexao-ajuda" id="modalComoConectarBens" tabindex="-1" aria-labelledby="modalComoConectarBensLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content border-0 shadow">
                     <div class="modal-header bg-light">
@@ -685,22 +826,39 @@ HTML_TEMPLATE = """
                             </li>
                             <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
                                 <div class="ms-2 me-auto">
-                                    <div class="fw-bold">Abra as Configurações no App do Leitor</div>
-                                    <span class="text-muted small">No menu lateral do aplicativo Urovo, toque em <strong>Configurações</strong>.</span>
+                                    <div class="fw-bold">Abra a Configuração no Leitor</div>
+                                    <span class="text-muted small">No menu lateral do aplicativo Urovo, toque em <strong>Configurações</strong> ou na barra de conexão no topo.</span>
                                 </div>
                             </li>
                             <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
-                                <div class="ms-2 me-auto">
-                                    <div class="fw-bold">Digite o Endereço IP do Servidor</div>
-                                    <span class="text-muted small">No campo <em>Servidor / IP</em>, digite no teclado do leitor:</span>
-                                    <div class="mt-2 p-2 bg-white rounded border font-monospace fw-bold text-primary text-center fs-5">
-                                        http://{{ ip_local }}:5000
+                                <div class="ms-2 me-auto w-100">
+                                    <div class="fw-bold">Opção 1: Token Rápido (Recomendada)</div>
+                                    <span class="text-muted small">Digite diretamente os 8 caracteres (sem hífen):</span>
+                                    <div class="mt-2 p-2 bg-light rounded border d-flex align-items-center justify-content-between">
+                                        <span class="font-monospace fw-bold text-dark fs-5 campo-token-mascaravel" data-real="{{ token_conexao }}" data-mascarado="••••••••••" style="letter-spacing: 1px;">••••••••••</span>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2 btn-toggle-token" title="Mostrar ou ocultar token" aria-label="Mostrar ou ocultar token">
+                                            <svg class="icone-olho-aberto" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                            <svg class="icone-olho-fechado" style="display:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
+                                <div class="ms-2 me-auto w-100">
+                                    <div class="fw-bold">Opção 2: Conexão Direta (Endereço Completo)</div>
+                                    <span class="text-muted small">Se preferir digitar o endereço completo, clique no olho para revelar:</span>
+                                    <div class="mt-2 p-2 bg-light rounded border d-flex align-items-center justify-content-between">
+                                        <span class="font-monospace fw-bold text-primary fs-6 campo-endereco-mascaravel" data-real="http://{{ ip_local }}:5000" data-mascarado="••••••••••••••••" style="letter-spacing: 1px;">••••••••••••••••</span>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2 btn-toggle-endereco" title="Mostrar ou ocultar endereço completo" aria-label="Mostrar ou ocultar endereço completo">
+                                            <svg class="icone-olho-aberto" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                            <svg class="icone-olho-fechado" style="display:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                                        </button>
                                     </div>
                                 </div>
                             </li>
                             <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
                                 <div class="ms-2 me-auto">
-                                    <div class="fw-bold">Toque em "Testar Conexão"</div>
+                                    <div class="fw-bold">Toque em "Salvar e testar"</div>
                                     <span class="text-muted small">Ao confirmar a mensagem de sucesso, os dados serão sincronizados e você poderá capturar tags diretamente no formulário.</span>
                                 </div>
                             </li>
@@ -1634,6 +1792,56 @@ HTML_TEMPLATE = """
         }
 
         // Monitoramento em tempo real do status de conexão com o coletor Urovo
+        // Monitoramento e alternância de máscara (Token e Endereço Completo)
+        let tokenVisivel = false;
+        let enderecoVisivel = false;
+
+        function alternarMascaraToken() {
+            tokenVisivel = !tokenVisivel;
+            document.querySelectorAll('.campo-token-mascaravel').forEach(el => {
+                el.innerText = tokenVisivel ? el.getAttribute('data-real') : el.getAttribute('data-mascarado');
+            });
+            document.querySelectorAll('.btn-toggle-token').forEach(btn => {
+                const olhoAberto = btn.querySelector('.icone-olho-aberto');
+                const olhoFechado = btn.querySelector('.icone-olho-fechado');
+                if (olhoAberto && olhoFechado) {
+                    olhoAberto.style.display = tokenVisivel ? 'none' : 'inline-block';
+                    olhoFechado.style.display = tokenVisivel ? 'inline-block' : 'none';
+                }
+            });
+        }
+
+        function alternarMascaraEndereco() {
+            enderecoVisivel = !enderecoVisivel;
+            document.querySelectorAll('.campo-endereco-mascaravel').forEach(el => {
+                el.innerText = enderecoVisivel ? el.getAttribute('data-real') : el.getAttribute('data-mascarado');
+            });
+            document.querySelectorAll('.btn-toggle-endereco').forEach(btn => {
+                const olhoAberto = btn.querySelector('.icone-olho-aberto');
+                const olhoFechado = btn.querySelector('.icone-olho-fechado');
+                if (olhoAberto && olhoFechado) {
+                    olhoAberto.style.display = enderecoVisivel ? 'none' : 'inline-block';
+                    olhoFechado.style.display = enderecoVisivel ? 'inline-block' : 'none';
+                }
+            });
+        }
+
+        document.querySelectorAll('.btn-toggle-token').forEach(btn => {
+            btn.addEventListener('click', alternarMascaraToken);
+        });
+        document.querySelectorAll('.btn-toggle-endereco').forEach(btn => {
+            btn.addEventListener('click', alternarMascaraEndereco);
+        });
+
+        // Ao fechar qualquer modal de conexão/ajuda, reoculta o endereço completo por privacidade
+        document.querySelectorAll('.modal-conexao-ajuda').forEach(modalEl => {
+            modalEl.addEventListener('hidden.bs.modal', () => {
+                if (enderecoVisivel) {
+                    alternarMascaraEndereco();
+                }
+            });
+        });
+
         function atualizarStatusColetor() {
             fetch('/api/status-coletor')
                 .then(r => r.json())
@@ -1647,11 +1855,12 @@ HTML_TEMPLATE = """
                         if (data.fila_pendente && data.fila_pendente > 0) {
                             badge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning p-2 d-flex align-items-center gap-2';
                             dot.className = 'status-dot warning';
-                            texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'}) · ${data.fila_pendente} pendência(s) na fila`;
+                            texto.innerText = `Coletor Conectado · ${data.fila_pendente} pendência(s) na fila`;
                         } else {
                             badge.className = 'badge bg-success-subtle text-success border border-success p-2 d-flex align-items-center gap-2';
                             dot.className = 'status-dot online';
-                            texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'} · há ${data.segundos_atras}s)`;
+                            const tempo = (data.segundos_atras !== null && data.segundos_atras !== undefined) ? `há ${data.segundos_atras}s` : 'ativo';
+                            texto.innerText = `Coletor Conectado (${tempo})`;
                         }
                     } else {
                         badge.className = 'badge bg-light text-secondary border p-2 d-flex align-items-center gap-2';
@@ -1876,9 +2085,13 @@ HTML_SALAS_TEMPLATE = """
                         Como Conectar o Leitor?
                     </button>
                 </div>
-                <p class="mb-0 text-muted small">
-                    Endereço configurado no leitor: 
-                    <strong class="text-dark fs-6 font-monospace px-2 py-1 bg-white rounded border">http://{{ ip_local }}:5000</strong>
+                <p class="mb-0 text-muted small d-flex flex-wrap align-items-center gap-2">
+                    <span>Token de Conexão:</span>
+                    <strong class="text-dark small font-monospace px-2 py-1 bg-white rounded border campo-token-mascaravel" data-real="{{ token_conexao }}" data-mascarado="••••••••••" style="letter-spacing: 1px;">••••••••••</strong>
+                    <button type="button" class="btn btn-link btn-sm p-0 text-secondary btn-toggle-token" title="Mostrar ou ocultar token" aria-label="Mostrar ou ocultar token">
+                        <svg class="icone-olho-aberto" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        <svg class="icone-olho-fechado" style="display:none;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                    </button>
                 </p>
             </div>
             <div class="d-flex align-items-center gap-3">
@@ -1893,7 +2106,7 @@ HTML_SALAS_TEMPLATE = """
         </div>
 
         <!-- Modal Didático: Como Conectar o Leitor Urovo DT50 (Salas) -->
-        <div class="modal fade" id="modalComoConectarSalas" tabindex="-1" aria-labelledby="modalComoConectarSalasLabel" aria-hidden="true">
+        <div class="modal fade modal-conexao-ajuda" id="modalComoConectarSalas" tabindex="-1" aria-labelledby="modalComoConectarSalasLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content border-0 shadow">
                     <div class="modal-header bg-light">
@@ -1912,22 +2125,39 @@ HTML_SALAS_TEMPLATE = """
                             </li>
                             <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
                                 <div class="ms-2 me-auto">
-                                    <div class="fw-bold">Abra as Configurações no App do Leitor</div>
-                                    <span class="text-muted small">No menu lateral do aplicativo Urovo, toque em <strong>Configurações</strong>.</span>
+                                    <div class="fw-bold">Abra a Configuração no Leitor</div>
+                                    <span class="text-muted small">No menu lateral do aplicativo Urovo, toque em <strong>Configurações</strong> ou na barra de conexão no topo.</span>
                                 </div>
                             </li>
                             <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
-                                <div class="ms-2 me-auto">
-                                    <div class="fw-bold">Digite o Endereço IP do Servidor</div>
-                                    <span class="text-muted small">No campo <em>Servidor / IP</em>, digite no teclado do leitor:</span>
-                                    <div class="mt-2 p-2 bg-white rounded border font-monospace fw-bold text-primary text-center fs-5">
-                                        http://{{ ip_local }}:5000
+                                <div class="ms-2 me-auto w-100">
+                                    <div class="fw-bold">Opção 1: Token Rápido (Recomendada)</div>
+                                    <span class="text-muted small">Digite diretamente os 8 caracteres (sem hífen):</span>
+                                    <div class="mt-2 p-2 bg-light rounded border d-flex align-items-center justify-content-between">
+                                        <span class="font-monospace fw-bold text-dark fs-5 campo-token-mascaravel" data-real="{{ token_conexao }}" data-mascarado="••••••••••" style="letter-spacing: 1px;">••••••••••</span>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2 btn-toggle-token" title="Mostrar ou ocultar token" aria-label="Mostrar ou ocultar token">
+                                            <svg class="icone-olho-aberto" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                            <svg class="icone-olho-fechado" style="display:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
+                                <div class="ms-2 me-auto w-100">
+                                    <div class="fw-bold">Opção 2: Conexão Direta (Endereço Completo)</div>
+                                    <span class="text-muted small">Se preferir digitar o endereço completo, clique no olho para revelar:</span>
+                                    <div class="mt-2 p-2 bg-light rounded border d-flex align-items-center justify-content-between">
+                                        <span class="font-monospace fw-bold text-primary fs-6 campo-endereco-mascaravel" data-real="http://{{ ip_local }}:5000" data-mascarado="••••••••••••••••" style="letter-spacing: 1px;">••••••••••••••••</span>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2 btn-toggle-endereco" title="Mostrar ou ocultar endereço completo" aria-label="Mostrar ou ocultar endereço completo">
+                                            <svg class="icone-olho-aberto" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                            <svg class="icone-olho-fechado" style="display:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                                        </button>
                                     </div>
                                 </div>
                             </li>
                             <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
                                 <div class="ms-2 me-auto">
-                                    <div class="fw-bold">Toque em "Testar Conexão"</div>
+                                    <div class="fw-bold">Toque em "Salvar e testar"</div>
                                     <span class="text-muted small">As salas cadastradas nesta página aparecem imediatamente na lista de seleção do leitor Urovo.</span>
                                 </div>
                             </li>
@@ -2058,6 +2288,56 @@ HTML_SALAS_TEMPLATE = """
 
     <script>
         // Monitoramento em tempo real do status de conexão com o coletor Urovo
+        // Monitoramento e alternância de máscara (Token e Endereço Completo)
+        let tokenVisivel = false;
+        let enderecoVisivel = false;
+
+        function alternarMascaraToken() {
+            tokenVisivel = !tokenVisivel;
+            document.querySelectorAll('.campo-token-mascaravel').forEach(el => {
+                el.innerText = tokenVisivel ? el.getAttribute('data-real') : el.getAttribute('data-mascarado');
+            });
+            document.querySelectorAll('.btn-toggle-token').forEach(btn => {
+                const olhoAberto = btn.querySelector('.icone-olho-aberto');
+                const olhoFechado = btn.querySelector('.icone-olho-fechado');
+                if (olhoAberto && olhoFechado) {
+                    olhoAberto.style.display = tokenVisivel ? 'none' : 'inline-block';
+                    olhoFechado.style.display = tokenVisivel ? 'inline-block' : 'none';
+                }
+            });
+        }
+
+        function alternarMascaraEndereco() {
+            enderecoVisivel = !enderecoVisivel;
+            document.querySelectorAll('.campo-endereco-mascaravel').forEach(el => {
+                el.innerText = enderecoVisivel ? el.getAttribute('data-real') : el.getAttribute('data-mascarado');
+            });
+            document.querySelectorAll('.btn-toggle-endereco').forEach(btn => {
+                const olhoAberto = btn.querySelector('.icone-olho-aberto');
+                const olhoFechado = btn.querySelector('.icone-olho-fechado');
+                if (olhoAberto && olhoFechado) {
+                    olhoAberto.style.display = enderecoVisivel ? 'none' : 'inline-block';
+                    olhoFechado.style.display = enderecoVisivel ? 'inline-block' : 'none';
+                }
+            });
+        }
+
+        document.querySelectorAll('.btn-toggle-token').forEach(btn => {
+            btn.addEventListener('click', alternarMascaraToken);
+        });
+        document.querySelectorAll('.btn-toggle-endereco').forEach(btn => {
+            btn.addEventListener('click', alternarMascaraEndereco);
+        });
+
+        // Ao fechar qualquer modal de conexão/ajuda, reoculta o endereço completo por privacidade
+        document.querySelectorAll('.modal-conexao-ajuda').forEach(modalEl => {
+            modalEl.addEventListener('hidden.bs.modal', () => {
+                if (enderecoVisivel) {
+                    alternarMascaraEndereco();
+                }
+            });
+        });
+
         function atualizarStatusColetor() {
             fetch('/api/status-coletor')
                 .then(r => r.json())
@@ -2071,11 +2351,12 @@ HTML_SALAS_TEMPLATE = """
                         if (data.fila_pendente && data.fila_pendente > 0) {
                             badge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning p-2 d-flex align-items-center gap-2';
                             dot.className = 'status-dot warning';
-                            texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'}) · ${data.fila_pendente} pendência(s) na fila`;
+                            texto.innerText = `Coletor Conectado · ${data.fila_pendente} pendência(s) na fila`;
                         } else {
                             badge.className = 'badge bg-success-subtle text-success border border-success p-2 d-flex align-items-center gap-2';
                             dot.className = 'status-dot online';
-                            texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'} · há ${data.segundos_atras}s)`;
+                            const tempo = (data.segundos_atras !== null && data.segundos_atras !== undefined) ? `há ${data.segundos_atras}s` : 'ativo';
+                            texto.innerText = `Coletor Conectado (${tempo})`;
                         }
                     } else {
                         badge.className = 'badge bg-light text-secondary border p-2 d-flex align-items-center gap-2';
@@ -2456,9 +2737,13 @@ HTML_RELATORIO_TEMPLATE = """
                         Como Conectar o Leitor?
                     </button>
                 </div>
-                <p class="mb-0 text-muted small">
-                    Endereço para sincronizar sessões: 
-                    <strong class="text-dark fs-6 font-monospace px-2 py-1 bg-white rounded border">http://{{ ip_local }}:5000</strong>
+                <p class="mb-0 text-muted small d-flex flex-wrap align-items-center gap-2">
+                    <span>Token de Conexão:</span>
+                    <strong class="text-dark small font-monospace px-2 py-1 bg-white rounded border campo-token-mascaravel" data-real="{{ token_conexao }}" data-mascarado="••••••••••" style="letter-spacing: 1px;">••••••••••</strong>
+                    <button type="button" class="btn btn-link btn-sm p-0 text-secondary btn-toggle-token" title="Mostrar ou ocultar token" aria-label="Mostrar ou ocultar token">
+                        <svg class="icone-olho-aberto" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        <svg class="icone-olho-fechado" style="display:none;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                    </button>
                 </p>
             </div>
             <div class="d-flex align-items-center gap-3">
@@ -2472,51 +2757,8 @@ HTML_RELATORIO_TEMPLATE = """
             </div>
         </div>
 
-        <!-- Legenda Didática de Auditoria e Divergências (No-print) -->
-        <div class="card mb-4 no-print border-0 shadow-sm" style="background-color: #F8FAFC;">
-            <div class="card-body py-3 px-4">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="small text-uppercase fw-bold text-secondary" style="letter-spacing: 0.5px;">
-                        Legenda de Situações do Inventário (Como Interpretar os Resultados)
-                    </span>
-                </div>
-                <div class="row g-2 small">
-                    <div class="col-md-4 col-lg">
-                        <div class="p-2 bg-white rounded border h-100">
-                            <span class="badge badge-localizado mb-1">Localizado</span>
-                            <p class="text-muted mb-0" style="font-size: 0.76rem;">Etiqueta RFID lida com sucesso na sala cadastrada esperada.</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-lg">
-                        <div class="p-2 bg-white rounded border h-100">
-                            <span class="badge badge-fora-local mb-1">Fora do Local</span>
-                            <p class="text-muted mb-0" style="font-size: 0.76rem;">Etiqueta lida nesta sala, mas o cadastro indicava outra sala (bem deslocado).</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-lg">
-                        <div class="p-2 bg-white rounded border h-100">
-                            <span class="badge badge-nao-localizado mb-1">Não Localizado</span>
-                            <p class="text-muted mb-0" style="font-size: 0.76rem;">Bem cadastrado nesta sala, porém a antena RFID não detectou o sinal da tag.</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg">
-                        <div class="p-2 bg-white rounded border h-100">
-                            <span class="badge badge-sem-cobertura mb-1">Sem Cobertura</span>
-                            <p class="text-muted mb-0" style="font-size: 0.76rem;">A sala ainda não teve varredura RFID executada ou finalizada nesta sessão.</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg">
-                        <div class="p-2 bg-white rounded border h-100">
-                            <span class="badge badge-sobras mb-1">Tag Não Cadastrada</span>
-                            <p class="text-muted mb-0" style="font-size: 0.76rem;">Etiqueta RFID física detectada que não consta na base de bens (sobra).</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Modal Didático: Como Conectar o Leitor Urovo DT50 (Relatório) -->
-        <div class="modal fade" id="modalComoConectarRelatorio" tabindex="-1" aria-labelledby="modalComoConectarRelatorioLabel" aria-hidden="true">
+        <div class="modal fade modal-conexao-ajuda" id="modalComoConectarRelatorio" tabindex="-1" aria-labelledby="modalComoConectarRelatorioLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content border-0 shadow">
                     <div class="modal-header bg-light">
@@ -2535,22 +2777,39 @@ HTML_RELATORIO_TEMPLATE = """
                             </li>
                             <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
                                 <div class="ms-2 me-auto">
-                                    <div class="fw-bold">Abra as Configurações no App do Leitor</div>
-                                    <span class="text-muted small">No aplicativo do Urovo, abra o menu lateral e toque em <strong>Configurações</strong>.</span>
+                                    <div class="fw-bold">Abra a Configuração no Leitor</div>
+                                    <span class="text-muted small">No aplicativo do Urovo, toque na barra de conexão no topo ou no menu lateral em <strong>Configurações</strong>.</span>
                                 </div>
                             </li>
                             <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
-                                <div class="ms-2 me-auto">
-                                    <div class="fw-bold">Digite o Endereço IP do Servidor</div>
-                                    <span class="text-muted small">No campo <em>Servidor / IP</em>, digite exatamente:</span>
-                                    <div class="mt-2 p-2 bg-white rounded border font-monospace fw-bold text-primary text-center fs-5">
-                                        http://{{ ip_local }}:5000
+                                <div class="ms-2 me-auto w-100">
+                                    <div class="fw-bold">Opção 1: Token Rápido (Recomendada)</div>
+                                    <span class="text-muted small">Digite diretamente os 8 caracteres (sem hífen):</span>
+                                    <div class="mt-2 p-2 bg-light rounded border d-flex align-items-center justify-content-between">
+                                        <span class="font-monospace fw-bold text-dark fs-5 campo-token-mascaravel" data-real="{{ token_conexao }}" data-mascarado="••••••••••" style="letter-spacing: 1px;">••••••••••</span>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2 btn-toggle-token" title="Mostrar ou ocultar token" aria-label="Mostrar ou ocultar token">
+                                            <svg class="icone-olho-aberto" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                            <svg class="icone-olho-fechado" style="display:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
+                                <div class="ms-2 me-auto w-100">
+                                    <div class="fw-bold">Opção 2: Conexão Direta (Endereço Completo)</div>
+                                    <span class="text-muted small">Se preferir digitar o endereço completo, clique no olho para revelar:</span>
+                                    <div class="mt-2 p-2 bg-light rounded border d-flex align-items-center justify-content-between">
+                                        <span class="font-monospace fw-bold text-primary fs-6 campo-endereco-mascaravel" data-real="http://{{ ip_local }}:5000" data-mascarado="••••••••••••••••" style="letter-spacing: 1px;">••••••••••••••••</span>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2 btn-toggle-endereco" title="Mostrar ou ocultar endereço completo" aria-label="Mostrar ou ocultar endereço completo">
+                                            <svg class="icone-olho-aberto" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                            <svg class="icone-olho-fechado" style="display:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                                        </button>
                                     </div>
                                 </div>
                             </li>
                             <li class="list-group-item d-flex align-items-start gap-2 border-0 px-0">
                                 <div class="ms-2 me-auto">
-                                    <div class="fw-bold">Sincronize pelo Coletor</div>
+                                    <div class="fw-bold">Toque em "Salvar e testar"</div>
                                     <span class="text-muted small">Ao concluir uma varredura no leitor, toque em "Sincronizar" para enviar os dados instantaneamente para esta página.</span>
                                 </div>
                             </li>
@@ -3205,6 +3464,56 @@ HTML_RELATORIO_TEMPLATE = """
         }
 
         // Monitoramento da Conexão com o Urovo
+        // Monitoramento e alternância de máscara (Token e Endereço Completo)
+        let tokenVisivel = false;
+        let enderecoVisivel = false;
+
+        function alternarMascaraToken() {
+            tokenVisivel = !tokenVisivel;
+            document.querySelectorAll('.campo-token-mascaravel').forEach(el => {
+                el.innerText = tokenVisivel ? el.getAttribute('data-real') : el.getAttribute('data-mascarado');
+            });
+            document.querySelectorAll('.btn-toggle-token').forEach(btn => {
+                const olhoAberto = btn.querySelector('.icone-olho-aberto');
+                const olhoFechado = btn.querySelector('.icone-olho-fechado');
+                if (olhoAberto && olhoFechado) {
+                    olhoAberto.style.display = tokenVisivel ? 'none' : 'inline-block';
+                    olhoFechado.style.display = tokenVisivel ? 'inline-block' : 'none';
+                }
+            });
+        }
+
+        function alternarMascaraEndereco() {
+            enderecoVisivel = !enderecoVisivel;
+            document.querySelectorAll('.campo-endereco-mascaravel').forEach(el => {
+                el.innerText = enderecoVisivel ? el.getAttribute('data-real') : el.getAttribute('data-mascarado');
+            });
+            document.querySelectorAll('.btn-toggle-endereco').forEach(btn => {
+                const olhoAberto = btn.querySelector('.icone-olho-aberto');
+                const olhoFechado = btn.querySelector('.icone-olho-fechado');
+                if (olhoAberto && olhoFechado) {
+                    olhoAberto.style.display = enderecoVisivel ? 'none' : 'inline-block';
+                    olhoFechado.style.display = enderecoVisivel ? 'inline-block' : 'none';
+                }
+            });
+        }
+
+        document.querySelectorAll('.btn-toggle-token').forEach(btn => {
+            btn.addEventListener('click', alternarMascaraToken);
+        });
+        document.querySelectorAll('.btn-toggle-endereco').forEach(btn => {
+            btn.addEventListener('click', alternarMascaraEndereco);
+        });
+
+        // Ao fechar qualquer modal de conexão/ajuda, reoculta o endereço completo por privacidade
+        document.querySelectorAll('.modal-conexao-ajuda').forEach(modalEl => {
+            modalEl.addEventListener('hidden.bs.modal', () => {
+                if (enderecoVisivel) {
+                    alternarMascaraEndereco();
+                }
+            });
+        });
+
         function atualizarStatusColetor() {
             fetch('/api/status-coletor')
                 .then(r => r.json())
@@ -3218,11 +3527,12 @@ HTML_RELATORIO_TEMPLATE = """
                         if (data.fila_pendente && data.fila_pendente > 0) {
                             badge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning p-2 d-flex align-items-center gap-2';
                             dot.className = 'status-dot warning';
-                            texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'}) · ${data.fila_pendente} pendência(s) na fila`;
+                            texto.innerText = `Coletor Conectado · ${data.fila_pendente} pendência(s) na fila`;
                         } else {
                             badge.className = 'badge bg-success-subtle text-success border border-success p-2 d-flex align-items-center gap-2';
                             dot.className = 'status-dot online';
-                            texto.innerText = `Coletor Conectado (${data.ip || 'Urovo'} · há ${data.segundos_atras}s)`;
+                            const tempo = (data.segundos_atras !== null && data.segundos_atras !== undefined) ? `há ${data.segundos_atras}s` : 'ativo';
+                            texto.innerText = `Coletor Conectado (${tempo})`;
                         }
                     } else {
                         badge.className = 'badge bg-light text-secondary border p-2 d-flex align-items-center gap-2';
@@ -3281,12 +3591,14 @@ def index():
     total_salas = con.execute("SELECT COUNT(*) FROM sala").fetchone()[0]
     total_sessoes = con.execute("SELECT COUNT(*) FROM sessao").fetchone()[0]
     ip_local = obter_ip_local()
+    token_conexao = gerar_token_conexao(ip_local)
     return render_template_string(
         HTML_HOME_TEMPLATE,
         total_bens=total_bens,
         total_salas=total_salas,
         total_sessoes=total_sessoes,
         ip_local=ip_local,
+        token_conexao=token_conexao,
     )
 
 
@@ -3301,6 +3613,7 @@ def gerenciar_bens():
     ).fetchall()
     salas = con.execute("SELECT id, nome, unidade FROM sala ORDER BY nome").fetchall()
     ip_local = obter_ip_local()
+    token_conexao = gerar_token_conexao(ip_local)
     msg = request.args.get("msg")
     tipo_msg = request.args.get("tipo", "info")
 
@@ -3333,6 +3646,7 @@ def gerenciar_bens():
         bens=bens,
         salas=salas,
         ip_local=ip_local,
+        token_conexao=token_conexao,
         mensagem=msg,
         tipo_msg=tipo_msg,
         conflito=conflito,
@@ -3474,10 +3788,11 @@ def listar_salas():
         "ORDER BY s.nome"
     ).fetchall()
     ip_local = obter_ip_local()
+    token_conexao = gerar_token_conexao(ip_local)
     msg = request.args.get("msg")
     tipo_msg = request.args.get("tipo", "info")
     return render_template_string(
-        HTML_SALAS_TEMPLATE, salas=salas, ip_local=ip_local, mensagem=msg, tipo_msg=tipo_msg
+        HTML_SALAS_TEMPLATE, salas=salas, ip_local=ip_local, token_conexao=token_conexao, mensagem=msg, tipo_msg=tipo_msg
     )
 
 
@@ -3614,6 +3929,7 @@ def ver_relatorio():
         nao_cadastrados=nao_cadastrados,
         pct_localizados=pct_localizados,
         ip_local=ip_local,
+        token_conexao=gerar_token_conexao(ip_local),
         mensagem=msg,
         tipo_msg=tipo_msg,
     )
@@ -3794,10 +4110,12 @@ def api_status():
     """Health-check para o Urovo detectar que o servidor está online."""
     fila = request.args.get("fila")
     registrar_contato_coletor("health-check", fila=fila)
+    ip = obter_ip_local()
     return jsonify({
         "status": "online",
         "servidor": "FIEA Coleta Local",
-        "ip": obter_ip_local(),
+        "ip": ip,
+        "token": gerar_token_conexao(ip),
         "timestamp": datetime.now().isoformat(),
     })
 
@@ -3809,12 +4127,14 @@ def api_status_coletor():
     conectado = bool(ts and (time.time() - ts < 45))
     segundos = int(time.time() - ts) if ts else None
     fila = ultimo_contato_coletor.get("fila_pendente", 0)
+    ip = obter_ip_local()
     return jsonify({
         "conectado": conectado,
         "ip": ultimo_contato_coletor.get("ip"),
         "acao": ultimo_contato_coletor.get("acao"),
         "segundos_atras": segundos,
         "fila_pendente": fila,
+        "token": gerar_token_conexao(ip),
     })
 
 

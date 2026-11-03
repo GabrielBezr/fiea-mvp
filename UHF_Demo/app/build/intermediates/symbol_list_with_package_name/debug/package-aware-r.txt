@@ -2542,6 +2542,8 @@ drawable ic_sell
 drawable ic_settings
 drawable ic_stop
 drawable ic_sync
+drawable ic_visibility
+drawable ic_visibility_off
 drawable ic_warning
 drawable ic_wifi
 drawable ic_wifi_off
@@ -3494,6 +3496,7 @@ string abc_shareactionprovider_share_with_application
 string abc_toolbar_collapse_description
 string acaoAtualizarSalas
 string acaoExportarXlsUltima
+string ajudaTokenConexao
 string already_all_storage_premission
 string already_bytes
 string already_pkg
@@ -3541,8 +3544,10 @@ string btInventory
 string btIrInventario
 string btKill
 string btLerTag
+string btLimparCampo
 string btLimparPar
 string btMarcarFaltante
+string btPreencherUrlCompleta
 string btResolverAgora
 string btResolverDepois
 string btResolverFaltante
@@ -3595,6 +3600,7 @@ string descConexao
 string descConfigServidor
 string descLogo
 string descMaisAcoes
+string descMostrarOcultarEndereco
 string descSairDev
 string descSinalFraco
 string descVoltarSalas
@@ -3792,6 +3798,7 @@ string msgTagTransmitidaFalha
 string msgTagTransmitidaSucesso
 string msgTagTransmitindo
 string msgTodosLidos
+string msgTokenInvalido
 string msgTsCamposVazios
 string msgTsEpcRepetido
 string msgTsPosicaoRepetida

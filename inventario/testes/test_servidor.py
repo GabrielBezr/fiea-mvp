@@ -499,6 +499,38 @@ class TestAssociacaoTagEBens(unittest.TestCase):
         self.assertIn("salvarRascunhoSala", html_salas)
         self.assertIn("restaurarRascunhoSala", html_salas)
 
+    def test_gerar_token_conexao_e_api_status(self):
+        from inventario.servidor import gerar_token_conexao
+        self.assertEqual(gerar_token_conexao("192.168.1.150"), "C0A80196")
+        self.assertEqual(gerar_token_conexao("10.0.0.1"), "0A000001")
+        self.assertEqual(gerar_token_conexao("invalid"), "00000000")
+
+        resp = self.cliente.get("/api/status")
+        self.assertEqual(resp.status_code, 200)
+        dados = resp.get_json()
+        self.assertIn("token", dados)
+        self.assertTrue(len(dados["token"]) == 8 and "-" not in dados["token"])
+
+        resp_coletor = self.cliente.get("/api/status-coletor")
+        self.assertEqual(resp_coletor.status_code, 200)
+        dados_coletor = resp_coletor.get_json()
+        self.assertIn("token", dados_coletor)
+        self.assertEqual(dados_coletor["token"], dados["token"])
+
+    def test_paginas_contem_mascara_e_token_conexao(self):
+        for rota in ["/", "/bens", "/salas", "/relatorio"]:
+            resp = self.cliente.get(rota)
+            self.assertEqual(resp.status_code, 200, f"Falha na rota {rota}")
+            html = resp.get_data(as_text=True)
+            self.assertIn("campo-token-mascaravel", html, f"campo-token-mascaravel ausente em {rota}")
+            self.assertIn("btn-toggle-token", html, f"btn-toggle-token ausente em {rota}")
+            self.assertIn("campo-endereco-mascaravel", html, f"campo-endereco-mascaravel ausente em {rota}")
+            self.assertIn("btn-toggle-endereco", html, f"btn-toggle-endereco ausente em {rota}")
+            self.assertIn("alternarMascaraToken", html, f"alternarMascaraToken ausente em {rota}")
+            self.assertIn("alternarMascaraEndereco", html, f"alternarMascaraEndereco ausente em {rota}")
+            self.assertIn("••••••••••", html, f"Mascara do token ausente em {rota}")
+            self.assertIn("••••••••••••••••", html, f"Mascara do endereco ausente em {rota}")
+
 
 if __name__ == "__main__":
     unittest.main()

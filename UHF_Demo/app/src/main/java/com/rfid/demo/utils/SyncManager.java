@@ -194,6 +194,148 @@ public class SyncManager {
     }
 
     /**
+     * Gera o Token de pareamento a partir de uma URL ou endereço IP.
+     * Exemplo: "http://192.168.1.150:5000" -> "C0A80196"
+     */
+    public static String gerarToken(String urlOuIp) {
+        if (urlOuIp == null || urlOuIp.isEmpty()) return "";
+        try {
+            String ip = urlOuIp.replaceAll("^https?://", "").replaceAll("(:\\d+)?(/.*)?$", "").trim();
+            String[] partes = ip.split("\\.");
+            if (partes.length == 4) {
+                int a = Integer.parseInt(partes[0]);
+                int b = Integer.parseInt(partes[1]);
+                int c = Integer.parseInt(partes[2]);
+                int d = Integer.parseInt(partes[3]);
+                return String.format(java.util.Locale.US, "%02X%02X%02X%02X", a, b, c, d);
+            }
+        } catch (Exception ignored) {}
+        return "";
+    }
+
+    /**
+     * Converte uma entrada do operador (Token ou IP/URL) em uma URL HTTP válida com porta 5000.
+     */
+    public static String resolverEnderecoServidor(String entrada, Context contexto) {
+        if (entrada == null) return "";
+        String s = entrada.trim();
+        if (s.isEmpty()) return "";
+
+        if (s.startsWith("#")) {
+            s = s.substring(1).trim();
+        }
+
+        // Caso 1: Token Hexadecimal de 8 caracteres (C0A80196 ou C0A80196)
+        String limpo = s.replace("-", "").replace(" ", "").toUpperCase();
+        if (limpo.matches("^[0-9A-F]{8}$")) {
+            try {
+                int a = Integer.parseInt(limpo.substring(0, 2), 16);
+                int b = Integer.parseInt(limpo.substring(2, 4), 16);
+                int c = Integer.parseInt(limpo.substring(4, 6), 16);
+                int d = Integer.parseInt(limpo.substring(6, 8), 16);
+                return "http://" + a + "." + b + "." + c + "." + d + ":5000";
+            } catch (Exception ignored) {}
+        }
+
+        // Caso 2: Apenas o número final do host (ex: 150) em rede local /24
+        if (s.matches("^\\d{1,3}$")) {
+            try {
+                int host = Integer.parseInt(s);
+                if (host >= 1 && host <= 254 && contexto != null) {
+                    String ipColetor = obterIpWifiLocal(contexto);
+                    if (ipColetor != null && ipColetor.contains(".")) {
+                        int ultimoPonto = ipColetor.lastIndexOf('.');
+                        String subrede = ipColetor.substring(0, ultimoPonto);
+                        return "http://" + subrede + "." + host + ":5000";
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+
+        // Caso 3: URL ou IP completo - validação estrita de IPv4
+        String semProtocolo = s.replaceAll("^https?://", "").trim();
+        int proximaBarra = semProtocolo.indexOf('/');
+        if (proximaBarra != -1) {
+            semProtocolo = semProtocolo.substring(0, proximaBarra).trim();
+        }
+
+        String host;
+        String porta = "5000";
+        if (semProtocolo.contains(":")) {
+            String[] partes = semProtocolo.split(":");
+            host = partes[0].trim();
+            if (partes.length > 1 && !partes[1].trim().isEmpty()) {
+                porta = partes[1].trim();
+            }
+        } else {
+            host = semProtocolo.trim();
+        }
+
+        // Valida se o host é um IPv4 válido (4 octetos de 0 a 255)
+        if (host.matches("^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$")) {
+            String[] octetos = host.split("\\.");
+            boolean valido = true;
+            for (String octeto : octetos) {
+                try {
+                    int val = Integer.parseInt(octeto);
+                    if (val < 0 || val > 255) {
+                        valido = false;
+                        break;
+                    }
+                } catch (Exception e) {
+                    valido = false;
+                    break;
+                }
+            }
+            if (valido) {
+                try {
+                    int p = Integer.parseInt(porta);
+                    if (p > 0 && p <= 65535) {
+                        return "http://" + host + ":" + porta;
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+
+        if (host.equalsIgnoreCase("localhost") || host.equals("127.0.0.1")) {
+            return "http://" + host + ":" + porta;
+        }
+
+        // Se não for token de 8 hex, nem host numérico, nem IPv4 válido: entrada rejeitada
+        return "";
+    }
+
+    /** Obtém o IP do coletor na rede Wi-Fi local para inferência de sub-rede. */
+    public static String obterIpWifiLocal(Context context) {
+        try {
+            android.net.wifi.WifiManager wm = (android.net.wifi.WifiManager)
+                    context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            if (wm != null) {
+                int ipInt = wm.getConnectionInfo().getIpAddress();
+                if (ipInt != 0) {
+                    return String.format(java.util.Locale.US, "%d.%d.%d.%d",
+                            (ipInt & 0xff),
+                            (ipInt >> 8 & 0xff),
+                            (ipInt >> 16 & 0xff),
+                            (ipInt >> 24 & 0xff));
+                }
+            }
+        } catch (Exception ignored) {}
+        try {
+            for (java.util.Enumeration<java.net.NetworkInterface> en = java.net.NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+                java.net.NetworkInterface intf = en.nextElement();
+                for (java.util.Enumeration<java.net.InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+                    java.net.InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (!inetAddress.isLoopbackAddress() && inetAddress instanceof java.net.Inet4Address) {
+                        return inetAddress.getHostAddress();
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+        return null;
+    }
+
+    /**
      * Testa se o servidor no PC está acessível pela rede.
      */
     public void testarConexao(Callback<Boolean> callback) {
