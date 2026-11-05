@@ -103,8 +103,8 @@ HTML_HOME_TEMPLATE = """
             --fiea-azul-escuro: #003A7C;
             --fiea-azul-claro: #00A0E7;
             --fiea-azul-fundo: #E6EEF8;
-            --fundo: #F1F5F9;
-            --superficie: #FFFFFF;
+            --fundo: #F0F0EB;
+            --superficie: #FAFAFA;
             --contorno: #E2E8F0;
             --contorno-forte: #CBD5E1;
             --texto-primario: #1E293B;
@@ -127,21 +127,117 @@ HTML_HOME_TEMPLATE = """
             --ciano-texto: #155E75;
         }
         body {
-            background-color: var(--fundo);
+            background: linear-gradient(180deg, #E2E8F0 0%, var(--fundo) 320px);
             color: var(--texto-primario);
             font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             min-height: 100vh;
         }
         .navbar-fiea {
-            background-color: var(--fiea-azul);
+            background: linear-gradient(100deg, #003264 0%, var(--fiea-azul-escuro) 28%, var(--fiea-azul) 75%, #11599F 100%);
             padding: 12px 0;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
         }
         .navbar-brand {
             font-weight: 700;
             color: #FFFFFF !important;
-            font-size: 1.15rem;
+            font-size: 1.25rem;
             letter-spacing: -0.2px;
+        }
+        .badge-pill-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(52, 211, 153, 0.16);
+            color: #A7F3D0;
+            border: 1px solid rgba(52, 211, 153, 0.45);
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 999px;
+            letter-spacing: 0.03em;
+            white-space: nowrap;
+        }
+        .dot-pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #34D399;
+            animation: dotPulse 1.7s ease-out infinite;
+        }
+        @keyframes dotPulse {
+            0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.55); }
+            70% { box-shadow: 0 0 0 7px rgba(52, 211, 153, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .dot-pulse { animation: none; }
+        }
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 0.86rem;
+            font-weight: 600;
+            border: 1px solid transparent;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+        .chip-ok { background: var(--sucesso-fundo); color: var(--sucesso-texto); border-color: #86EFAC; }
+        .chip-warn { background: var(--alerta-fundo); color: var(--alerta-texto); border-color: #FCD34D; }
+        .chip-off { background: #E9EDF3; color: #33415C; border-color: #C9D3E0; }
+        .hero-card {
+            background: linear-gradient(165deg, #E9F1FB 0%, #F5FAFF 52%, #FFFFFF 100%);
+            border: 1px solid #C9DCF0;
+        }
+        .token-box {
+            background: linear-gradient(180deg, #FFFFFF 0%, #EFF6FF 100%);
+            box-shadow: 0 8px 22px rgba(0, 78, 166, 0.16);
+        }
+        .secao-label {
+            font-size: 0.72rem;
+            letter-spacing: 0.09em;
+        }
+        .metric-card {
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 32px rgba(16, 42, 67, 0.16);
+        }
+        .metric-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 13px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .metric-icon.verde { background: #D1FAE5; color: #047857; }
+        .metric-icon.azul { background: #DBEAFE; color: #1E40AF; }
+        .metric-icon.ciano { background: #CFFAFE; color: #155E75; }
+        .metric-number {
+            font-size: 2.4rem;
+            line-height: 1.1;
+        }
+        .panel-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+        }
+        .panel-icon.verde { background: #D1FAE5; color: #047857; }
+        .panel-icon.azul { background: #DBEAFE; color: #1E40AF; }
+        .config-box {
+            background: #F2F7FE;
+            border: 1px solid #D5E4F5;
+        }
+        .rodape {
+            border-top: 1px solid var(--contorno);
+            background: #FFFFFF;
         }
         .nav-pill-btn {
             border-radius: 20px;
@@ -169,7 +265,7 @@ HTML_HOME_TEMPLATE = """
             border-radius: 12px;
             border: 1px solid var(--contorno);
             background-color: var(--superficie);
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+            box-shadow: 0 3px 18px rgba(16, 42, 67, 0.10);
         }
         .status-dot {
             width: 8px;
@@ -202,43 +298,38 @@ HTML_HOME_TEMPLATE = """
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-fiea mb-4">
-        <div class="container-fluid px-4">
+        <div class="container-fluid px-4 pagina-container">
             <a class="navbar-brand d-flex align-items-center" href="/">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
-                    <rect x="3" y="5" width="18" height="14" rx="2"></rect>
-                    <path d="M7 15h.01"></path>
-                    <path d="M10 15h7"></path>
-                    <path d="M7 10h10"></path>
-                </svg>
-                FIEA Coleta RFID — Servidor Local
+                <img src="/static/logo_fiea.jpg" alt="FIEA" width="45" height="45" class="me-2 rounded">
+                Inventário
             </a>
             <div class="d-flex align-items-center gap-2">
                 <a href="/" class="nav-pill-btn active">Início</a>
                 <a href="/bens" class="nav-pill-btn">Bens Cadastrados</a>
                 <a href="/salas" class="nav-pill-btn">Gerenciar Salas</a>
                 <a href="/relatorio" class="nav-pill-btn">Relatório de Inventário</a>
-                <span class="badge bg-white text-dark ms-2 fw-semibold">Servidor Ativo</span>
+                <span class="badge-pill-status ms-2"><span class="dot-pulse"></span>Servidor Ativo</span>
             </div>
         </div>
     </nav>
 
     <div class="container px-4 py-2" style="max-width: 1140px;">
         <!-- Seção 1: Conexão com o Leitor Urovo DT50 (Hero Card) -->
-        <div class="card mb-4 border-primary border-opacity-25 shadow-sm" style="background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);">
+        <div class="card mb-4 hero-card shadow-sm">
             <div class="card-body p-4 text-center">
                 <div class="d-flex justify-content-center align-items-center gap-2 mb-2">
-                    <span id="badgeColetor" class="badge bg-light text-secondary border p-2 d-flex align-items-center gap-2" style="font-size: 0.85rem;">
+                    <span id="badgeColetor" class="chip chip-off">
                         <span id="dotColetor" class="status-dot offline"></span>
                         <span id="textoColetor">Coletor: Aguardando Conexão Wi-Fi</span>
                     </span>
                 </div>
-                <h5 class="fw-bold text-primary mb-1">Conexão com o Leitor Urovo DT50</h5>
+                <h5 class="fw-bold mb-1" style="color: var(--fiea-azul); font-size: 1.4rem;">Conexão com o Leitor Urovo DT50</h5>
                 <p class="text-muted small mb-3">
                     Certifique-se de que o leitor e este computador estejam na <strong>mesma rede Wi-Fi</strong>. Digite o <strong>Token</strong> no aplicativo:
                 </p>
 
                 <!-- Apenas Token de conexão mascarável com botão de visualização -->
-                <div class="d-inline-flex flex-column align-items-center py-3 px-4 bg-white rounded-3 border border-primary border-opacity-50 shadow-sm mb-3">
+                <div class="d-inline-flex flex-column align-items-center py-3 px-5 rounded-3 border border-primary border-opacity-50 mb-3 token-box">
                     <div class="small fw-semibold text-muted mb-1 text-uppercase" style="letter-spacing: 0.5px; font-size: 0.75rem;">Token de Conexão</div>
                     <div class="d-flex align-items-center gap-2">
                         <span class="fs-3 font-monospace fw-bold text-primary px-3 py-1 bg-light rounded border campo-token-mascaravel" data-real="{{ token_conexao }}" data-mascarado="••••••••••" style="letter-spacing: 2px;">••••••••••</span>
@@ -251,7 +342,7 @@ HTML_HOME_TEMPLATE = """
 
                 <div class="row justify-content-center">
                     <div class="col-md-9 text-start">
-                        <div class="p-3 bg-light rounded border small">
+                        <div class="p-3 rounded border small config-box">
                             <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
                                 <strong class="text-dark">Como configurar no leitor Urovo DT50:</strong>
                                 <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 fw-medium" style="font-size: 0.78rem;" data-bs-toggle="modal" data-bs-target="#modalComoConectarHome">
@@ -337,9 +428,12 @@ HTML_HOME_TEMPLATE = """
         <!-- Seção 2: Métricas Rápidas do Sistema (3 Cards) -->
         <div class="row g-3 mb-4">
             <div class="col-md-4">
-                <div class="card h-100 p-3 text-center border-0 shadow-sm bg-white">
-                    <div class="text-muted small text-uppercase fw-semibold mb-1">Conferência &amp; Auditoria</div>
-                    <div class="display-6 fw-bold text-success mb-1">{{ total_sessoes }}</div>
+                <div class="card h-100 p-4 text-center border-0 shadow-sm bg-white metric-card">
+                    <div class="metric-icon verde mx-auto mb-2">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="1"></rect><path d="M9 14l2 2 4-4"></path></svg>
+                    </div>
+                    <div class="text-muted small text-uppercase fw-semibold secao-label mb-2">Conferência &amp; Auditoria</div>
+                    <div class="metric-number fw-bold text-success mb-1">{{ total_sessoes }}</div>
                     <div class="small text-muted mb-3">Sessões de inventário registradas</div>
                     <a href="/relatorio" class="btn btn-sm btn-outline-success mt-auto fw-semibold">
                         Acessar Relatório de Inventário &rarr;
@@ -347,9 +441,12 @@ HTML_HOME_TEMPLATE = """
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card h-100 p-3 text-center border-0 shadow-sm bg-white">
-                    <div class="text-muted small text-uppercase fw-semibold mb-1">Base Patrimonial</div>
-                    <div class="display-6 fw-bold text-primary mb-1">{{ total_bens }}</div>
+                <div class="card h-100 p-4 text-center border-0 shadow-sm bg-white metric-card">
+                    <div class="metric-icon azul mx-auto mb-2">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                    </div>
+                    <div class="text-muted small text-uppercase fw-semibold secao-label mb-2">Base Patrimonial</div>
+                    <div class="metric-number fw-bold text-primary mb-1">{{ total_bens }}</div>
                     <div class="small text-muted mb-3">Bens cadastrados no sistema</div>
                     <a href="/bens" class="btn btn-sm btn-outline-primary mt-auto fw-semibold">
                         Consultar Bens Cadastrados &rarr;
@@ -357,9 +454,12 @@ HTML_HOME_TEMPLATE = """
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card h-100 p-3 text-center border-0 shadow-sm bg-white">
-                    <div class="text-muted small text-uppercase fw-semibold mb-1">Estrutura Física</div>
-                    <div class="display-6 fw-bold text-primary mb-1">{{ total_salas }}</div>
+                <div class="card h-100 p-4 text-center border-0 shadow-sm bg-white metric-card">
+                    <div class="metric-icon ciano mx-auto mb-2">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    </div>
+                    <div class="text-muted small text-uppercase fw-semibold secao-label mb-2">Estrutura Física</div>
+                    <div class="metric-number fw-bold text-primary mb-1">{{ total_salas }}</div>
                     <div class="small text-muted mb-3">Salas e ambientes mapeados</div>
                     <a href="/salas" class="btn btn-sm btn-outline-primary mt-auto fw-semibold">
                         Gerenciar Salas &rarr;
@@ -374,9 +474,14 @@ HTML_HOME_TEMPLATE = """
             <div class="col-md-7">
                 <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid var(--sucesso) !important;">
                     <div class="card-body p-4">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <span class="badge bg-success-subtle text-success fw-bold text-uppercase" style="font-size: 0.72rem;">Dia a Dia</span>
-                            <h6 class="fw-bold mb-0 text-dark">Rotina Padrão do Inventário RFID</h6>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <span class="panel-icon verde">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="1"></rect><path d="M9 14l2 2 4-4"></path></svg>
+                            </span>
+                            <div>
+                                <span class="badge bg-success-subtle text-success fw-bold text-uppercase mb-1" style="font-size: 0.68rem; letter-spacing: 0.08em;">Dia a Dia</span>
+                                <h6 class="fw-bold mb-0 text-dark" style="font-size: 1.02rem;">Rotina Padrão do Inventário RFID</h6>
+                            </div>
                         </div>
                         <p class="text-muted small mb-3">
                             Para fazer o inventário de rotina, <strong>não é necessário recadastrar itens nem salas</strong>. O processo é direto no leitor Urovo:
@@ -396,9 +501,14 @@ HTML_HOME_TEMPLATE = """
             <div class="col-md-5">
                 <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid var(--fiea-azul) !important;">
                     <div class="card-body p-4">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <span class="badge bg-primary-subtle text-primary fw-bold text-uppercase" style="font-size: 0.72rem;">Eventual</span>
-                            <h6 class="fw-bold mb-0 text-dark">Manutenção de Cadastro</h6>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <span class="panel-icon azul">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                            </span>
+                            <div>
+                                <span class="badge bg-primary-subtle text-primary fw-bold text-uppercase mb-1" style="font-size: 0.68rem; letter-spacing: 0.08em;">Eventual</span>
+                                <h6 class="fw-bold mb-0 text-dark" style="font-size: 1.02rem;">Manutenção de Cadastro</h6>
+                            </div>
                         </div>
                         <p class="text-muted small mb-3">
                             Utilize estas opções apenas quando houver alterações patrimoniais ou novos ambientes:
@@ -407,7 +517,7 @@ HTML_HOME_TEMPLATE = """
                             <li><a href="/salas" class="text-primary fw-semibold text-decoration-none">Gerenciar Salas:</a> Crie ou edite ambientes físicos (ex: novas salas, laboratórios ou almoxarifado).</li>
                             <li><a href="/bens" class="text-primary fw-semibold text-decoration-none">Bens Cadastrados:</a> Adicione novos equipamentos que chegaram ou vincule novas tags RFID (EPC).</li>
                         </ul>
-                        <div class="alert alert-light border small text-muted mb-0 py-2">
+                        <div class="alert mb-0 py-2 small" style="background:#F2F7FE; border:1px solid #D5E4F5; color:#33415C;">
                             <strong>Dica:</strong> Uma vez cadastradas, as salas e os bens ficam salvos permanentemente no banco de dados.
                         </div>
                     </div>
@@ -415,6 +525,13 @@ HTML_HOME_TEMPLATE = """
             </div>
         </div>
     </div>
+
+    <footer class="rodape">
+        <div class="container px-4 py-3 d-flex justify-content-between align-items-center flex-wrap gap-2 small text-muted" style="max-width: 1140px;">
+            <span><strong class="text-secondary">FIEA Inventário RFID</strong> · Servidor local nesta máquina</span>
+            <span>Dados armazenados em <code>dados/inventario.db</code></span>
+        </div>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -479,17 +596,17 @@ HTML_HOME_TEMPLATE = """
 
                     if (data && data.conectado) {
                         if (data.fila_pendente && data.fila_pendente > 0) {
-                            badge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning p-2 d-flex align-items-center gap-2';
+                            badge.className = 'chip chip-warn';
                             dot.className = 'status-dot warning';
                             texto.innerText = `Coletor Conectado · ${data.fila_pendente} pendência(s) na fila`;
                         } else {
-                            badge.className = 'badge bg-success-subtle text-success border border-success p-2 d-flex align-items-center gap-2';
+                            badge.className = 'chip chip-ok';
                             dot.className = 'status-dot online';
                             const tempo = (data.segundos_atras !== null && data.segundos_atras !== undefined) ? `há ${data.segundos_atras}s` : 'ativo';
-                            texto.innerText = `Coletor Conectado (${tempo})`;
+                            texto.innerText = `Coletor Conectado`;
                         }
                     } else {
-                        badge.className = 'badge bg-light text-secondary border p-2 d-flex align-items-center gap-2';
+                        badge.className = 'chip chip-off';
                         dot.className = 'status-dot offline';
                         texto.innerText = 'Coletor: Aguardando Conexão Wi-Fi';
                     }
@@ -546,19 +663,20 @@ HTML_TEMPLATE = """
             --ciano-texto: #155E75;
         }
         body {
-            background-color: var(--fundo);
+            background: linear-gradient(180deg, #E2E8F0 0%, var(--fundo) 320px);
             font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: var(--texto-primario);
             -webkit-font-smoothing: antialiased;
         }
         .navbar-fiea {
-            background-color: var(--fiea-azul);
+            background: linear-gradient(100deg, #003264 0%, var(--fiea-azul-escuro) 28%, var(--fiea-azul) 75%, #11599F 100%);
             border-bottom: 1px solid var(--fiea-azul-escuro);
         }
         .navbar-brand {
             font-weight: 700;
             letter-spacing: -0.01em;
             color: #FFFFFF !important;
+            font-size: 1.25rem;
         }
         .nav-pill-btn {
             border-radius: 8px;
@@ -586,17 +704,219 @@ HTML_TEMPLATE = """
             border-radius: 12px;
             border: 1px solid var(--contorno);
             background-color: var(--superficie);
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+            box-shadow: 0 3px 18px rgba(16, 42, 67, 0.10);
         }
         .card-header {
-            background-color: transparent;
-            border-bottom: 1px solid var(--contorno);
+            background-color: #F3F8FE;
+            border-bottom: 1px solid #DFE9F6;
+        }
+        .card-header-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--fiea-azul-fundo);
+            color: var(--fiea-azul);
+            flex: 0 0 auto;
+        }
+        .tabela-cadastro thead th {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #3D5068;
+            white-space: nowrap;
+            background: #E8EEF7;
+            border-bottom: 2px solid #CFDCEC;
+        }
+        .tabela-cadastro tbody td {
+            padding-top: 0.85rem;
+            padding-bottom: 0.85rem;
+            border-bottom-color: #ECF1F8;
+        }
+        .tabela-cadastro tbody tr:nth-child(even) {
+            background-color: #FAFCFF;
+        }
+        .tabela-cadastro tbody tr:hover {
+            background-color: #E8F0FB;
+        }
+        .pagina-container {
+            max-width: 1240px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        /* Formulário de cadastro — polimento visual */
+        .form-card { max-width: 1040px; }
+        .form-card .form-label { color: #33415C; letter-spacing: 0.02em; }
+        .form-card .form-control-lg,
+        .form-card .form-select-lg {
+            border-color: #D3DEEA;
+            border-radius: 10px;
+            color: #1E293B;
+        }
+        .form-card .form-control-lg:focus,
+        .form-card .form-select-lg:focus {
+            border-color: var(--fiea-azul);
+            box-shadow: 0 0 0 3px rgba(0, 78, 166, 0.15);
+        }
+        .form-card .form-control-lg::placeholder { color: #A8B7CB; }
+        .form-card .form-text { color: #64748B; }
+        .form-card .input-group-lg .form-control { border-radius: 10px 0 0 10px; border-color: #D3DEEA; }
+        .form-card .input-group-lg .btn-outline-secondary {
+            border-color: #D3DEEA;
+            border-left: none;
+            border-radius: 0 10px 10px 0;
+            background: #F1F5F9;
+            color: #3D4B5F;
+            font-weight: 600;
+        }
+        .form-card .input-group-lg .btn-outline-secondary:hover,
+        .form-card .input-group-lg .btn-outline-secondary:focus {
+            background: #E2E8F0;
+            color: #1E293B;
+            border-color: #CBD5E1;
+        }
+        .btn-fiea {
+            background: linear-gradient(180deg, #0F63B4 0%, var(--fiea-azul) 55%, #003A7C 140%);
+            border: 1px solid var(--fiea-azul-escuro);
+            box-shadow: 0 6px 16px rgba(0, 78, 166, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+            color: #FFFFFF;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+        }
+        .btn-fiea:hover,
+        .btn-fiea:focus {
+            background: linear-gradient(180deg, #0B5CB8 0%, var(--fiea-azul-escuro) 120%);
+            border-color: var(--fiea-azul-escuro);
+            color: #FFFFFF;
+        }
+        .limpar-link { color: #64748B; font-weight: 500; }
+        .limpar-link:hover { color: var(--fiea-azul); }
+        .metal-card {
+            background: linear-gradient(180deg, #F0F7FF 0%, #E9F0FB 100%);
+            border: 1px solid #C4D8EE;
+            border-radius: 12px;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .metal-card:hover { border-color: #A9C8E8; box-shadow: 0 2px 10px rgba(0, 78, 166, 0.12); }
+        .divider-suave { border-top: 1px solid #E4ECF7; }
+        .tag-mono {
+            display: inline-flex;
+            align-items: center;
+            background: #EDF2F9;
+            color: #16324F;
+            border: 1px solid #C9D8EA;
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 0.76rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .chip-contador {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--fiea-azul-fundo);
+            color: var(--fiea-azul-escuro);
+            border: 1px solid #BFD5EE;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            white-space: nowrap;
+        }
+        .chip-sala {
+            display: inline-flex;
+            align-items: center;
+            background: var(--info-fundo);
+            color: var(--info-texto);
+            border: 1px solid #BAE6FD;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 3px 10px;
+        }
+        .chip-alerta {
+            display: inline-flex;
+            align-items: center;
+            background: var(--alerta-fundo);
+            color: var(--alerta-texto);
+            border: 1px solid #FCD34D;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 3px 10px;
+        }
+        .chip-neutro {
+            display: inline-flex;
+            align-items: center;
+            background: #ECEFF4;
+            color: #3D4B5F;
+            border: 1px solid #D3DAE4;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 3px 10px;
+        }
+        .badge-pill-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(52, 211, 153, 0.16);
+            color: #A7F3D0;
+            border: 1px solid rgba(52, 211, 153, 0.45);
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 999px;
+            letter-spacing: 0.03em;
+            white-space: nowrap;
+        }
+        .dot-pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #34D399;
+            animation: dotPulse 1.7s ease-out infinite;
+        }
+        @keyframes dotPulse {
+            0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.55); }
+            70% { box-shadow: 0 0 0 7px rgba(52, 211, 153, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .dot-pulse { animation: none; }
+        }
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 0.86rem;
+            font-weight: 600;
+            border: 1px solid transparent;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            width: max-content;
+        }
+        .chip-ok { background: var(--sucesso-fundo); color: var(--sucesso-texto); border-color: #86EFAC; }
+        .chip-warn { background: var(--alerta-fundo); color: var(--alerta-texto); border-color: #FCD34D; }
+        .chip-off { background: #E9EDF3; color: #33415C; border-color: #C9D3E0; }
+        .rodape {
+            border-top: 1px solid var(--contorno);
+            background: #FFFFFF;
+        }
+        @media print {
+            .no-print { display: none !important; }
         }
         .ip-box {
-            background: var(--fiea-azul-fundo);
-            border: 1px solid #BAE6FD;
-            border-radius: 10px;
-            padding: 14px 18px;
+            background: linear-gradient(135deg, #E9F0FB 0%, #DDE9F7 52%, #CCDFEF 100%);
+            border: 1px solid #AECBE6;
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 3px 14px rgba(0, 78, 166, 0.14);
         }
         .btn-primary {
             background-color: var(--fiea-azul);
@@ -755,27 +1075,22 @@ HTML_TEMPLATE = """
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-fiea mb-4">
-        <div class="container-fluid px-4">
+        <div class="container-fluid px-4 pagina-container">
             <a class="navbar-brand d-flex align-items-center" href="/">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
-                    <rect x="3" y="5" width="18" height="14" rx="2"></rect>
-                    <path d="M7 15h.01"></path>
-                    <path d="M10 15h7"></path>
-                    <path d="M7 10h10"></path>
-                </svg>
-                FIEA Coleta RFID — Servidor Local
+                <img src="/static/logo_fiea.jpg" alt="FIEA" width="45" height="45" class="me-2 rounded">
+                Inventário
             </a>
             <div class="d-flex align-items-center gap-2">
                 <a href="/" class="nav-pill-btn">Início</a>
                 <a href="/bens" class="nav-pill-btn active">Bens Cadastrados</a>
                 <a href="/salas" class="nav-pill-btn">Gerenciar Salas</a>
                 <a href="/relatorio" class="nav-pill-btn">Relatório de Inventário</a>
-                <span class="badge bg-white text-dark ms-2 fw-semibold">Servidor Ativo</span>
+                <span class="badge-pill-status ms-2"><span class="dot-pulse"></span>Servidor Ativo</span>
             </div>
         </div>
     </nav>
 
-    <div class="container-fluid px-4">
+    <div class="container-fluid px-4 pagina-container">
         <!-- Topo da Tela de Bens: Identificação e Conexão Limpa -->
         <div class="ip-box mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div>
@@ -795,13 +1110,13 @@ HTML_TEMPLATE = """
                 </p>
             </div>
             <div class="d-flex align-items-center gap-3">
-                <div id="badgeColetor" class="badge bg-secondary p-2 d-flex align-items-center gap-2" style="font-size: 0.85rem;">
+                <div id="badgeColetor" class="chip chip-off">
                     <span id="dotColetor" class="status-dot offline"></span>
                     <span id="textoColetor">Coletor: Aguardando Wi-Fi</span>
                 </div>
                 <div class="text-end">
-                    <span class="badge bg-light text-primary border">Total de Bens: {{ bens|length }}</span>
-                    <span class="badge bg-light text-primary border">Salas: {{ salas|length }}</span>
+                    <span class="chip-contador">Total de Bens: {{ bens|length }}</span>
+                    <span class="chip-contador">Salas: {{ salas|length }}</span>
                 </div>
             </div>
         </div>
@@ -939,83 +1254,124 @@ HTML_TEMPLATE = """
         </div>
         {% endif %}
 
-        <div class="row">
+        <div class="row g-4">
             <!-- Formulário de Cadastro de Novo Bem -->
-            <div class="col-lg-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-header bg-white py-3">
-                        <h6 class="mb-0 fw-bold">Cadastrar Novo Bem</h6>
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="card-header-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="9"></circle>
+                                    <path d="M12 8v8M8 12h8"></path>
+                                </svg>
+                            </span>
+                            <div>
+                                <h6 class="mb-0 fw-bold">Cadastrar Novo Bem</h6>
+                                <div class="small text-muted">Preencha os dados abaixo ou capture a tag diretamente do leitor Urovo.</div>
+                            </div>
+                        </div>
+                        <span class="chip-neutro">Cadastro manual e via leitor</span>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="/cadastrar" id="formNovoBem">
+                        <form method="POST" action="/cadastrar" id="formNovoBem" class="row g-3 align-items-start form-card">
                             <input type="hidden" name="editando" value="0">
-                            <div class="mb-3">
+                            <div class="col-12 col-md-3">
                                 <label class="form-label small fw-semibold">Patrimônio / Tombo *</label>
-                                <input type="text" name="patrimonio" id="campoPatrimonio" class="form-control" placeholder="Ex: 10001" required>
+                                <input type="text" name="patrimonio" id="campoPatrimonio" class="form-control form-control-lg" placeholder="Ex: 10001" required>
                                 <div id="statusPatrimonio" class="form-text small text-muted">O patrimônio é único por bem.</div>
                             </div>
-                            <div class="mb-3">
+                            <div class="col-12 col-md-9">
                                 <label class="form-label small fw-semibold">Descrição do Bem *</label>
-                                <input type="text" name="descricao" id="campoDescricao" class="form-control" placeholder="Ex: Notebook Dell Latitude" required>
+                                <input type="text" name="descricao" id="campoDescricao" class="form-control form-control-lg" placeholder="Ex: Notebook Dell Latitude" required>
                             </div>
-                            <div class="mb-3">
+                            <div class="col-12 col-md-6 col-lg-5">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <label class="form-label small fw-semibold mb-0">EPC da Tag RFID</label>
                                     <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" id="btnCapturarTag" style="font-size: 0.78rem;">
                                         Capturar do Urovo
                                     </button>
                                 </div>
-                                <div class="input-group">
-                                    <input type="text" name="epc" id="campoEpc" class="form-control font-monospace" placeholder="Ex: E2801160600002162A7A1C57">
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnLimparCampoEpc" title="Limpar tag">
+                                <div class="input-group input-group-lg">
+                                    <input type="text" name="epc" id="campoEpc" class="form-control form-control-lg font-monospace" placeholder="Ex: E2801160600002162A7A1C57">
+                                    <button type="button" class="btn btn-outline-secondary" id="btnLimparCampoEpc" title="Limpar tag">
                                         Limpar
                                     </button>
                                 </div>
                                 <div id="statusCaptura" class="form-text small text-muted">Deixe em branco se ainda não foi etiquetado.</div>
                             </div>
-                            <div class="mb-3">
+                            <div class="col-12 col-md-6 col-lg-4">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <label class="form-label small fw-semibold mb-0">Sala Esperada *</label>
                                     <a href="/salas" class="text-decoration-none small text-primary fw-medium" style="font-size: 0.76rem;">+ Nova Sala</a>
                                 </div>
-                                <select name="sala" id="campoSala" class="form-select" required>
+                                <select name="sala" id="campoSala" class="form-select form-select-lg" required>
                                     <option value="" disabled selected>Selecione uma sala...</option>
                                     {% for s in salas %}
                                     <option value="{{ s.id }}">{{ s.nome }} ({{ s.unidade }})</option>
                                     {% endfor %}
                                 </select>
                             </div>
-                            <div class="form-check mb-4">
-                                <input class="form-check-input" type="checkbox" name="metalico" id="checkMetal" value="1">
-                                <label class="form-check-label small" for="checkMetal">
-                                    Bem metálico (requer tag on-metal)
-                                </label>
+                            <div class="col-12 col-md-6 col-lg-3">
+                                <label class="form-label small fw-semibold mb-1" for="checkMetal">Material do bem</label>
+                                <div class="metal-card px-3 d-flex align-items-center" style="min-height: 48px;">
+                                    <div class="form-check mb-0 py-1">
+                                        <input class="form-check-input" type="checkbox" name="metalico" id="checkMetal" value="1" style="width: 1.15rem; height: 1.15rem; accent-color: var(--fiea-azul);">
+                                        <label class="form-check-label small fw-medium" for="checkMetal">
+                                            Bem metálico
+                                            <span class="text-muted d-block" style="font-size: 0.72rem;">Requer tag on-metal</span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
-                            <button type="submit" id="btnSubmitForm" class="btn btn-primary w-100 py-2">Salvar Bem no Cadastro</button>
-                            <button type="button" id="btnLimparFormNovoBem" class="btn btn-link btn-sm text-secondary w-100 text-decoration-none mt-1">Limpar campos</button>
+                            <div class="col-12">
+                                <div class="d-flex align-items-center gap-3 flex-wrap divider-suave pt-3">
+                                    <button type="submit" id="btnSubmitForm" class="btn btn-fiea btn-lg px-5">Salvar Bem no Cadastro</button>
+                                    <span class="d-none d-sm-block" style="width: 1px; height: 22px; background: #D8E2EE;"></span>
+                                    <button type="button" id="btnLimparFormNovoBem" class="btn btn-link btn-sm limpar-link text-decoration-none">Limpar campos</button>
+                                </div>
+                            </div>
                         </form>
                     </div>
                 </div>
             </div>
 
             <!-- Tabela de Bens Cadastrados -->
-            <div class="col-lg-8 mb-4">
-                <div class="card h-100">
-                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0 fw-bold">Relação Patrimonial de Bens</h6>
-                        <div class="input-group input-group-sm w-50">
-                            <span class="input-group-text bg-white border-end-0">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted">
-                                    <circle cx="11" cy="11" r="8"></circle>
-                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="card-header-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
                                 </svg>
                             </span>
-                            <input type="text" id="filtro" class="form-control border-start-0 ps-0" placeholder="Filtrar por patrimônio, descrição ou sala...">
+                            <div>
+                                <h6 class="mb-0 fw-bold">Relação Patrimonial de Bens</h6>
+                                <div class="small text-muted">Todos os bens cadastrados, com suas tags RFID e salas esperadas.</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <span class="chip-contador">{{ bens|length }} {% if bens|length == 1 %}bem{% else %}bens{% endif %}</span>
+                            <div class="input-group input-group-sm" style="width: 280px;">
+                                <span class="input-group-text bg-white border-end-0">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                </span>
+                                <input type="text" id="filtro" class="form-control border-start-0 ps-0" placeholder="Filtrar por patrimônio, descrição ou sala...">
+                            </div>
                         </div>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive" style="max-height: 520px; overflow-y: auto;">
-                            <table class="table table-hover align-middle mb-0" id="tabelaBens">
+                            <table class="table table-hover align-middle mb-0 tabela-cadastro" id="tabelaBens">
                                 <thead class="table-light sticky-top">
                                     <tr class="small text-muted">
                                         <th>Patrimônio</th>
@@ -1031,10 +1387,10 @@ HTML_TEMPLATE = """
                                     <tr>
                                         <td class="fw-bold font-monospace">{{ b.patrimonio }}</td>
                                         <td>{{ b.descricao }}</td>
-                                        <td><span class="badge bg-light text-dark border">{{ b.sala or 'Sem sala' }}</span></td>
+                                        <td>{% if b.sala %}<span class="chip-sala">{{ b.sala }}</span>{% else %}<span class="chip-alerta">Sem sala</span>{% endif %}</td>
                                         <td class="font-monospace small">
                                             {% if b.epc %}
-                                                <span class="badge bg-light text-dark border">{{ b.epc }}</span>
+                                                <span class="tag-mono">{{ b.epc }}</span>
                                             {% else %}
                                                 <span class="text-muted fst-italic">Sem tag</span>
                                             {% endif %}
@@ -1094,7 +1450,7 @@ HTML_TEMPLATE = """
                                                 </svg>
                                             </div>
                                             <h6 class="fw-bold mb-1">Nenhum bem cadastrado ainda</h6>
-                                            <p class="text-muted small mb-0">Utilize o formulário ao lado para cadastrar o primeiro bem do patrimônio.</p>
+                                            <p class="text-muted small mb-0">Utilize o formulário acima para cadastrar o primeiro bem do patrimônio.</p>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -1275,6 +1631,13 @@ HTML_TEMPLATE = """
 
     <!-- Container isolado para impressao da etiqueta patrimonial -->
     <div id="areaImpressaoEtiquetaContainer"></div>
+
+    <footer class="rodape no-print">
+        <div class="container-fluid px-4 pagina-container py-3 d-flex justify-content-between align-items-center flex-wrap gap-2 small text-muted">
+            <span><strong class="text-secondary">FIEA Inventário RFID</strong> · Servidor local nesta máquina</span>
+            <span>Dados armazenados em <code>dados/inventario.db</code></span>
+        </div>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/qrcode.min.js"></script>
@@ -1853,17 +2216,17 @@ HTML_TEMPLATE = """
 
                     if (data && data.conectado) {
                         if (data.fila_pendente && data.fila_pendente > 0) {
-                            badge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning p-2 d-flex align-items-center gap-2';
+                            badge.className = 'chip chip-warn';
                             dot.className = 'status-dot warning';
                             texto.innerText = `Coletor Conectado · ${data.fila_pendente} pendência(s) na fila`;
                         } else {
-                            badge.className = 'badge bg-success-subtle text-success border border-success p-2 d-flex align-items-center gap-2';
+                            badge.className = 'chip chip-ok';
                             dot.className = 'status-dot online';
                             const tempo = (data.segundos_atras !== null && data.segundos_atras !== undefined) ? `há ${data.segundos_atras}s` : 'ativo';
-                            texto.innerText = `Coletor Conectado (${tempo})`;
+                            texto.innerText = `Coletor Conectado`;
                         }
                     } else {
-                        badge.className = 'badge bg-light text-secondary border p-2 d-flex align-items-center gap-2';
+                        badge.className = 'chip chip-off';
                         dot.className = 'status-dot offline';
                         texto.innerText = 'Coletor: Aguardando Wi-Fi';
                     }
@@ -1935,19 +2298,20 @@ HTML_SALAS_TEMPLATE = """
             --ciano-texto: #155E75;
         }
         body {
-            background-color: var(--fundo);
+            background: linear-gradient(180deg, #E2E8F0 0%, var(--fundo) 320px);
             font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: var(--texto-primario);
             -webkit-font-smoothing: antialiased;
         }
         .navbar-fiea {
-            background-color: var(--fiea-azul);
+            background: linear-gradient(100deg, #003264 0%, var(--fiea-azul-escuro) 28%, var(--fiea-azul) 75%, #11599F 100%);
             border-bottom: 1px solid var(--fiea-azul-escuro);
         }
         .navbar-brand {
             font-weight: 700;
             letter-spacing: -0.01em;
             color: #FFFFFF !important;
+            font-size: 1.25rem;
         }
         .nav-pill-btn {
             border-radius: 8px;
@@ -1975,17 +2339,219 @@ HTML_SALAS_TEMPLATE = """
             border-radius: 12px;
             border: 1px solid var(--contorno);
             background-color: var(--superficie);
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+            box-shadow: 0 3px 18px rgba(16, 42, 67, 0.10);
         }
         .card-header {
-            background-color: transparent;
-            border-bottom: 1px solid var(--contorno);
+            background-color: #F3F8FE;
+            border-bottom: 1px solid #DFE9F6;
+        }
+        .card-header-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--fiea-azul-fundo);
+            color: var(--fiea-azul);
+            flex: 0 0 auto;
+        }
+        .tabela-cadastro thead th {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #3D5068;
+            white-space: nowrap;
+            background: #E8EEF7;
+            border-bottom: 2px solid #CFDCEC;
+        }
+        .tabela-cadastro tbody td {
+            padding-top: 0.85rem;
+            padding-bottom: 0.85rem;
+            border-bottom-color: #ECF1F8;
+        }
+        .tabela-cadastro tbody tr:nth-child(even) {
+            background-color: #FAFCFF;
+        }
+        .tabela-cadastro tbody tr:hover {
+            background-color: #E8F0FB;
+        }
+        .pagina-container {
+            max-width: 1240px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        /* Formulário de cadastro — polimento visual */
+        .form-card { max-width: 1040px; }
+        .form-card .form-label { color: #33415C; letter-spacing: 0.02em; }
+        .form-card .form-control-lg,
+        .form-card .form-select-lg {
+            border-color: #D3DEEA;
+            border-radius: 10px;
+            color: #1E293B;
+        }
+        .form-card .form-control-lg:focus,
+        .form-card .form-select-lg:focus {
+            border-color: var(--fiea-azul);
+            box-shadow: 0 0 0 3px rgba(0, 78, 166, 0.15);
+        }
+        .form-card .form-control-lg::placeholder { color: #A8B7CB; }
+        .form-card .form-text { color: #64748B; }
+        .form-card .input-group-lg .form-control { border-radius: 10px 0 0 10px; border-color: #D3DEEA; }
+        .form-card .input-group-lg .btn-outline-secondary {
+            border-color: #D3DEEA;
+            border-left: none;
+            border-radius: 0 10px 10px 0;
+            background: #F1F5F9;
+            color: #3D4B5F;
+            font-weight: 600;
+        }
+        .form-card .input-group-lg .btn-outline-secondary:hover,
+        .form-card .input-group-lg .btn-outline-secondary:focus {
+            background: #E2E8F0;
+            color: #1E293B;
+            border-color: #CBD5E1;
+        }
+        .btn-fiea {
+            background: linear-gradient(180deg, #0F63B4 0%, var(--fiea-azul) 55%, #003A7C 140%);
+            border: 1px solid var(--fiea-azul-escuro);
+            box-shadow: 0 6px 16px rgba(0, 78, 166, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+            color: #FFFFFF;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+        }
+        .btn-fiea:hover,
+        .btn-fiea:focus {
+            background: linear-gradient(180deg, #0B5CB8 0%, var(--fiea-azul-escuro) 120%);
+            border-color: var(--fiea-azul-escuro);
+            color: #FFFFFF;
+        }
+        .limpar-link { color: #64748B; font-weight: 500; }
+        .limpar-link:hover { color: var(--fiea-azul); }
+        .metal-card {
+            background: linear-gradient(180deg, #F0F7FF 0%, #E9F0FB 100%);
+            border: 1px solid #C4D8EE;
+            border-radius: 12px;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .metal-card:hover { border-color: #A9C8E8; box-shadow: 0 2px 10px rgba(0, 78, 166, 0.12); }
+        .divider-suave { border-top: 1px solid #E4ECF7; }
+        .tag-mono {
+            display: inline-flex;
+            align-items: center;
+            background: #EDF2F9;
+            color: #16324F;
+            border: 1px solid #C9D8EA;
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 0.76rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .chip-contador {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--fiea-azul-fundo);
+            color: var(--fiea-azul-escuro);
+            border: 1px solid #BFD5EE;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            white-space: nowrap;
+        }
+        .chip-sala {
+            display: inline-flex;
+            align-items: center;
+            background: var(--info-fundo);
+            color: var(--info-texto);
+            border: 1px solid #BAE6FD;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 3px 10px;
+        }
+        .chip-alerta {
+            display: inline-flex;
+            align-items: center;
+            background: var(--alerta-fundo);
+            color: var(--alerta-texto);
+            border: 1px solid #FCD34D;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 3px 10px;
+        }
+        .chip-neutro {
+            display: inline-flex;
+            align-items: center;
+            background: #ECEFF4;
+            color: #3D4B5F;
+            border: 1px solid #D3DAE4;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 3px 10px;
+        }
+        .badge-pill-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(52, 211, 153, 0.16);
+            color: #A7F3D0;
+            border: 1px solid rgba(52, 211, 153, 0.45);
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 999px;
+            letter-spacing: 0.03em;
+            white-space: nowrap;
+        }
+        .dot-pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #34D399;
+            animation: dotPulse 1.7s ease-out infinite;
+        }
+        @keyframes dotPulse {
+            0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.55); }
+            70% { box-shadow: 0 0 0 7px rgba(52, 211, 153, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .dot-pulse { animation: none; }
+        }
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 0.86rem;
+            font-weight: 600;
+            border: 1px solid transparent;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            width: max-content;
+        }
+        .chip-ok { background: var(--sucesso-fundo); color: var(--sucesso-texto); border-color: #86EFAC; }
+        .chip-warn { background: var(--alerta-fundo); color: var(--alerta-texto); border-color: #FCD34D; }
+        .chip-off { background: #E9EDF3; color: #33415C; border-color: #C9D3E0; }
+        .rodape {
+            border-top: 1px solid var(--contorno);
+            background: #FFFFFF;
+        }
+        @media print {
+            .no-print { display: none !important; }
         }
         .ip-box {
-            background: var(--fiea-azul-fundo);
-            border: 1px solid #BAE6FD;
-            border-radius: 10px;
-            padding: 14px 18px;
+            background: linear-gradient(135deg, #E9F0FB 0%, #DDE9F7 52%, #CCDFEF 100%);
+            border: 1px solid #AECBE6;
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 3px 14px rgba(0, 78, 166, 0.14);
         }
         .btn-primary {
             background-color: var(--fiea-azul);
@@ -2055,27 +2621,22 @@ HTML_SALAS_TEMPLATE = """
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-fiea mb-4">
-        <div class="container-fluid px-4">
+        <div class="container-fluid px-4 pagina-container">
             <a class="navbar-brand d-flex align-items-center" href="/">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
-                    <rect x="3" y="5" width="18" height="14" rx="2"></rect>
-                    <path d="M7 15h.01"></path>
-                    <path d="M10 15h7"></path>
-                    <path d="M7 10h10"></path>
-                </svg>
-                FIEA Coleta RFID — Servidor Local
+                <img src="/static/logo_fiea.jpg" alt="FIEA" width="45" height="45" class="me-2 rounded">
+                Inventário
             </a>
             <div class="d-flex align-items-center gap-2">
                 <a href="/" class="nav-pill-btn">Início</a>
                 <a href="/bens" class="nav-pill-btn">Bens Cadastrados</a>
                 <a href="/salas" class="nav-pill-btn active">Gerenciar Salas</a>
                 <a href="/relatorio" class="nav-pill-btn">Relatório de Inventário</a>
-                <span class="badge bg-white text-dark ms-2 fw-semibold">Servidor Ativo</span>
+                <span class="badge-pill-status ms-2"><span class="dot-pulse"></span>Servidor Ativo</span>
             </div>
         </div>
     </nav>
 
-    <div class="container-fluid px-4">
+    <div class="container-fluid px-4 pagina-container">
         <!-- Banner de Conexão com o Urovo -->
         <div class="ip-box mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div>
@@ -2095,12 +2656,12 @@ HTML_SALAS_TEMPLATE = """
                 </p>
             </div>
             <div class="d-flex align-items-center gap-3">
-                <div id="badgeColetor" class="badge bg-secondary p-2 d-flex align-items-center gap-2" style="font-size: 0.85rem;">
+                <div id="badgeColetor" class="chip chip-off">
                     <span id="dotColetor" class="status-dot offline"></span>
                     <span id="textoColetor">Coletor: Aguardando Wi-Fi</span>
                 </div>
                 <div class="text-end">
-                    <span class="badge bg-light text-primary border">Total de Salas: {{ salas|length }}</span>
+                    <span class="chip-contador">Total de Salas: {{ salas|length }}</span>
                 </div>
             </div>
         </div>
@@ -2177,42 +2738,71 @@ HTML_SALAS_TEMPLATE = """
         </div>
         {% endif %}
 
-        <div class="row">
+        <div class="row g-4">
             <!-- Formulário de Cadastro de Sala -->
-            <div class="col-lg-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-header bg-white py-3">
-                        <h6 class="mb-0 fw-bold">Cadastrar Nova Sala</h6>
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="card-header-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="9"></circle>
+                                    <path d="M12 8v8M8 12h8"></path>
+                                </svg>
+                            </span>
+                            <div>
+                                <h6 class="mb-0 fw-bold">Cadastrar Nova Sala</h6>
+                                <div class="small text-muted">Salas cadastradas aqui passam a aparecer na lista de seleção do leitor Urovo.</div>
+                            </div>
+                        </div>
+                        <span class="chip-neutro">Cadastro manual</span>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="/salas/cadastrar" id="formNovaSala">
-                            <div class="mb-3">
+                        <form method="POST" action="/salas/cadastrar" id="formNovaSala" class="row g-3 align-items-start form-card">
+                            <div class="col-12 col-md-4">
                                 <label class="form-label small fw-semibold">Nome da Sala *</label>
-                                <input type="text" name="nome" id="campoNomeSala" class="form-control" placeholder="Ex: EASY, Lab 1, Almoxarifado" required autofocus>
+                                <input type="text" name="nome" id="campoNomeSala" class="form-control form-control-lg" placeholder="Ex: EASY, Lab 1, Almoxarifado" required autofocus>
                                 <div class="form-text small">Nome exato como será selecionado no inventário.</div>
                             </div>
-                            <div class="mb-3">
+                            <div class="col-12 col-md-4">
                                 <label class="form-label small fw-semibold">Unidade *</label>
-                                <input type="text" name="unidade" id="campoUnidadeSala" class="form-control" placeholder="Ex: UFAL, SENAI, FIEA" required>
+                                <input type="text" name="unidade" id="campoUnidadeSala" class="form-control form-control-lg" placeholder="Ex: UFAL, SENAI, FIEA" required>
+                                <div class="form-text small">Unidade ou local à qual a sala pertence.</div>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100 py-2">Salvar Sala</button>
-                            <button type="button" id="btnLimparFormNovaSala" class="btn btn-link btn-sm text-secondary w-100 text-decoration-none mt-1">Limpar campos</button>
-                            <a href="/bens" class="btn btn-link w-100 text-center text-muted small mt-2 text-decoration-none">Voltar para Cadastro de Bens</a>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label small fw-semibold d-none d-md-block" aria-hidden="true">&nbsp;</label>
+                                <button type="submit" class="btn btn-fiea btn-lg w-100">Salvar Sala</button>
+                            </div>
+                            <div class="col-12 d-flex align-items-center justify-content-between flex-wrap gap-2 divider-suave pt-3">
+                                <button type="button" id="btnLimparFormNovaSala" class="btn btn-link btn-sm limpar-link text-decoration-none px-0">Limpar campos</button>
+                                <a href="/bens" class="text-muted small text-decoration-none">&larr; Voltar para Cadastro de Bens</a>
+                            </div>
                         </form>
                     </div>
                 </div>
             </div>
 
             <!-- Tabela de Salas Cadastradas -->
-            <div class="col-lg-8 mb-4">
-                <div class="card h-100">
-                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0 fw-bold">Salas Cadastradas</h6>
-                        <span class="badge bg-light text-primary border">{{ salas|length }} {% if salas|length == 1 %}sala{% else %}salas{% endif %}</span>
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="card-header-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                </svg>
+                            </span>
+                            <div>
+                                <h6 class="mb-0 fw-bold">Salas Cadastradas</h6>
+                                <div class="small text-muted">Ambientes físicos e a quantidade de bens vinculados a cada um.</div>
+                            </div>
+                        </div>
+                        <span class="chip-contador">{{ salas|length }} {% if salas|length == 1 %}sala{% else %}salas{% endif %}</span>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive" style="max-height: 520px; overflow-y: auto;">
-                            <table class="table table-hover align-middle mb-0">
+                            <table class="table table-hover align-middle mb-0 tabela-cadastro">
                                 <thead class="table-light small">
                                     <tr>
                                         <th>Nome da Sala</th>
@@ -2226,17 +2816,17 @@ HTML_SALAS_TEMPLATE = """
                                     {% for s in salas %}
                                     <tr>
                                         <td class="fw-bold">{{ s.nome }}</td>
-                                        <td><span class="badge bg-light text-dark border">{{ s.unidade }}</span></td>
+                                        <td><span class="chip-sala">{{ s.unidade }}</span></td>
                                         <td>
                                             {% if s.total_bens > 0 %}
-                                                <span class="badge bg-primary-subtle text-primary border border-primary">{{ s.total_bens }} {% if s.total_bens == 1 %}bem{% else %}bens{% endif %}</span>
+                                                <span class="chip-contador">{{ s.total_bens }} {% if s.total_bens == 1 %}bem{% else %}bens{% endif %}</span>
                                             {% else %}
                                                 <span class="text-muted small">Nenhum</span>
                                             {% endif %}
                                         </td>
                                         <td>
                                             {% if s.total_varreduras > 0 %}
-                                                <span class="badge bg-secondary-subtle text-secondary border border-secondary">{{ s.total_varreduras }} {% if s.total_varreduras == 1 %}varredura{% else %}varreduras{% endif %}</span>
+                                                <span class="chip-neutro">{{ s.total_varreduras }} {% if s.total_varreduras == 1 %}varredura{% else %}varreduras{% endif %}</span>
                                             {% else %}
                                                 <span class="text-muted small">Nenhuma</span>
                                             {% endif %}
@@ -2273,7 +2863,7 @@ HTML_SALAS_TEMPLATE = """
                                                 </svg>
                                             </div>
                                             <h6 class="fw-bold mb-1">Nenhuma sala cadastrada ainda</h6>
-                                            <p class="text-muted small mb-0">Cadastre a primeira sala ao lado (ex: Laboratório, Almoxarifado) para que o leitor Urovo possa listá-la.</p>
+                                            <p class="text-muted small mb-0">Cadastre a primeira sala acima (ex: Laboratório, Almoxarifado) para que o leitor Urovo possa listá-la.</p>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -2286,6 +2876,14 @@ HTML_SALAS_TEMPLATE = """
         </div>
     </div>
 
+    <footer class="rodape no-print">
+        <div class="container-fluid px-4 pagina-container py-3 d-flex justify-content-between align-items-center flex-wrap gap-2 small text-muted">
+            <span><strong class="text-secondary">FIEA Inventário RFID</strong> · Servidor local nesta máquina</span>
+            <span>Dados armazenados em <code>dados/inventario.db</code></span>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Monitoramento em tempo real do status de conexão com o coletor Urovo
         // Monitoramento e alternância de máscara (Token e Endereço Completo)
@@ -2349,17 +2947,17 @@ HTML_SALAS_TEMPLATE = """
 
                     if (data && data.conectado) {
                         if (data.fila_pendente && data.fila_pendente > 0) {
-                            badge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning p-2 d-flex align-items-center gap-2';
+                            badge.className = 'chip chip-warn';
                             dot.className = 'status-dot warning';
                             texto.innerText = `Coletor Conectado · ${data.fila_pendente} pendência(s) na fila`;
                         } else {
-                            badge.className = 'badge bg-success-subtle text-success border border-success p-2 d-flex align-items-center gap-2';
+                            badge.className = 'chip chip-ok';
                             dot.className = 'status-dot online';
                             const tempo = (data.segundos_atras !== null && data.segundos_atras !== undefined) ? `há ${data.segundos_atras}s` : 'ativo';
-                            texto.innerText = `Coletor Conectado (${tempo})`;
+                            texto.innerText = `Coletor Conectado`;
                         }
                     } else {
-                        badge.className = 'badge bg-light text-secondary border p-2 d-flex align-items-center gap-2';
+                        badge.className = 'chip chip-off';
                         dot.className = 'status-dot offline';
                         texto.innerText = 'Coletor: Aguardando Wi-Fi';
                     }
@@ -2480,19 +3078,20 @@ HTML_RELATORIO_TEMPLATE = """
             --ciano-texto: #155E75;
         }
         body {
-            background-color: var(--fundo);
+            background: linear-gradient(180deg, #E2E8F0 0%, var(--fundo) 320px);
             font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: var(--texto-primario);
             -webkit-font-smoothing: antialiased;
         }
         .navbar-fiea {
-            background-color: var(--fiea-azul);
+            background: linear-gradient(100deg, #003264 0%, var(--fiea-azul-escuro) 28%, var(--fiea-azul) 75%, #11599F 100%);
             border-bottom: 1px solid var(--fiea-azul-escuro);
         }
         .navbar-brand {
             font-weight: 700;
             letter-spacing: -0.01em;
             color: #FFFFFF !important;
+            font-size: 1.25rem;
         }
         .nav-pill-btn {
             border-radius: 8px;
@@ -2520,17 +3119,219 @@ HTML_RELATORIO_TEMPLATE = """
             border-radius: 12px;
             border: 1px solid var(--contorno);
             background-color: var(--superficie);
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+            box-shadow: 0 3px 18px rgba(16, 42, 67, 0.10);
         }
         .card-header {
-            background-color: transparent;
-            border-bottom: 1px solid var(--contorno);
+            background-color: #F3F8FE;
+            border-bottom: 1px solid #DFE9F6;
+        }
+        .card-header-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--fiea-azul-fundo);
+            color: var(--fiea-azul);
+            flex: 0 0 auto;
+        }
+        .tabela-cadastro thead th {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #3D5068;
+            white-space: nowrap;
+            background: #E8EEF7;
+            border-bottom: 2px solid #CFDCEC;
+        }
+        .tabela-cadastro tbody td {
+            padding-top: 0.85rem;
+            padding-bottom: 0.85rem;
+            border-bottom-color: #ECF1F8;
+        }
+        .tabela-cadastro tbody tr:nth-child(even) {
+            background-color: #FAFCFF;
+        }
+        .tabela-cadastro tbody tr:hover {
+            background-color: #E8F0FB;
+        }
+        .pagina-container {
+            max-width: 1240px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        /* Formulário de cadastro — polimento visual */
+        .form-card { max-width: 1040px; }
+        .form-card .form-label { color: #33415C; letter-spacing: 0.02em; }
+        .form-card .form-control-lg,
+        .form-card .form-select-lg {
+            border-color: #D3DEEA;
+            border-radius: 10px;
+            color: #1E293B;
+        }
+        .form-card .form-control-lg:focus,
+        .form-card .form-select-lg:focus {
+            border-color: var(--fiea-azul);
+            box-shadow: 0 0 0 3px rgba(0, 78, 166, 0.15);
+        }
+        .form-card .form-control-lg::placeholder { color: #A8B7CB; }
+        .form-card .form-text { color: #64748B; }
+        .form-card .input-group-lg .form-control { border-radius: 10px 0 0 10px; border-color: #D3DEEA; }
+        .form-card .input-group-lg .btn-outline-secondary {
+            border-color: #D3DEEA;
+            border-left: none;
+            border-radius: 0 10px 10px 0;
+            background: #F1F5F9;
+            color: #3D4B5F;
+            font-weight: 600;
+        }
+        .form-card .input-group-lg .btn-outline-secondary:hover,
+        .form-card .input-group-lg .btn-outline-secondary:focus {
+            background: #E2E8F0;
+            color: #1E293B;
+            border-color: #CBD5E1;
+        }
+        .btn-fiea {
+            background: linear-gradient(180deg, #0F63B4 0%, var(--fiea-azul) 55%, #003A7C 140%);
+            border: 1px solid var(--fiea-azul-escuro);
+            box-shadow: 0 6px 16px rgba(0, 78, 166, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+            color: #FFFFFF;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+        }
+        .btn-fiea:hover,
+        .btn-fiea:focus {
+            background: linear-gradient(180deg, #0B5CB8 0%, var(--fiea-azul-escuro) 120%);
+            border-color: var(--fiea-azul-escuro);
+            color: #FFFFFF;
+        }
+        .limpar-link { color: #64748B; font-weight: 500; }
+        .limpar-link:hover { color: var(--fiea-azul); }
+        .metal-card {
+            background: linear-gradient(180deg, #F0F7FF 0%, #E9F0FB 100%);
+            border: 1px solid #C4D8EE;
+            border-radius: 12px;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .metal-card:hover { border-color: #A9C8E8; box-shadow: 0 2px 10px rgba(0, 78, 166, 0.12); }
+        .divider-suave { border-top: 1px solid #E4ECF7; }
+        .tag-mono {
+            display: inline-flex;
+            align-items: center;
+            background: #EDF2F9;
+            color: #16324F;
+            border: 1px solid #C9D8EA;
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 0.76rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .chip-contador {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--fiea-azul-fundo);
+            color: var(--fiea-azul-escuro);
+            border: 1px solid #BFD5EE;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            white-space: nowrap;
+        }
+        .chip-sala {
+            display: inline-flex;
+            align-items: center;
+            background: var(--info-fundo);
+            color: var(--info-texto);
+            border: 1px solid #BAE6FD;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 3px 10px;
+        }
+        .chip-alerta {
+            display: inline-flex;
+            align-items: center;
+            background: var(--alerta-fundo);
+            color: var(--alerta-texto);
+            border: 1px solid #FCD34D;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 3px 10px;
+        }
+        .chip-neutro {
+            display: inline-flex;
+            align-items: center;
+            background: #ECEFF4;
+            color: #3D4B5F;
+            border: 1px solid #D3DAE4;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 3px 10px;
+        }
+        .badge-pill-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(52, 211, 153, 0.16);
+            color: #A7F3D0;
+            border: 1px solid rgba(52, 211, 153, 0.45);
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 999px;
+            letter-spacing: 0.03em;
+            white-space: nowrap;
+        }
+        .dot-pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #34D399;
+            animation: dotPulse 1.7s ease-out infinite;
+        }
+        @keyframes dotPulse {
+            0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.55); }
+            70% { box-shadow: 0 0 0 7px rgba(52, 211, 153, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .dot-pulse { animation: none; }
+        }
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 0.86rem;
+            font-weight: 600;
+            border: 1px solid transparent;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            width: max-content;
+        }
+        .chip-ok { background: var(--sucesso-fundo); color: var(--sucesso-texto); border-color: #86EFAC; }
+        .chip-warn { background: var(--alerta-fundo); color: var(--alerta-texto); border-color: #FCD34D; }
+        .chip-off { background: #E9EDF3; color: #33415C; border-color: #C9D3E0; }
+        .rodape {
+            border-top: 1px solid var(--contorno);
+            background: #FFFFFF;
+        }
+        @media print {
+            .no-print { display: none !important; }
         }
         .ip-box {
-            background: var(--fiea-azul-fundo);
-            border: 1px solid #BAE6FD;
-            border-radius: 10px;
-            padding: 14px 18px;
+            background: linear-gradient(135deg, #E9F0FB 0%, #DDE9F7 52%, #CCDFEF 100%);
+            border: 1px solid #AECBE6;
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 3px 14px rgba(0, 78, 166, 0.14);
         }
         .btn-primary {
             background-color: var(--fiea-azul);
@@ -2603,7 +3404,7 @@ HTML_RELATORIO_TEMPLATE = """
         }
 
         .kpi-card { border-radius: 12px; transition: transform 0.15s ease, box-shadow 0.15s ease; }
-        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+        .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(16, 42, 67, 0.14); }
         
         /* Área de Arraste de Arquivos (Drag and Drop) */
         .drop-zone {
@@ -2686,22 +3487,17 @@ HTML_RELATORIO_TEMPLATE = """
 <body>
     <!-- Navbar (Oculto na Impressão) -->
     <nav class="navbar navbar-expand-lg navbar-fiea mb-4 no-print">
-        <div class="container-fluid px-4">
+        <div class="container-fluid px-4 pagina-container">
             <a class="navbar-brand d-flex align-items-center" href="/">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
-                    <rect x="3" y="5" width="18" height="14" rx="2"></rect>
-                    <path d="M7 15h.01"></path>
-                    <path d="M10 15h7"></path>
-                    <path d="M7 10h10"></path>
-                </svg>
-                FIEA Coleta RFID — Servidor Local
+                <img src="/static/logo_fiea.jpg" alt="FIEA" width="45" height="45" class="me-2 rounded">
+                Inventário
             </a>
             <div class="d-flex align-items-center gap-2">
                 <a href="/" class="nav-pill-btn">Início</a>
                 <a href="/bens" class="nav-pill-btn">Bens Cadastrados</a>
                 <a href="/salas" class="nav-pill-btn">Gerenciar Salas</a>
                 <a href="/relatorio" class="nav-pill-btn active">Relatório de Inventário</a>
-                <span class="badge bg-white text-dark ms-2 fw-semibold">Servidor Ativo</span>
+                <span class="badge-pill-status ms-2"><span class="dot-pulse"></span>Servidor Ativo</span>
             </div>
         </div>
     </nav>
@@ -2727,7 +3523,7 @@ HTML_RELATORIO_TEMPLATE = """
         </div>
     </div>
 
-    <div class="container-fluid px-4">
+    <div class="container-fluid px-4 pagina-container">
         <!-- Banner de Conexão com o Urovo (No-print) -->
         <div class="ip-box mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3 no-print">
             <div>
@@ -2747,12 +3543,12 @@ HTML_RELATORIO_TEMPLATE = """
                 </p>
             </div>
             <div class="d-flex align-items-center gap-3">
-                <div id="badgeColetor" class="badge bg-secondary p-2 d-flex align-items-center gap-2" style="font-size: 0.85rem;">
+                <div id="badgeColetor" class="chip chip-off">
                     <span id="dotColetor" class="status-dot offline"></span>
                     <span id="textoColetor">Coletor: Aguardando Wi-Fi</span>
                 </div>
                 <div class="text-end">
-                    <span class="badge bg-light text-primary border">Sessões: {{ sessoes|length }}</span>
+                    <span class="chip-contador">Sessões: {{ sessoes|length }}</span>
                 </div>
             </div>
         </div>
@@ -2898,7 +3694,7 @@ HTML_RELATORIO_TEMPLATE = """
 
         <!-- Área de Importação Amigável de Arquivos Offline (No-print) -->
         <div class="card mb-4 no-print border-primary border-opacity-50" id="cardImportacao">
-            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#004EA6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -2986,17 +3782,17 @@ HTML_RELATORIO_TEMPLATE = """
                     <div class="col-md-6 mb-2 mb-md-0">
                         <span class="badge bg-primary me-2">Sessão: {{ sessao_atual.id }}</span>
                         <span class="badge bg-secondary me-2">Unidade: {{ sessao_atual.unidade }}</span>
-                        <span class="badge bg-light text-dark border">Operador: {{ sessao_atual.operador }}</span>
+                        <span class="chip-neutro">Operador: {{ sessao_atual.operador }}</span>
                     </div>
                     <div class="col-md-6 text-md-end text-muted small">
                         <strong>Varreduras realizadas nesta sessão:</strong>
                         <div class="d-flex flex-wrap justify-content-md-end gap-1 mt-1">
                             {% for v in varreduras %}
-                            <span class="badge bg-light text-primary border">
+                            <span class="chip-sala">
                                 Sala {{ v.sala or 'Não Identificada' }} (v{{ "%02d"|format(v.numero) }} · {{ v.total_etiquetas }} tags)
                             </span>
                             {% else %}
-                            <span class="badge bg-light text-muted border">Nenhuma varredura registrada</span>
+                            <span class="chip-neutro">Nenhuma varredura registrada</span>
                             {% endfor %}
                         </div>
                     </div>
@@ -3120,13 +3916,13 @@ HTML_RELATORIO_TEMPLATE = """
 
         <!-- Tabela Principal: Relação Analítica de Bens -->
         <div class="card mb-4">
-            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
                 <h6 class="mb-0 fw-bold">Relação Patrimonial Conferida</h6>
-                <span class="badge bg-light text-dark border">{{ relatorio.bens|length }} bens auditados</span>
+                <span class="chip-contador">{{ relatorio.bens|length }} bens auditados</span>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0" id="tabelaConferencia">
+                    <table class="table table-hover align-middle mb-0 tabela-cadastro" id="tabelaConferencia">
                         <thead class="table-light small">
                             <tr>
                                 <th>Patrimônio</th>
@@ -3145,13 +3941,13 @@ HTML_RELATORIO_TEMPLATE = """
                                 <td>{{ b.descricao }}</td>
                                 <td class="font-monospace small">
                                     {% if b.epc %}
-                                    <span class="badge bg-light text-dark border">{{ b.epc }}</span>
+                                    <span class="tag-mono">{{ b.epc }}</span>
                                     {% else %}
                                     <span class="text-muted fst-italic">Sem tag</span>
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <span class="badge bg-light text-primary border">{{ b.sala_esperada or 'Sem sala' }}</span>
+                                    {% if b.sala_esperada %}<span class="chip-sala">{{ b.sala_esperada }}</span>{% else %}<span class="chip-alerta">Sem sala</span>{% endif %}
                                 </td>
                                 <td>
                                     {% if b.salas_lidas %}
@@ -3230,7 +4026,7 @@ HTML_RELATORIO_TEMPLATE = """
         <!-- Tabela Secundária: Sobras / Tags Não Cadastradas no Ambiente -->
         {% if relatorio.epcs_nao_cadastrados %}
         <div class="card mb-4" id="secaoSobras">
-            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <span class="status-dot" style="background-color: var(--ciano);"></span>
                     <div>
@@ -3242,7 +4038,7 @@ HTML_RELATORIO_TEMPLATE = """
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive" id="containerTabelaSobras" style="max-height: 380px; overflow-y: auto;">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover align-middle mb-0 tabela-cadastro">
                         <thead class="table-light small">
                             <tr>
                                 <th>EPC da Tag Detectada</th>
@@ -3255,11 +4051,11 @@ HTML_RELATORIO_TEMPLATE = """
                             {% for item in relatorio.epcs_nao_cadastrados %}
                             <tr>
                                 <td class="font-monospace small fw-bold">
-                                    <span class="badge bg-light text-dark border">{{ item.epc }}</span>
+                                    <span class="tag-mono">{{ item.epc }}</span>
                                 </td>
                                 <td>
                                     {% for s in item.salas_lidas %}
-                                    <span class="badge bg-light text-dark border">{{ s }}{% if s in item.sinal_por_sala %} · {{ "%g"|format(item.sinal_por_sala[s]) }}{% endif %}</span>
+                                    <span class="chip-neutro">{{ s }}{% if s in item.sinal_por_sala %} · {{ "%g"|format(item.sinal_por_sala[s]) }}{% endif %}</span>
                                     {% endfor %}
                                     {% if item.salas_lidas|length > 1 and item.sala_provavel %}
                                     <div class="small text-muted mt-1">Provável: <strong>{{ item.sala_provavel }}</strong></div>
@@ -3317,6 +4113,13 @@ HTML_RELATORIO_TEMPLATE = """
         </div>
         {% endif %}
     </div>
+
+    <footer class="rodape no-print">
+        <div class="container-fluid px-4 pagina-container py-3 d-flex justify-content-between align-items-center flex-wrap gap-2 small text-muted">
+            <span><strong class="text-secondary">FIEA Inventário RFID</strong> · Servidor local nesta máquina</span>
+            <span>Dados armazenados em <code>dados/inventario.db</code></span>
+        </div>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -3525,17 +4328,17 @@ HTML_RELATORIO_TEMPLATE = """
 
                     if (data && data.conectado) {
                         if (data.fila_pendente && data.fila_pendente > 0) {
-                            badge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning p-2 d-flex align-items-center gap-2';
+                            badge.className = 'chip chip-warn';
                             dot.className = 'status-dot warning';
                             texto.innerText = `Coletor Conectado · ${data.fila_pendente} pendência(s) na fila`;
                         } else {
-                            badge.className = 'badge bg-success-subtle text-success border border-success p-2 d-flex align-items-center gap-2';
+                            badge.className = 'chip chip-ok';
                             dot.className = 'status-dot online';
                             const tempo = (data.segundos_atras !== null && data.segundos_atras !== undefined) ? `há ${data.segundos_atras}s` : 'ativo';
-                            texto.innerText = `Coletor Conectado (${tempo})`;
+                            texto.innerText = `Coletor Conectado`;
                         }
                     } else {
-                        badge.className = 'badge bg-light text-secondary border p-2 d-flex align-items-center gap-2';
+                        badge.className = 'chip chip-off';
                         dot.className = 'status-dot offline';
                         texto.innerText = 'Coletor: Aguardando Wi-Fi';
                     }
