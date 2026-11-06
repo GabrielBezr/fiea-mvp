@@ -7,6 +7,9 @@
         android:id="@+id/acao_limpar"
         android:title="@string/btClear" />
     <item
+        android:id="@+id/acao_descartar"
+        android:title="@string/btDescartarVarredura" />
+    <item
         android:id="@+id/acao_exportar_xls"
         android:title="@string/btImport" />
     <item

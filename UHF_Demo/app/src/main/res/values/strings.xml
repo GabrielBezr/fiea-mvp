@@ -228,6 +228,10 @@
     <string name="tituloEncerrarVarredura">Encerrar a varredura?</string>
     <string name="msgEncerrarVarreduraVoltar">Para voltar às salas, a varredura da sala %1$s precisa ser encerrada. Ela é exportada e conferida com os bens da sala.</string>
     <string name="btContinuarLendo">Continuar lendo</string>
+    <string name="btDescartarVarredura">Descartar</string>
+    <string name="msgVarreduraCancelada">Varredura cancelada</string>
+    <string name="msgDescartarVarredura">Deseja realmente descartar a varredura da sala %1$s? As leituras feitas nesta sala serão descartadas.</string>
+    <string name="msgSessaoExpiradaViradaDia">A sessão anterior foi encerrada automaticamente pela virada do dia (23:59). Inicie uma nova sessão para o dia de hoje.</string>
     <plurals name="salasFaltando">
         <item quantity="one">Ainda há %d sala da unidade sem varredura: os bens dela vão aparecer no relatório como “sem cobertura”.</item>
         <item quantity="other">Ainda há %d salas da unidade sem varredura: os bens delas vão aparecer no relatório como “sem cobertura”.</item>

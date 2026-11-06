@@ -3797,6 +3797,11 @@ HTML_RELATORIO_TEMPLATE = """
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.75;"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                         {{ sessao_inicio_fmt }}
                     </span>
+                    {% if sessao_atual.encerrada_auto %}
+                    <span class="badge bg-warning text-dark border border-warning" title="Sessão finalizada automaticamente com base no término da última varredura">Encerramento automático</span>
+                    {% elif sessao_fim_fmt == 'Em aberto' %}
+                    <span class="badge bg-info text-dark border border-info">Em andamento</span>
+                    {% endif %}
                 </div>
                 <span class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1 fw-semibold no-print" title="Expandir ou recolher detalhes da sessão">
                     <span class="texto-toggle-sessao">Expandir</span>
@@ -3805,16 +3810,29 @@ HTML_RELATORIO_TEMPLATE = """
             </div>
             <div class="collapse" id="corpoSessaoAtual">
                 <div class="card-body p-3">
-                    <div class="text-muted small fw-semibold mb-2">Varreduras realizadas nesta sessão:</div>
                     <div class="d-flex flex-wrap align-items-center gap-2 small text-muted mb-2 border-bottom pb-2">
                         <span><strong class="text-secondary">Início:</strong> {{ sessao_inicio_fmt }}</span>
                         <span>·</span>
                         <span><strong class="text-secondary">Fim:</strong> {{ sessao_fim_fmt }}</span>
-                        {% if sessao_atual.duracao_s is not none %}
+                        {% if sessao_atual.duracao_s is not none and sessao_atual.duracao_s > 0 and sessao_fim_fmt != 'Em aberto' %}
                         <span>·</span>
-                        <span><strong class="text-secondary">Duração:</strong> {{ (sessao_atual.duracao_s // 60)|int }}min {{ (sessao_atual.duracao_s % 60)|int }}s</span>
+                        <span><strong class="text-secondary">Duração:</strong> {{ formatar_duracao(sessao_atual.duracao_s) }}</span>
+                        {% else %}
+                        <span>·</span>
+                        <span><strong class="text-secondary">Duração:</strong> <span class="badge bg-light text-primary border">Em andamento</span></span>
+                        {% endif %}
+                        {% if sessao_atual.encerrada_auto %}
+                        <span>·</span>
+                        <span class="badge bg-warning text-dark border border-warning">Encerramento automático</span>
                         {% endif %}
                     </div>
+                    {% if sessao_atual.encerrada_auto %}
+                    <div class="alert alert-warning py-1 px-2 d-flex align-items-center gap-2 mb-3 small text-dark" style="background-color: #fff9e6; border: 1px solid #ffe082; border-radius: 6px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        <span><strong>Aviso de encerramento automático:</strong> Esta sessão não foi encerrada formalmente pelo operador no leitor de mão. O término e a duração foram calculados com base na última varredura realizada.</span>
+                    </div>
+                    {% endif %}
+                    <div class="text-muted small fw-semibold mb-2">Varreduras realizadas nesta sessão:</div>
                     <div class="d-flex flex-wrap gap-1">
                         {% for v in varreduras %}
                         <span class="chip-sala">
@@ -4699,19 +4717,54 @@ def formatar_data_hora(valor):
     """Formata um instante textual (ex.: '2026-10-21 16:10:20.759') como 'dd/mm/aaaa hh:mm'.
 
     Tolerante a variações de formato; se não reconhecer, devolve o texto original.
+    Trata timestamps nulos ou ano <= 1970 (sessão em andamento) como 'Em aberto'.
     """
     if not valor:
         return "Em aberto"
     texto = str(valor).strip()
+    if texto in ("1969-12-31 21:00:00", "1970-01-01 00:00:00") or texto.startswith("1969-") or texto.startswith("1970-"):
+        return "Em aberto"
     for fmt in ("%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"):
         try:
-            return datetime.strptime(texto, fmt).strftime("%d/%m/%Y %H:%M")
+            dt = datetime.strptime(texto, fmt)
+            if dt.year <= 1970:
+                return "Em aberto"
+            return dt.strftime("%d/%m/%Y %H:%M")
         except ValueError:
             continue
     return texto
 
 
+def formatar_duracao(duracao_s):
+    """Formata duração em segundos para texto legível: '45s', '12min 30s', '1h 15min 20s'."""
+    if duracao_s is None:
+        return ""
+    try:
+        total = int(duracao_s)
+    except (ValueError, TypeError):
+        return ""
+    if total <= 0:
+        return "0s"
+    if total < 60:
+        return f"{total}s"
+    if total < 3600:
+        mins = total // 60
+        segs = total % 60
+        return f"{mins}min {segs}s" if segs > 0 else f"{mins}min"
+    horas = total // 3600
+    resto = total % 3600
+    mins = resto // 60
+    segs = resto % 60
+    partes = [f"{horas}h"]
+    if mins > 0:
+        partes.append(f"{mins}min")
+    if segs > 0:
+        partes.append(f"{segs}s")
+    return " ".join(partes)
+
+
 app.jinja_env.globals["formatar_data_hora"] = formatar_data_hora
+app.jinja_env.globals["formatar_duracao"] = formatar_duracao
 
 
 @app.route("/relatorio")
@@ -4719,7 +4772,7 @@ def ver_relatorio():
     """Visualização da conferência e auditoria patrimonial (RF07 / RF08)."""
     con = get_db()
     sessoes = con.execute(
-        "SELECT s.id, s.unidade, s.operador, s.inicio, s.fim, s.duracao_s, s.n_varreduras, "
+        "SELECT s.id, s.unidade, s.operador, s.inicio, s.fim, s.duracao_s, s.n_varreduras, s.encerrada_auto, "
         "       COUNT(v.id) AS total_varreduras "
         "FROM sessao s LEFT JOIN varredura v ON v.sessao_id = s.id "
         "GROUP BY s.id ORDER BY s.id DESC"
@@ -5243,21 +5296,39 @@ def api_sincronizar():
 
     # 1. Atualiza/Cria Sessão
     if sessao_info.get("id"):
+        fim_val = sessao_info.get("fim")
+        duracao_val = sessao_info.get("duracao_s")
+
+        # Sanitiza fim zerado ou ano <= 1970
+        if fim_val:
+            fim_str = str(fim_val).strip()
+            if fim_str.startswith("1969-") or fim_str.startswith("1970-") or "1969" in fim_str or "1970" in fim_str:
+                fim_val = None
+
+        # Sanitiza duração negativa ou inválida
+        if duracao_val is not None:
+            try:
+                duracao_int = int(duracao_val)
+                duracao_val = duracao_int if duracao_int >= 0 else None
+            except (ValueError, TypeError):
+                duracao_val = None
+
         con.execute(
             "INSERT INTO sessao (id, unidade, operador, inicio, fim, duracao_s, n_varreduras) "
             "VALUES (?, ?, ?, ?, ?, ?, ?) "
             "ON CONFLICT(id) DO UPDATE SET "
             "  unidade = excluded.unidade, operador = excluded.operador, "
-            "  fim = COALESCE(excluded.fim, sessao.fim), "
-            "  duracao_s = COALESCE(excluded.duracao_s, sessao.duracao_s), "
+            "  fim = CASE WHEN excluded.fim IS NOT NULL THEN excluded.fim ELSE sessao.fim END, "
+            "  duracao_s = CASE WHEN excluded.duracao_s IS NOT NULL THEN excluded.duracao_s ELSE sessao.duracao_s END, "
+            "  encerrada_auto = CASE WHEN excluded.fim IS NOT NULL THEN 0 ELSE sessao.encerrada_auto END, "
             "  n_varreduras = COALESCE(excluded.n_varreduras, sessao.n_varreduras)",
             (
                 sessao_info["id"],
                 sessao_info.get("unidade", "UFAL"),
                 sessao_info.get("operador", "Operador"),
                 sessao_info.get("inicio"),
-                sessao_info.get("fim"),
-                sessao_info.get("duracao_s"),
+                fim_val,
+                duracao_val,
                 sessao_info.get("n_varreduras", 1),
             ),
         )
@@ -5281,6 +5352,13 @@ def api_sincronizar():
     # 3. Cria/Atualiza Varredura
     varredura_id = varredura_info.get("id")
     if not varredura_id:
+        if sessao_info.get("id"):
+            con.commit()
+            return jsonify({
+                "status": "sucesso",
+                "mensagem": "Sessão sincronizada com sucesso",
+                "sessao_id": sessao_info.get("id"),
+            })
         return jsonify({"erro": "varredura.id é obrigatório"}), 400
 
     numero = 1
@@ -5375,6 +5453,52 @@ def api_sincronizar():
         "varredura_id": varredura_id,
         "leituras_gravadas": len(leituras),
         "pendencias_gravadas": len(pendencias),
+    })
+
+
+@app.route("/api/encerrar_sessao", methods=["POST"])
+def encerrar_sessao_api():
+    """Encerra uma sessão de inventário pelo leitor móvel."""
+    dados = request.get_json(silent=True) or {}
+    sessao_info = dados.get("sessao", dados)
+    sessao_id = sessao_info.get("id") or sessao_info.get("sessao_id")
+    if not sessao_id:
+        return jsonify({"erro": "id da sessão é obrigatório"}), 400
+
+    fim_val = sessao_info.get("fim")
+    duracao_val = sessao_info.get("duracao_s")
+
+    if not fim_val or "1969" in str(fim_val) or "1970" in str(fim_val):
+        fim_val = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    con = get_db()
+    row = con.execute("SELECT inicio FROM sessao WHERE id = ?", (sessao_id,)).fetchone()
+    if row and row["inicio"]:
+        try:
+            if duracao_val is None or int(duracao_val) <= 0:
+                inicio_str = row["inicio"]
+                for fmt in ("%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S"):
+                    try:
+                        dt_ini = datetime.strptime(inicio_str, fmt)
+                        dt_fim = datetime.strptime(str(fim_val)[:19], "%Y-%m-%d %H:%M:%S")
+                        duracao_val = max(0, int((dt_fim - dt_ini).total_seconds()))
+                        break
+                    except ValueError:
+                        pass
+        except Exception:
+            pass
+
+    con.execute(
+        "UPDATE sessao SET fim = ?, duracao_s = ?, encerrada_auto = 0 WHERE id = ?",
+        (fim_val, duracao_val, sessao_id),
+    )
+    con.commit()
+    return jsonify({
+        "status": "sucesso",
+        "mensagem": "Sessão encerrada com sucesso",
+        "sessao_id": sessao_id,
+        "fim": fim_val,
+        "duracao_s": duracao_val,
     })
 
 
