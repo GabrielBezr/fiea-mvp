@@ -3422,6 +3422,11 @@ HTML_RELATORIO_TEMPLATE = """
 
         /* Estilização para Impressão / Exportação PDF */
         @media print {
+            /* Conteúdo recolhido na tela imprime completo no papel */
+            .collapse {
+                display: block !important;
+                height: auto !important;
+            }
             @page {
                 size: A4 portrait;
                 margin: 12mm 10mm 15mm 10mm;
@@ -3516,7 +3521,7 @@ HTML_RELATORIO_TEMPLATE = """
                 <strong>Operador Responsável:</strong> {{ sessao_atual.operador if sessao_atual else 'Não informado' }}
             </div>
             <div class="col-6 text-end">
-                <strong>Data da Auditoria:</strong> {{ sessao_atual.inicio if sessao_atual and sessao_atual.inicio else 'Em aberto' }}<br>
+                <strong>Data da Auditoria:</strong> {{ sessao_inicio_fmt }}<br>
                 <strong>Data de Emissão do Relatório:</strong> <span class="data-emissao-print"></span><br>
                 <strong>Total de Varreduras:</strong> {{ varreduras|length }} {% if varreduras|length == 1 %}sala auditada{% else %}salas auditadas{% endif %}
             </div>
@@ -3647,7 +3652,7 @@ HTML_RELATORIO_TEMPLATE = """
                         <select class="form-select form-select-sm fw-semibold" onchange="window.location.href='/relatorio?sessao=' + this.value">
                             {% for s in sessoes %}
                             <option value="{{ s.id }}" {% if s.id == sessao_id %}selected{% endif %}>
-                                Sessão {{ s.id }} — {{ s.inicio or 'Data N/D' }} (Op: {{ s.operador or 'N/D' }} · {{ s.total_varreduras }} varreduras)
+                                Sessão {{ s.id }} — {{ formatar_data_hora(s.inicio) }} (Op: {{ s.operador or 'N/D' }} · {{ s.total_varreduras }} varreduras)
                             </option>
                             {% else %}
                             <option value="" disabled selected>Nenhuma sessão cadastrada ainda</option>
@@ -3692,9 +3697,9 @@ HTML_RELATORIO_TEMPLATE = """
             </div>
         </div>
 
-        <!-- Área de Importação Amigável de Arquivos Offline (No-print) -->
+        <!-- Área de Importação (recolhida por padrão; clique no cabeçalho para expandir) -->
         <div class="card mb-4 no-print border-primary border-opacity-50" id="cardImportacao">
-            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center gap-2" data-bs-toggle="collapse" data-bs-target="#corpoImportacao" role="button" tabindex="0" aria-expanded="false" aria-controls="corpoImportacao" style="cursor: pointer;">
                 <div class="d-flex align-items-center gap-2">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#004EA6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -3706,8 +3711,12 @@ HTML_RELATORIO_TEMPLATE = """
                         <small class="text-muted">Como enviar os arquivos sem confusão com nomes compridos</small>
                     </div>
                 </div>
-                <button type="button" class="btn-close" onclick="toggleAreaImportacao()"></button>
+                <span class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1 fw-semibold" title="Expandir ou recolher a área de importação">
+                    <span class="texto-toggle-importacao">Expandir</span>
+                    <svg class="icone-chevron-importacao" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s ease;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </span>
             </div>
+            <div class="collapse" id="corpoImportacao">
             <div class="card-body">
                 <!-- Passo a passo visual amigável -->
                 <div class="row g-3 mb-4">
@@ -3772,29 +3781,48 @@ HTML_RELATORIO_TEMPLATE = """
                     </div>
                 </form>
             </div>
+            </div>
         </div>
 
         {% if sessao_atual and relatorio %}
-        <!-- Detalhes da Sessão Atual e Varreduras -->
-        <div class="card mb-4">
-            <div class="card-body p-3">
-                <div class="row align-items-center">
-                    <div class="col-md-6 mb-2 mb-md-0">
-                        <span class="badge bg-primary me-2">Sessão: {{ sessao_atual.id }}</span>
-                        <span class="badge bg-secondary me-2">Unidade: {{ sessao_atual.unidade }}</span>
-                        <span class="chip-neutro">Operador: {{ sessao_atual.operador }}</span>
+        <!-- Sessão Atual Recolhida por Padrão (No-print no cabeçalho; corpo imprime completo) -->
+        <div class="card mb-4" id="cardSessaoAtual">
+            <div class="card-header py-2 px-3 d-flex justify-content-between align-items-center gap-2" data-bs-toggle="collapse" data-bs-target="#corpoSessaoAtual" role="button" tabindex="0" aria-expanded="false" aria-controls="corpoSessaoAtual" style="cursor: pointer;">
+                <div class="d-flex flex-wrap align-items-center gap-2 small">
+                    <strong class="text-secondary text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.08em;">Sessão atual</strong>
+                    <span class="badge bg-primary">{{ sessao_atual.id }}</span>
+                    <span class="badge bg-secondary">{{ sessao_atual.unidade }}</span>
+                    <span class="chip-neutro">{{ sessao_atual.operador }}</span>
+                    <span class="chip-neutro d-inline-flex align-items-center gap-1" title="Data e hora de início da sessão">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.75;"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        {{ sessao_inicio_fmt }}
+                    </span>
+                </div>
+                <span class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1 fw-semibold no-print" title="Expandir ou recolher detalhes da sessão">
+                    <span class="texto-toggle-sessao">Expandir</span>
+                    <svg class="icone-chevron-sessao" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s ease;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </span>
+            </div>
+            <div class="collapse" id="corpoSessaoAtual">
+                <div class="card-body p-3">
+                    <div class="text-muted small fw-semibold mb-2">Varreduras realizadas nesta sessão:</div>
+                    <div class="d-flex flex-wrap align-items-center gap-2 small text-muted mb-2 border-bottom pb-2">
+                        <span><strong class="text-secondary">Início:</strong> {{ sessao_inicio_fmt }}</span>
+                        <span>·</span>
+                        <span><strong class="text-secondary">Fim:</strong> {{ sessao_fim_fmt }}</span>
+                        {% if sessao_atual.duracao_s is not none %}
+                        <span>·</span>
+                        <span><strong class="text-secondary">Duração:</strong> {{ (sessao_atual.duracao_s // 60)|int }}min {{ (sessao_atual.duracao_s % 60)|int }}s</span>
+                        {% endif %}
                     </div>
-                    <div class="col-md-6 text-md-end text-muted small">
-                        <strong>Varreduras realizadas nesta sessão:</strong>
-                        <div class="d-flex flex-wrap justify-content-md-end gap-1 mt-1">
-                            {% for v in varreduras %}
-                            <span class="chip-sala">
-                                Sala {{ v.sala or 'Não Identificada' }} (v{{ "%02d"|format(v.numero) }} · {{ v.total_etiquetas }} tags)
-                            </span>
-                            {% else %}
-                            <span class="chip-neutro">Nenhuma varredura registrada</span>
-                            {% endfor %}
-                        </div>
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for v in varreduras %}
+                        <span class="chip-sala">
+                            Sala {{ v.sala or 'Não Identificada' }} (v{{ "%02d"|format(v.numero) }} · {{ v.total_etiquetas }} tags)
+                        </span>
+                        {% else %}
+                        <span class="chip-neutro">Nenhuma varredura registrada</span>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -4139,16 +4167,30 @@ HTML_RELATORIO_TEMPLATE = """
         }
 
         function toggleAreaImportacao() {
-            const card = document.getElementById('cardImportacao');
-            if (card) {
-                if (card.style.display === 'none') {
-                    card.style.display = 'block';
-                    card.scrollIntoView({ behavior: 'smooth' });
-                } else {
-                    card.style.display = 'none';
-                }
+            const alvo = document.getElementById('corpoImportacao');
+            if (!alvo || !window.bootstrap) return;
+            const vaiAbrir = !alvo.classList.contains('show');
+            bootstrap.Collapse.getOrCreateInstance(alvo).toggle();
+            if (vaiAbrir) {
+                document.getElementById('cardImportacao').scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
+
+        // Chevron e rótulo dos cabeçalhos expansíveis
+        function configurarToggle(alvoId, textoClasse, iconeClasse) {
+            const alvo = document.getElementById(alvoId);
+            if (!alvo) return;
+            alvo.addEventListener('show.bs.collapse', () => {
+                const t = document.querySelector('.' + textoClasse); if (t) t.textContent = 'Recolher';
+                const i = document.querySelector('.' + iconeClasse); if (i) i.style.transform = 'rotate(180deg)';
+            });
+            alvo.addEventListener('hide.bs.collapse', () => {
+                const t = document.querySelector('.' + textoClasse); if (t) t.textContent = 'Expandir';
+                const i = document.querySelector('.' + iconeClasse); if (i) i.style.transform = 'rotate(0deg)';
+            });
+        }
+        configurarToggle('corpoImportacao', 'texto-toggle-importacao', 'icone-chevron-importacao');
+        configurarToggle('corpoSessaoAtual', 'texto-toggle-sessao', 'icone-chevron-sessao');
 
         // Filtro interativo na tabela
         function filtrarTabela(situacao, btn) {
@@ -4653,6 +4695,25 @@ def excluir_sala(sala_id):
     return redirect(url_for("listar_salas", msg=f"Sala '{nome_sala}' excluída com sucesso.", tipo="warning"))
 
 
+def formatar_data_hora(valor):
+    """Formata um instante textual (ex.: '2026-10-21 16:10:20.759') como 'dd/mm/aaaa hh:mm'.
+
+    Tolerante a variações de formato; se não reconhecer, devolve o texto original.
+    """
+    if not valor:
+        return "Em aberto"
+    texto = str(valor).strip()
+    for fmt in ("%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(texto, fmt).strftime("%d/%m/%Y %H:%M")
+        except ValueError:
+            continue
+    return texto
+
+
+app.jinja_env.globals["formatar_data_hora"] = formatar_data_hora
+
+
 @app.route("/relatorio")
 def ver_relatorio():
     """Visualização da conferência e auditoria patrimonial (RF07 / RF08)."""
@@ -4713,6 +4774,9 @@ def ver_relatorio():
         except conferencia.SessaoNaoEncontrada:
             relatorio = None
 
+    sessao_inicio_fmt = formatar_data_hora(sessao_atual["inicio"]) if sessao_atual else "Em aberto"
+    sessao_fim_fmt = formatar_data_hora(sessao_atual["fim"]) if sessao_atual else "Em aberto"
+
     ip_local = obter_ip_local()
     msg = request.args.get("msg")
     tipo_msg = request.args.get("tipo", "info")
@@ -4721,6 +4785,8 @@ def ver_relatorio():
         HTML_RELATORIO_TEMPLATE,
         sessoes=sessoes,
         sessao_atual=sessao_atual,
+        sessao_inicio_fmt=sessao_inicio_fmt,
+        sessao_fim_fmt=sessao_fim_fmt,
         sessao_id=sessao_id,
         varreduras=varreduras,
         relatorio=relatorio,
