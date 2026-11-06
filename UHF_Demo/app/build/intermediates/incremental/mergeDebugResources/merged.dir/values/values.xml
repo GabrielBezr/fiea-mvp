@@ -1960,6 +1960,7 @@
     <string name="btConfigServidor">Configurar PC</string>
     <string name="btConfirmar">Confirmar</string>
     <string name="btContinuarLendo">Continuar lendo</string>
+    <string name="btDescartarVarredura">Descartar</string>
     <string name="btEncerrar">Encerrar</string>
     <string name="btEncerrarSessao">Encerrar sessão</string>
     <string name="btEncerrarVarredura">Encerrar varredura</string>
@@ -2189,6 +2190,7 @@
     <string name="msgConfigServidor">Digite o Token de 8 caracteres exibido no computador (sem hífen).</string>
     <string name="msgCsvFalha">Não foi possível gravar o CSV. Confira o espaço livre e a permissão de acesso a arquivos.</string>
     <string name="msgCsvSucesso">CSV gravado em %1$s</string>
+    <string name="msgDescartarVarredura">Deseja realmente descartar a varredura da sala %1$s? As leituras feitas nesta sala serão descartadas.</string>
     <string name="msgEncerrarSessao">A sessão de %1$s (varreduras: %2$d) será fechada e exportada. Ela não pode ser reaberta: para continuar o inventário depois, inicie uma sessão nova.</string>
     <string name="msgEncerrarVarreduraVoltar">Para voltar às salas, a varredura da sala %1$s precisa ser encerrada. Ela é exportada e conferida com os bens da sala.</string>
     <string name="msgEnviadoPc">Varredura e resoluções enviadas ao PC.</string>
@@ -2220,6 +2222,7 @@
     <string name="msgSemSessao">Inicie uma sessão antes de ler.</string>
     <string name="msgSemVarredura">Toque numa sala da lista para começar a varredura.</string>
     <string name="msgSessaoCamposVazios">Preencha a unidade e o operador para iniciar a sessão.</string>
+    <string name="msgSessaoExpiradaViradaDia">A sessão anterior foi encerrada automaticamente pela virada do dia (23:59). Inicie uma nova sessão para o dia de hoje.</string>
     <string name="msgSessaoExportada">Sessão exportada em %1$s</string>
     <string name="msgTagTransmitidaFalha">Tag %1$s lida, mas não chegou ao PC. Confira a conexão na barra superior.</string>
     <string name="msgTagTransmitidaSucesso">Tag %1$s enviada ao formulário do PC</string>
@@ -2229,6 +2232,7 @@
     <string name="msgTsCamposVazios">Informe unidade, sala e EPC</string>
     <string name="msgTsEpcRepetido">Esta tag ja foi gravada nesta campanha</string>
     <string name="msgTsPosicaoRepetida">Esta posicao da sala ja tem uma tag gravada</string>
+    <string name="msgVarreduraCancelada">Varredura cancelada</string>
     <string name="msgVarreduraSemReferencia">Leia a tag de referência da sala antes de encerrar a varredura</string>
     <string name="msgVarreduraSincronizada">Varredura enviada ao PC</string>
     <string description="Content description for new notification (no number count) [CHAR_LIMIT=NONE]" name="mtrl_badge_numberless_content_description">New notification</string>

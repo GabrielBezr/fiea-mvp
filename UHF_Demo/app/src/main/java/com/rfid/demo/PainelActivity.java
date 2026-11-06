@@ -150,7 +150,7 @@ public class PainelActivity extends Activity {
     }
 
     private void atualizarSessaoECabecalho() {
-        Sessao sessao = ScanActivity.getSessaoAtual();
+        Sessao sessao = ScanActivity.getSessaoAtual(this);
         if (sessao != null && !sessao.encerrada()) {
             String op = (sessao.operador != null && !sessao.operador.isEmpty()) ? sessao.operador : "-";
             String un = (sessao.unidade != null && !sessao.unidade.isEmpty()) ? sessao.unidade : "-";

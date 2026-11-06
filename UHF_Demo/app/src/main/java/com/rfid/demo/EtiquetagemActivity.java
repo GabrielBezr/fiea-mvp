@@ -28,7 +28,11 @@ import com.rfid.demo.utils.SyncManager;
 import com.ubx.usdk.RFIDSDKManager;
 import com.ubx.usdk.rfid.aidl.IRfidCallback;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -123,7 +127,19 @@ public class EtiquetagemActivity extends Activity implements OnClickListener {
             }
         });
 
-        arquivo = CsvExport.arquivoEtiquetagem(System.currentTimeMillis());
+        SharedPreferences sp = getSharedPreferences(PREFS_RASCUNHO, MODE_PRIVATE);
+        String ultimoArquivo = sp.getString("ultimo_arquivo", null);
+        if (ultimoArquivo != null) {
+            File f = new File(ultimoArquivo);
+            if (f.exists() && f.lastModified() >= System.currentTimeMillis() - 86400000L) {
+                arquivo = f;
+                carregarParesDoArquivo(f);
+            }
+        }
+        if (arquivo == null) {
+            arquivo = CsvExport.arquivoEtiquetagem(System.currentTimeMillis());
+            sp.edit().putString("ultimo_arquivo", arquivo.getAbsolutePath()).apply();
+        }
 
         handler = new Handler(Looper.getMainLooper()) {
             @Override
@@ -302,6 +318,35 @@ public class EtiquetagemActivity extends Activity implements OnClickListener {
 
         limparCampos();
         atualizarStatus();
+        getSharedPreferences(PREFS_RASCUNHO, MODE_PRIVATE)
+                .edit()
+                .putString("ultimo_arquivo", arquivo.getAbsolutePath())
+                .apply();
+    }
+
+    private void carregarParesDoArquivo(File f) {
+        if (f == null || !f.exists()) return;
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8))) {
+            String linha = br.readLine(); // pula cabeçalho
+            while ((linha = br.readLine()) != null) {
+                String[] cols = linha.split(",");
+                if (cols.length >= 5) {
+                    String epc = cols[1].trim().toUpperCase();
+                    String pat = cols[2].trim();
+                    boolean met = "sim".equalsIgnoreCase(cols[3].trim());
+                    String orig = cols[4].trim();
+                    ParEtiquetagem p = new ParEtiquetagem(System.currentTimeMillis(), epc, pat, met, orig);
+                    pares.add(p);
+                    epcsUsados.add(epc);
+                    patrimoniosUsados.add(pat);
+                    linhasDaTela.add(0, getString(R.string.parLinha, pat, epc)
+                            + (p.metalico ? getString(R.string.parMetalico) : "")
+                            + (ParEtiquetagem.ORIGEM_RFID.equals(p.origemEpc) ? "" : getString(R.string.parSemRadio)));
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Falha ao recarregar pares de etiquetagem anteriores", e);
+        }
     }
 
     private static final String PREFS_RASCUNHO = "FieaEtiquetagemRascunho";
