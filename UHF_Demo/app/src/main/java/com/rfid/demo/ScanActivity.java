@@ -433,6 +433,11 @@ public class ScanActivity extends Activity implements OnClickListener {
         atualizarStatus();
         exportarSessao(s, true);
 
+        // RF09/RF10: a aba de Pendências reflete a sessão; ao encerrar, envia o
+        // que falta e esvazia a lista — sem precisar reiniciar o app ou iniciar
+        // uma nova sessão.
+        TagsSalaActivity.finalizarSessaoAtual(this);
+
         // Se há itens na fila offline e o servidor estiver acessível, sincroniza automaticamente
         SyncManager sm = SyncManager.getInstance(this);
         if (sm.totalPendenciasNaFila() > 0) {

@@ -3727,7 +3727,7 @@ HTML_RELATORIO_TEMPLATE = """
                                 <strong class="small">Conecte o Coletor</strong>
                             </div>
                             <p class="text-muted small mb-0">
-                                Conecte o cabo USB do DT50 ao PC (modo "Transferência de Arquivos") e abra a pasta <code>Download/FieaColeta</code>.
+                                Conecte o cabo USB do DT50 ao PC (modo "Transferência de Arquivos") e abra a pasta <code>XLSFile</code> (<code>/sdcard/XLSFile/</code>) no armazenamento interno.
                             </p>
                         </div>
                     </div>
@@ -5241,7 +5241,31 @@ def api_sincronizar():
 
     con = get_db()
 
-    # 1. Atualiza/Cria Sessão
+    # 1. Sala da varredura (resolução prévia e estrita, antes de qualquer gravação):
+    # nome desconhecido na unidade → 409 e nada é gravado no banco. Sem criação
+    # silenciosa de salas por sincronização (a sala se cadastra na web).
+    sala_nome = varredura_info.get("sala", "").strip()
+    unidade = sessao_info.get("unidade", "UFAL")
+    sala_id = None
+    if sala_nome:
+        s_row = con.execute(
+            "SELECT id FROM sala WHERE LOWER(nome) = LOWER(?) AND unidade = ?",
+            (sala_nome, unidade),
+        ).fetchone()
+        if s_row is None:
+            salas = con.execute(
+                "SELECT nome FROM sala WHERE unidade = ? ORDER BY nome",
+                (unidade,),
+            ).fetchall()
+            return jsonify({
+                "status": "sala_desconhecida",
+                "sala": sala_nome,
+                "unidade": unidade,
+                "salas": [r["nome"] for r in salas],
+            }), 409
+        sala_id = s_row["id"]
+
+    # 2. Atualiza/Cria Sessão
     if sessao_info.get("id"):
         con.execute(
             "INSERT INTO sessao (id, unidade, operador, inicio, fim, duracao_s, n_varreduras) "
@@ -5261,22 +5285,6 @@ def api_sincronizar():
                 sessao_info.get("n_varreduras", 1),
             ),
         )
-
-    # 2. Sala da varredura
-    sala_nome = varredura_info.get("sala", "").strip()
-    unidade = sessao_info.get("unidade", "UFAL")
-    sala_id = None
-    if sala_nome:
-        con.execute(
-            "INSERT INTO sala (unidade, nome) VALUES (?, ?) ON CONFLICT(unidade, nome) DO NOTHING",
-            (unidade, sala_nome),
-        )
-        s_row = con.execute(
-            "SELECT id FROM sala WHERE LOWER(nome) = LOWER(?) AND unidade = ?",
-            (sala_nome, unidade),
-        ).fetchone()
-        if s_row:
-            sala_id = s_row["id"]
 
     # 3. Cria/Atualiza Varredura
     varredura_id = varredura_info.get("id")
@@ -5376,6 +5384,35 @@ def api_sincronizar():
         "leituras_gravadas": len(leituras),
         "pendencias_gravadas": len(pendencias),
     })
+
+
+@app.route("/api/salas", methods=["POST"])
+def api_cadastrar_sala():
+    """Cria uma sala no PC (usado pelo app quando a coletora aponta uma sala desconhecida)."""
+    dados = request.get_json(force=True, silent=True) or {}
+    nome = (dados.get("nome") or "").strip()
+    unidade = (dados.get("unidade") or "UFAL").strip() or "UFAL"
+    if not nome:
+        return jsonify({"erro": "nome é obrigatório"}), 400
+    con = get_db()
+    existente = con.execute(
+        "SELECT id, nome, unidade FROM sala WHERE unidade = ? AND LOWER(nome) = LOWER(?)",
+        (unidade, nome),
+    ).fetchone()
+    if existente:
+        return jsonify({
+            "status": "ja_existia",
+            "sala": {"id": existente["id"], "nome": existente["nome"], "unidade": existente["unidade"]},
+        }), 200
+    cur = con.execute(
+        "INSERT INTO sala (unidade, nome) VALUES (?, ?)",
+        (unidade, nome),
+    )
+    con.commit()
+    return jsonify({
+        "status": "sucesso",
+        "sala": {"id": cur.lastrowid, "nome": nome, "unidade": unidade},
+    }), 201
 
 
 def iniciar_servidor(porta=5000):

@@ -68,6 +68,16 @@ public class SyncManager {
         void onReconexaoDetectada(int pendenciasCount);
     }
 
+    public interface OnSalaDesconhecidaListener {
+        void onSalaDesconhecida(String sala, String unidade, List<SalaCadastrada> salasConhecidas);
+    }
+
+    private OnSalaDesconhecidaListener salaDesconhecidaListener;
+
+    public void setOnSalaDesconhecidaListener(OnSalaDesconhecidaListener l) {
+        this.salaDesconhecidaListener = l;
+    }
+
     /** Sala cadastrada no PC; a unidade separa salas de mesmo nome em prédios diferentes. */
     public static class SalaCadastrada {
         public final String nome;
@@ -466,6 +476,85 @@ public class SyncManager {
         });
     }
 
+    /** Consulta as salas do PC (ou do cache) sem passar pelo callback da tela. */
+    private List<SalaCadastrada> fetchSalasPlain() {
+        List<SalaCadastrada> salas = new ArrayList<>();
+        try {
+            URL url = new URL(getServerUrl() + "/api/salas");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(2500);
+            conn.setReadTimeout(2500);
+            conn.setRequestMethod("GET");
+            if (conn.getResponseCode() == 200) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line);
+                }
+                reader.close();
+                JSONArray arr = new JSONArray(sb.toString());
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject obj = arr.getJSONObject(i);
+                    adicionarSala(salas, obj.optString("nome", ""), obj.optString("unidade", ""));
+                }
+                salvarCacheSalas(salas);
+                return salas;
+            }
+            conn.disconnect();
+        } catch (Exception e) {
+            Log.w(TAG, "Falha ao validar salas, recorrendo ao cache: " + e.getMessage());
+        }
+        return carregarCacheSalas();
+    }
+
+    private static String normalizar(String s) {
+        if (s == null) return "";
+        return s.trim().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
+    }
+
+    private static boolean contemSala(List<SalaCadastrada> salas, String sala, String unidade) {
+        String sn = normalizar(sala), un = normalizar(unidade);
+        for (SalaCadastrada s : salas) {
+            if (normalizar(s.nome).equals(sn) && normalizar(s.unidade).equals(un)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Cria a sala no PC (unidade opcional; o PC recusa nomes duplicados). */
+    public void criarSala(String nome, String unidade, Callback<Boolean> callback) {
+        executor.execute(() -> {
+            boolean ok = false;
+            try {
+                JSONObject body = new JSONObject();
+                body.put("nome", nome);
+                body.put("unidade", unidade);
+                URL url = new URL(getServerUrl() + "/api/salas");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setConnectTimeout(4000);
+                conn.setReadTimeout(4000);
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setDoOutput(true);
+                OutputStream os = conn.getOutputStream();
+                os.write(body.toString().getBytes(StandardCharsets.UTF_8));
+                os.flush();
+                os.close();
+                int code = conn.getResponseCode();
+                ok = (code == 200 || code == 201);
+                conn.disconnect();
+            } catch (Exception e) {
+                Log.w(TAG, "Falha ao criar sala: " + e.getMessage());
+            }
+            final boolean resultado = ok;
+            if (callback != null) {
+                mainHandler.post(() -> callback.onResult(resultado));
+            }
+        });
+    }
+
     /** Acrescenta a sala se ainda não houver uma com o mesmo nome na mesma unidade. */
     private static void adicionarSala(List<SalaCadastrada> salas, String nome, String unidade) {
         nome = nome != null ? nome.trim() : "";
@@ -619,6 +708,30 @@ public class SyncManager {
                     }
                 }
                 payload.put("pendencias", pArr);
+
+                // Validação prévia: o PC recusa salas desconhecidas (409) e não cria
+                // mais salas sozinho. Se a sala não estiver cadastrada, guarda na fila
+                // e avisa o operador para criar a sala ou corrigir o nome.
+                String salaNome = varredura != null ? varredura.sala : null;
+                if (salaNome != null) {
+                    salaNome = salaNome.trim();
+                    if (!salaNome.isEmpty()) {
+                        final String unidade = sessao != null ? sessao.unidade : "UFAL";
+                        List<SalaCadastrada> conhecidas = fetchSalasPlain();
+                        if (!contemSala(conhecidas, salaNome, unidade)) {
+                            enfileirarOffline(payload);
+                            if (salaDesconhecidaListener != null) {
+                                final String sFinal = salaNome;
+                                final List<SalaCadastrada> conhecidasFinais = conhecidas;
+                                mainHandler.post(() -> salaDesconhecidaListener.onSalaDesconhecida(sFinal, unidade, conhecidasFinais));
+                            }
+                            if (callback != null) {
+                                mainHandler.post(() -> callback.onResult(false));
+                            }
+                            return;
+                        }
+                    }
+                }
 
                 // Envio HTTP POST
                 URL url = new URL(getServerUrl() + "/api/sincronizar");
