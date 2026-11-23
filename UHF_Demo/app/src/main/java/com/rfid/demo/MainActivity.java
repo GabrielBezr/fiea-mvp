@@ -115,6 +115,38 @@ public class MainActivity extends TabActivity   {
 			}
 		});
 
+		// Sala desconhecida na varredura: o PC recusa a sincronização (409), então o
+		// app avisa o operador em vez de perder o dado numa fila muda.
+		com.rfid.demo.utils.SyncManager.getInstance(this).setOnSalaDesconhecidaListener((sala, unidade, conhecidas) -> {
+			StringBuilder sb = new StringBuilder();
+			if (conhecidas == null || conhecidas.isEmpty()) {
+				sb.append("Nenhuma sala cadastrada no servidor ainda.");
+			} else {
+				sb.append("Salas cadastradas: ");
+				for (int i = 0; i < conhecidas.size(); i++) {
+					if (i > 0) sb.append(", ");
+					sb.append(conhecidas.get(i).nome);
+				}
+			}
+			new AlertDialog.Builder(MainActivity.this)
+					.setTitle(R.string.salaNaoCadastradaTitulo)
+					.setMessage(getString(R.string.salaNaoCadastradaMsg, sala, sb.toString()))
+					.setPositiveButton(R.string.salaNaoCadastradaCriar, (dialog, which) -> {
+						com.rfid.demo.utils.SyncManager.getInstance(MainActivity.this)
+								.criarSala(sala, unidade, ok -> {
+									if (ok) {
+										Toast.makeText(MainActivity.this, R.string.salaCriada, Toast.LENGTH_LONG).show();
+										com.rfid.demo.utils.SyncManager.getInstance(MainActivity.this).sincronizarFilaOffline(null);
+									} else {
+										Toast.makeText(MainActivity.this, R.string.salaNaoCriada, Toast.LENGTH_LONG).show();
+									}
+								});
+					})
+					.setNegativeButton(R.string.salaNaoCadastradaEspera, null)
+					.setCancelable(true)
+					.show();
+		});
+
 		// Monitor de Reconexão Wi-Fi (Modo Offline com Alerta)
 		com.rfid.demo.utils.SyncManager.getInstance(this).monitorarReconexao(new com.rfid.demo.utils.SyncManager.OnReconexaoListener() {
 			@Override
