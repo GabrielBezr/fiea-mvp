@@ -90,6 +90,8 @@ class TestSincronizacao(unittest.TestCase):
 
         self.con = esquema.conectar(servidor.CAMINHO_DB)
         self.addCleanup(self.con.close)
+        self.con.execute("INSERT INTO sala (unidade, nome) VALUES ('UFAL', 'Lab A')")
+        self.con.commit()
         self.cliente = servidor.app.test_client()
 
     def _enviar(self, leituras, pendencias=None):
@@ -298,6 +300,72 @@ class TestSincronizacao(unittest.TestCase):
         self.assertEqual(s_com_var["encerrada_auto"], 1)
         self.assertEqual(s_com_var["fim"], "2026-10-01 10:20:00")
         self.assertEqual(s_com_var["duracao_s"], 20 * 60)
+
+    def test_sala_desconhecida_recusa_sync_sem_gravar_nada(self):
+        resposta = self.cliente.post("/api/sincronizar", json={
+            "sessao": {"id": "S2", "unidade": "UFAL", "operador": "Ana"},
+            "varredura": {"id": "S2-v01", "sala": "Sala Inexistente",
+                          "tecnica": "movel_ambiente", "potencia_dbm": 25,
+                          "inicio": "2026-10-26 10:00:00.000",
+                          "fim": "2026-10-26 10:02:00.000", "duracao_s": 120},
+            "leituras": [self._evento("AAA", 60, "2026-10-26 10:00:01.000")],
+            "pendencias": [],
+        })
+        self.assertEqual(resposta.status_code, 409)
+        corpo = resposta.get_json()
+        self.assertEqual(corpo["status"], "sala_desconhecida")
+        self.assertEqual(corpo["sala"], "Sala Inexistente")
+        self.assertEqual(corpo["unidade"], "UFAL")
+        self.assertIn("Lab A", corpo["salas"])
+        self.assertIsNone(self.con.execute("SELECT id FROM sessao WHERE id = 'S2'").fetchone())
+        self.assertIsNone(self.con.execute("SELECT id FROM sala WHERE nome = 'Sala Inexistente'").fetchone())
+
+    def test_sala_com_caso_diferente_e_aceita(self):
+        resposta = self.cliente.post("/api/sincronizar", json={
+            "sessao": {"id": "S3", "unidade": "UFAL", "operador": "Ana"},
+            "varredura": {"id": "S3-v01", "sala": "lab a",
+                          "tecnica": "movel_ambiente", "potencia_dbm": 25,
+                          "inicio": "2026-10-26 10:00:00.000",
+                          "fim": "2026-10-26 10:02:00.000", "duracao_s": 120},
+            "leituras": [self._evento("AAA", 60, "2026-10-26 10:00:01.000")],
+            "pendencias": [],
+        })
+
+        self.assertEqual(resposta.status_code, 200)
+
+
+@unittest.skipUnless(TEM_FLASK, "Flask não instalado (use o .venv do servidor)")
+class TestApiSalas(unittest.TestCase):
+    """POST /api/salas: o coletor cria a sala pré-apontando-a quando ela falta."""
+
+    def setUp(self):
+        self._temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
+        self.addCleanup(self._temp.cleanup)
+        self._db_original = servidor.CAMINHO_DB
+        servidor.CAMINHO_DB = Path(self._temp.name) / "teste.db"
+        self.addCleanup(setattr, servidor, "CAMINHO_DB", self._db_original)
+
+        self.con = esquema.conectar(servidor.CAMINHO_DB)
+        self.addCleanup(self.con.close)
+        self.con.execute("INSERT INTO sala (unidade, nome) VALUES ('UFAL', 'Lab A')")
+        self.con.commit()
+        self.cliente = servidor.app.test_client()
+
+    def test_criar_sala_e_idempotente(self):
+        r1 = self.cliente.post("/api/salas", json={"nome": "Almoxarifado", "unidade": "UFAL"})
+        self.assertEqual(r1.status_code, 201)
+        self.assertEqual(r1.get_json()["status"], "sucesso")
+
+        r2 = self.cliente.post("/api/salas", json={"nome": "almoxarifado", "unidade": "UFAL"})
+        self.assertEqual(r2.status_code, 200)
+        self.assertEqual(r2.get_json()["status"], "ja_existia")
+
+        total = self.con.execute("SELECT COUNT(*) AS c FROM sala WHERE nome LIKE '%lmoxarifado%'").fetchone()["c"]
+        self.assertEqual(total, 1)
+
+    def test_sem_nome_recusa_criacao(self):
+        resposta = self.cliente.post("/api/salas", json={"unidade": "UFAL"})
+        self.assertEqual(resposta.status_code, 400)
 
 
 @unittest.skipUnless(TEM_FLASK, "Flask não instalado (use o .venv do servidor)")

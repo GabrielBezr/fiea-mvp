@@ -531,8 +531,8 @@ public class ScanActivity extends Activity implements OnClickListener {
                 .remove("sessao_salas_varridas")
                 .apply();
 
-        // RF09: Limpa pendências ao finalizar a sessão para não persistir nas próximas
-        TagsSalaActivity.limparSessao(this);
+        // RF09/RF10: envia resoluções ainda não sincronizadas e limpa pendências da sessão
+        TagsSalaActivity.finalizarSessaoAtual(this);
         limparVarreduraEmAndamento();
 
         etUnidade.setEnabled(true);

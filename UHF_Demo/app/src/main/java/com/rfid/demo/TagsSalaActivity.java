@@ -362,6 +362,24 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
             } catch (Exception ignored) {}
         }
     }
+
+    /**
+     * Encerramento da sessão (RF04): envia as resoluções que ainda não saíram
+     * do aparelho e esvazia a lista de salas com pendências. Sem isto, a aba
+     * de Pendências só mostrava o conteúdo da sessão anterior ao iniciar uma
+     * sessão nova (ou reiniciar o app).
+     */
+    public static void finalizarSessaoAtual(Context context) {
+        SyncManager sync = SyncManager.getInstance(context);
+        for (SalaConferida sala : new ArrayList<>(salasConferidas)) {
+            if (sala != null && sala.resolucoesNaoEnviadas) {
+                sync.sincronizarVarredura(sala.sessao, sala.varredura, sala.leituras,
+                        new ArrayList<>(sala.resolvidas), null);
+                sala.resolucoesNaoEnviadas = false;
+            }
+        }
+        limparSessao(context);
+    }
     // "Resolver agora" no Inventário: ao entrar na aba, abre direto esta sala.
     private static SalaConferida salaParaAbrir = null;
 

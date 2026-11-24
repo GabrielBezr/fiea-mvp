@@ -701,4 +701,10 @@
     <string name="power_setting">Power setting</string>
     <string name="tips_inv">Continuous Inventory in Progress</string>
     <string name="tips_inv_timeout">Lendo… a leitura para sozinha em %s s</string>
+    <string name="salaNaoCadastradaTitulo">Sala nao cadastrada</string>
+    <string name="salaNaoCadastradaMsg">A sala %1$s nao existe no servidor.\n\n%2$s\n\nAs leituras desta varredura ficaram na fila do aparelho e vao subir quando a sala for cadastrada.</string>
+    <string name="salaNaoCadastradaCriar">Criar agora</string>
+    <string name="salaNaoCadastradaEspera">Deixar na fila</string>
+    <string name="salaCriada">Sala criada; as varreduras da fila foram sincronizadas.</string>
+    <string name="salaNaoCriada">Nao foi possivel criar a sala. Cadastre-a na tela Gerenciar Salas no PC.</string>
 </resources>
