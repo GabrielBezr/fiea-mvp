@@ -11,6 +11,7 @@ import android.os.Looper;
 import android.util.Log;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -665,8 +666,13 @@ public class SyncManager {
                     sObj.put("unidade", sessao.unidade);
                     sObj.put("operador", sessao.operador);
                     sObj.put("inicio", formatarData(sessao.inicio));
-                    sObj.put("fim", formatarData(sessao.fim));
-                    sObj.put("duracao_s", (sessao.fim - sessao.inicio) / 1000);
+                    if (sessao.encerrada()) {
+                        sObj.put("fim", formatarData(sessao.fim));
+                        sObj.put("duracao_s", Math.max(0, (sessao.fim - sessao.inicio) / 1000));
+                    } else {
+                        sObj.put("fim", JSONObject.NULL);
+                        sObj.put("duracao_s", JSONObject.NULL);
+                    }
                     sObj.put("n_varreduras", sessao.totalVarreduras());
                     payload.put("sessao", sObj);
                 }
@@ -757,6 +763,70 @@ public class SyncManager {
 
             if (!enviou) {
                 // Guarda na fila offline do coletor
+                enfileirarOffline(payload);
+                estavaOffline = true;
+            }
+
+            final boolean res = enviou;
+            if (callback != null) {
+                mainHandler.post(() -> callback.onResult(res));
+            }
+        });
+    }
+
+    /**
+     * Encerra a sessão no servidor. Se a rede estiver offline, enfileira
+     * para envio automático posterior na fila offline.
+     */
+    public void encerrarSessao(Sessao sessao, Callback<Boolean> callback) {
+        if (sessao == null) {
+            if (callback != null) callback.onResult(false);
+            return;
+        }
+
+        JSONObject payload = new JSONObject();
+        try {
+            JSONObject sObj = new JSONObject();
+            sObj.put("id", sessao.id);
+            sObj.put("unidade", sessao.unidade);
+            sObj.put("operador", sessao.operador);
+            sObj.put("inicio", formatarData(sessao.inicio));
+            long instanteFim = sessao.fim > 0 ? sessao.fim : System.currentTimeMillis();
+            sObj.put("fim", formatarData(instanteFim));
+            long duracao = Math.max(0, (instanteFim - sessao.inicio) / 1000);
+            sObj.put("duracao_s", duracao);
+            sObj.put("n_varreduras", sessao.totalVarreduras());
+            payload.put("sessao", sObj);
+        } catch (JSONException e) {
+            if (callback != null) callback.onResult(false);
+            return;
+        }
+
+        executor.execute(() -> {
+            boolean enviou = false;
+            try {
+                URL url = new URL(getServerUrl() + "/api/sincronizar");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setConnectTimeout(4000);
+                conn.setReadTimeout(4000);
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setDoOutput(true);
+
+                OutputStream os = conn.getOutputStream();
+                os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
+                os.flush();
+                os.close();
+
+                int code = conn.getResponseCode();
+                enviou = (code == 200 || code == 201);
+                conn.disconnect();
+            } catch (Exception e) {
+                Log.w(TAG, "Falha ao sincronizar encerramento de sessão via Wi-Fi: " + e.getMessage());
+                enviou = false;
+            }
+
+            if (!enviou) {
                 enfileirarOffline(payload);
                 estavaOffline = true;
             }

@@ -2626,6 +2626,7 @@ id TvTagRssi
 id TvTagUii
 id ab_spinner
 id acao_atualizar_salas
+id acao_descartar
 id acao_exportar_xls
 id acao_limpar
 id acao_reexportar
@@ -3533,6 +3534,7 @@ string btClear
 string btConfigServidor
 string btConfirmar
 string btContinuarLendo
+string btDescartarVarredura
 string btEncerrar
 string btEncerrarSessao
 string btEncerrarVarredura
@@ -3762,6 +3764,7 @@ string msgCapturandoRef
 string msgConfigServidor
 string msgCsvFalha
 string msgCsvSucesso
+string msgDescartarVarredura
 string msgEncerrarSessao
 string msgEncerrarVarreduraVoltar
 string msgEnviadoPc
@@ -3793,6 +3796,7 @@ string msgSalaVazia
 string msgSemSessao
 string msgSemVarredura
 string msgSessaoCamposVazios
+string msgSessaoExpiradaViradaDia
 string msgSessaoExportada
 string msgTagTransmitidaFalha
 string msgTagTransmitidaSucesso
@@ -3802,6 +3806,7 @@ string msgTokenInvalido
 string msgTsCamposVazios
 string msgTsEpcRepetido
 string msgTsPosicaoRepetida
+string msgVarreduraCancelada
 string msgVarreduraSemReferencia
 string msgVarreduraSincronizada
 string mtrl_badge_numberless_content_description

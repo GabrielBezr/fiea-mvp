@@ -27,6 +27,15 @@ public class Sessao {
         this.id = new SimpleDateFormat("yyyyMMddHHmmssSSS", Locale.US).format(new Date(inicio));
     }
 
+    /** Construtor para restaurar sessão em andamento do armazenamento persistente. */
+    public Sessao(String id, String unidade, String operador, long inicio, int varreduras) {
+        this.id = id;
+        this.unidade = unidade;
+        this.operador = operador;
+        this.inicio = inicio;
+        this.varreduras = varreduras;
+    }
+
     /** Formata os instantes da sessão para exibição e exportação legível. */
     public static String formatarInstante(long instante) {
         return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US)

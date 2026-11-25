@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,11 +28,19 @@ import com.rfid.demo.utils.Sessao;
 import com.rfid.demo.utils.SyncManager;
 import com.rfid.demo.utils.Varredura;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.List;
@@ -76,11 +85,188 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         }
     }
 
-    // Salas com pendências, a mais recente primeiro. Ficam na memória enquanto o app
-    // estiver aberto; o que já foi resolvido vai ao PC (ou à fila) ao sair da sala.
+    private static final String TAG = "TagsSalaActivity";
+    private static final String ARQUIVO_PENDENCIAS = "sessao_pendencias.json";
+    private static Context appContext = null;
+
+    public static void setAppContext(Context ctx) {
+        if (ctx != null) {
+            appContext = ctx.getApplicationContext();
+        }
+    }
+
+    // Salas com pendências, a mais recente primeiro. Ficam na memória e persistidas em disco;
+    // o que já foi resolvido vai ao PC (ou à fila) ao sair da sala.
     private static final List<SalaConferida> salasConferidas = new ArrayList<>();
     // Mapeamento de EPC (maiúsculo) -> Conjunto de salas onde foi detectado via RFID nesta sessão
     private static final Map<String, Set<String>> leiturasRfidPorEpc = new HashMap<>();
+
+    public static synchronized void salvarEstado(Context ctx) {
+        Context c = ctx != null ? ctx : appContext;
+        if (c == null) return;
+        try {
+            JSONObject root = new JSONObject();
+
+            JSONObject mapObj = new JSONObject();
+            synchronized (leiturasRfidPorEpc) {
+                for (Map.Entry<String, Set<String>> entry : leiturasRfidPorEpc.entrySet()) {
+                    JSONArray arr = new JSONArray();
+                    for (String s : entry.getValue()) {
+                        arr.put(s);
+                    }
+                    mapObj.put(entry.getKey(), arr);
+                }
+            }
+            root.put("leiturasRfidPorEpc", mapObj);
+
+            JSONArray salasArr = new JSONArray();
+            synchronized (salasConferidas) {
+                for (SalaConferida sc : salasConferidas) {
+                    JSONObject scObj = new JSONObject();
+                    if (sc.sessao != null) {
+                        JSONObject sObj = new JSONObject();
+                        sObj.put("id", sc.sessao.id);
+                        sObj.put("unidade", sc.sessao.unidade);
+                        sObj.put("operador", sc.sessao.operador);
+                        sObj.put("inicio", sc.sessao.inicio);
+                        sObj.put("varreduras", sc.sessao.totalVarreduras());
+                        scObj.put("sessao", sObj);
+                    }
+                    if (sc.varredura != null) {
+                        JSONObject vObj = new JSONObject();
+                        vObj.put("id", sc.varredura.id);
+                        vObj.put("numero", sc.varredura.numero);
+                        vObj.put("sala", sc.varredura.sala);
+                        vObj.put("tecnica", sc.varredura.tecnica);
+                        vObj.put("potencia", sc.varredura.potenciaDbm);
+                        vObj.put("inicio", sc.varredura.inicio);
+                        vObj.put("fim", sc.varredura.fim);
+                        scObj.put("varredura", vObj);
+                    }
+                    scObj.put("total", sc.total);
+                    scObj.put("pendentes", sc.pendentes);
+                    scObj.put("resolucoesNaoEnviadas", sc.resolucoesNaoEnviadas);
+
+                    JSONArray epcsArr = new JSONArray();
+                    if (sc.epcsLidos != null) {
+                        for (String epc : sc.epcsLidos) {
+                            epcsArr.put(epc);
+                        }
+                    }
+                    scObj.put("epcsLidos", epcsArr);
+
+                    JSONArray resArr = new JSONArray();
+                    if (sc.resolvidas != null) {
+                        for (SyncManager.PendenciaResolvida pr : sc.resolvidas) {
+                            JSONObject prObj = new JSONObject();
+                            prObj.put("patrimonio", pr.patrimonio);
+                            prObj.put("epc", pr.epc);
+                            prObj.put("metodo", pr.metodo);
+                            prObj.put("timestamp", pr.timestamp);
+                            resArr.put(prObj);
+                        }
+                    }
+                    scObj.put("resolvidas", resArr);
+                    salasArr.put(scObj);
+                }
+            }
+            root.put("salas", salasArr);
+
+            File f = new File(c.getFilesDir(), ARQUIVO_PENDENCIAS);
+            FileOutputStream fos = new FileOutputStream(f, false);
+            fos.write(root.toString().getBytes(StandardCharsets.UTF_8));
+            fos.close();
+        } catch (Exception e) {
+            Log.e(TAG, "Falha ao salvar pendências da sessão", e);
+        }
+    }
+
+    public static synchronized void restaurarEstadoSeNecessario(Context ctx) {
+        Context c = ctx != null ? ctx : appContext;
+        if (c == null) return;
+        if (appContext == null) appContext = c.getApplicationContext();
+        if (!salasConferidas.isEmpty()) return;
+
+        try {
+            File f = new File(c.getFilesDir(), ARQUIVO_PENDENCIAS);
+            if (!f.exists() || f.length() == 0) return;
+
+            FileInputStream fis = new FileInputStream(f);
+            byte[] buf = new byte[(int) f.length()];
+            fis.read(buf);
+            fis.close();
+            String jsonStr = new String(buf, StandardCharsets.UTF_8);
+            JSONObject root = new JSONObject(jsonStr);
+
+            JSONObject mapObj = root.optJSONObject("leiturasRfidPorEpc");
+            if (mapObj != null) {
+                synchronized (leiturasRfidPorEpc) {
+                    leiturasRfidPorEpc.clear();
+                    Iterator<String> keys = mapObj.keys();
+                    while (keys.hasNext()) {
+                        String epc = keys.next();
+                        JSONArray arr = mapObj.optJSONArray(epc);
+                        if (arr != null) {
+                            Set<String> set = new HashSet<>();
+                            for (int i = 0; i < arr.length(); i++) {
+                                set.add(arr.getString(i));
+                            }
+                            leiturasRfidPorEpc.put(epc, set);
+                        }
+                    }
+                }
+            }
+
+            JSONArray salasArr = root.optJSONArray("salas");
+            if (salasArr != null) {
+                synchronized (salasConferidas) {
+                    salasConferidas.clear();
+                    for (int i = 0; i < salasArr.length(); i++) {
+                        JSONObject scObj = salasArr.getJSONObject(i);
+                        JSONObject sObj = scObj.optJSONObject("sessao");
+                        Sessao s = null;
+                        if (sObj != null) {
+                            s = new Sessao(sObj.optString("id"), sObj.optString("unidade"),
+                                    sObj.optString("operador"), sObj.optLong("inicio"), sObj.optInt("varreduras"));
+                        }
+                        JSONObject vObj = scObj.optJSONObject("varredura");
+                        Varredura v = null;
+                        if (vObj != null && s != null) {
+                            v = new Varredura(s, vObj.optInt("numero"), vObj.optString("sala"),
+                                    vObj.optString("tecnica"), vObj.optInt("potencia"), vObj.optLong("inicio"));
+                            v.fim = vObj.optLong("fim", v.inicio);
+                        }
+
+                        int total = scObj.optInt("total", 0);
+                        int pendentes = scObj.optInt("pendentes", 0);
+                        boolean naoEnviadas = scObj.optBoolean("resolucoesNaoEnviadas", false);
+
+                        Set<String> epcsLidos = new HashSet<>();
+                        JSONArray epcsArr = scObj.optJSONArray("epcsLidos");
+                        if (epcsArr != null) {
+                            for (int j = 0; j < epcsArr.length(); j++) {
+                                epcsLidos.add(epcsArr.getString(j));
+                            }
+                        }
+
+                        SalaConferida sc = new SalaConferida(s, v, new ArrayList<Leitura>(), epcsLidos, total, pendentes);
+                        sc.resolucoesNaoEnviadas = naoEnviadas;
+
+                        JSONArray resArr = scObj.optJSONArray("resolvidas");
+                        if (resArr != null) {
+                            for (int j = 0; j < resArr.length(); j++) {
+                                JSONObject prObj = resArr.getJSONObject(j);
+                                sc.resolvidas.add(SyncManager.PendenciaResolvida.fromJson(prObj));
+                            }
+                        }
+                        salasConferidas.add(sc);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Falha ao restaurar pendências da sessão", e);
+        }
+    }
 
     /**
      * Registra os EPCs lidos via RFID em uma varredura para cruzar itens fora do local
@@ -104,6 +290,7 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
                 }
             }
         }
+        salvarEstado(appContext);
     }
 
     /**
@@ -113,6 +300,9 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
     public static String obterOutrasSalasOndeLido(String epc, String salaAtual) {
         if (epc == null || epc.trim().isEmpty()) {
             return null;
+        }
+        if (salasConferidas.isEmpty() && appContext != null) {
+            restaurarEstadoSeNecessario(appContext);
         }
         String epcNorm = epc.trim().toUpperCase();
         String salaNorm = salaAtual != null ? salaAtual.trim() : "";
@@ -153,11 +343,24 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
 
     /** Limpa o histórico de conferência ao iniciar uma nova sessão de inventário. */
     public static void limparSessao() {
+        limparSessao(appContext);
+    }
+
+    public static void limparSessao(Context ctx) {
         salasConferidas.clear();
         synchronized (leiturasRfidPorEpc) {
             leiturasRfidPorEpc.clear();
         }
         salaParaAbrir = null;
+        Context c = ctx != null ? ctx : appContext;
+        if (c != null) {
+            try {
+                File f = new File(c.getFilesDir(), ARQUIVO_PENDENCIAS);
+                if (f.exists()) {
+                    f.delete();
+                }
+            } catch (Exception ignored) {}
+        }
     }
 
     /**
@@ -175,7 +378,7 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
                 sala.resolucoesNaoEnviadas = false;
             }
         }
-        limparSessao();
+        limparSessao(context);
     }
     // "Resolver agora" no Inventário: ao entrar na aba, abre direto esta sala.
     private static SalaConferida salaParaAbrir = null;
@@ -193,7 +396,8 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
             return;
         }
         for (int i = 0; i < salasConferidas.size(); i++) {
-            if (salasConferidas.get(i).varredura.id.equals(v.id)) {
+            SalaConferida sc = salasConferidas.get(i);
+            if (sc.varredura != null && sc.varredura.id != null && sc.varredura.id.equals(v.id)) {
                 salasConferidas.remove(i);
                 break;
             }
@@ -201,12 +405,20 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         salasConferidas.add(0, new SalaConferida(s, v,
                 leituras != null ? new ArrayList<>(leituras) : new ArrayList<Leitura>(),
                 epcs != null ? new HashSet<>(epcs) : new HashSet<String>(), total, pendentes));
+        salvarEstado(appContext);
     }
 
     /** "Resolver agora": a próxima vez que a aba aparecer, ela abre nesta varredura. */
     public static void abrirAoEntrar(Varredura v) {
+        if (v == null) return;
+        if (salasConferidas.isEmpty() && appContext != null) {
+            restaurarEstadoSeNecessario(appContext);
+        }
         for (SalaConferida sala : salasConferidas) {
-            if (sala.varredura == v) {
+            if (sala.varredura == v ||
+                    (sala.varredura != null &&
+                     ((sala.varredura.id != null && sala.varredura.id.equals(v.id)) ||
+                      (sala.varredura.sala != null && sala.varredura.sala.equalsIgnoreCase(v.sala))))) {
                 salaParaAbrir = sala;
                 return;
             }
@@ -215,8 +427,15 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
 
     /** Quantos bens desta varredura ainda faltam resolver aqui; 0 se ela não tem pendências. */
     public static int pendentesDe(Varredura v) {
+        if (v == null) return 0;
+        if (salasConferidas.isEmpty() && appContext != null) {
+            restaurarEstadoSeNecessario(appContext);
+        }
         for (SalaConferida sala : salasConferidas) {
-            if (sala.varredura == v) {
+            if (sala.varredura == v ||
+                    (sala.varredura != null &&
+                     ((sala.varredura.id != null && sala.varredura.id.equals(v.id)) ||
+                      (sala.varredura.sala != null && sala.varredura.sala.equalsIgnoreCase(v.sala))))) {
                 return sala.pendentes;
             }
         }
@@ -248,6 +467,9 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tags_sala);
+
+        setAppContext(this);
+        restaurarEstadoSeNecessario(this);
 
         syncManager = SyncManager.getInstance(this);
 
@@ -371,6 +593,7 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
             return;
         }
         sala.resolucoesNaoEnviadas = false;
+        salvarEstado(this);
         syncManager.sincronizarVarredura(sala.sessao, sala.varredura, sala.leituras,
                 new ArrayList<>(sala.resolvidas), null);
     }
@@ -384,6 +607,11 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onResume() {
         super.onResume();
+        setAppContext(this);
+        restaurarEstadoSeNecessario(this);
+        if (salaAberta != null && !salasConferidas.contains(salaAberta)) {
+            salaAberta = null;
+        }
         if (salaParaAbrir != null) {
             SalaConferida sala = salaParaAbrir;
             salaParaAbrir = null;
@@ -623,6 +851,7 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         }
         salaAberta.resolvidas.add(resolucao);
         salaAberta.resolucoesNaoEnviadas = true;
+        salvarEstado(this);
         atualizarContadores();
         adaptador.notifyDataSetChanged();
     }

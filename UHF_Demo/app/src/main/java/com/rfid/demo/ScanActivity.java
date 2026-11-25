@@ -2,6 +2,7 @@ package com.rfid.demo;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
@@ -45,14 +46,24 @@ import com.ubx.usdk.rfid.aidl.IRfidCallback;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class ScanActivity extends Activity implements OnClickListener {
 
@@ -81,10 +92,25 @@ public class ScanActivity extends Activity implements OnClickListener {
         final String nome;
         int varreduras = 0;
         int etiquetas = 0;          // EPCs distintos lidos na última varredura
+        int pendentes = -1;
         Varredura ultima = null;
 
         SalaDaSessao(String nome) {
             this.nome = nome;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            SalaDaSessao that = (SalaDaSessao) o;
+            return nome != null && that.nome != null &&
+                    nome.trim().equalsIgnoreCase(that.nome.trim());
+        }
+
+        @Override
+        public int hashCode() {
+            return nome != null ? nome.trim().toLowerCase(Locale.ROOT).hashCode() : 0;
         }
     }
 
@@ -110,7 +136,55 @@ public class ScanActivity extends Activity implements OnClickListener {
     private volatile Sessao sessaoAtual = null;
     private static volatile Sessao sessaoAtualStatic = null;
 
+    /**
+     * Regra 23:59: Uma sessão aberta em data anterior não pode continuar no dia seguinte.
+     * Retorna true se a sessão iniciou antes de hoje (00:00:00).
+     */
+    public static boolean sessaoExpirou2359(long inicioTimestamp) {
+        if (inicioTimestamp <= 0) return false;
+        Calendar calInicio = Calendar.getInstance();
+        calInicio.setTimeInMillis(inicioTimestamp);
+        Calendar calHoje = Calendar.getInstance();
+        return calInicio.get(Calendar.YEAR) < calHoje.get(Calendar.YEAR)
+                || (calInicio.get(Calendar.YEAR) == calHoje.get(Calendar.YEAR)
+                    && calInicio.get(Calendar.DAY_OF_YEAR) < calHoje.get(Calendar.DAY_OF_YEAR));
+    }
+
+    public static Sessao getSessaoAtual(Context ctx) {
+        if (sessaoAtualStatic != null && !sessaoAtualStatic.encerrada()) {
+            if (sessaoExpirou2359(sessaoAtualStatic.inicio)) {
+                sessaoAtualStatic = null;
+            } else {
+                return sessaoAtualStatic;
+            }
+        }
+        if (ctx != null) {
+            SharedPreferences prefs = ctx.getSharedPreferences("FieaColetaPrefs", Context.MODE_PRIVATE);
+            boolean ativa = prefs.getBoolean("sessao_ativa", false);
+            if (ativa) {
+                long sInicio = prefs.getLong("sessao_inicio", 0);
+                if (sessaoExpirou2359(sInicio)) {
+                    prefs.edit().putBoolean("sessao_ativa", false).apply();
+                    return null;
+                }
+                String sId = prefs.getString("sessao_id", null);
+                String sUnidade = prefs.getString("sessao_unidade", null);
+                String sOperador = prefs.getString("sessao_operador", null);
+                int sVarreduras = prefs.getInt("sessao_varreduras", 0);
+                if (sId != null && sInicio > 0) {
+                    sessaoAtualStatic = new Sessao(sId, sUnidade != null ? sUnidade : "",
+                            sOperador != null ? sOperador : "", sInicio, sVarreduras);
+                    return sessaoAtualStatic;
+                }
+            }
+        }
+        return sessaoAtualStatic;
+    }
+
     public static Sessao getSessaoAtual() {
+        if (sessaoAtualStatic != null && sessaoExpirou2359(sessaoAtualStatic.inicio)) {
+            sessaoAtualStatic = null;
+        }
         return sessaoAtualStatic;
     }
 
@@ -136,7 +210,7 @@ public class ScanActivity extends Activity implements OnClickListener {
     private static final int MSG_UPDATE_STOP = 3;
     
     public long CardNumber;
-    public static List<String> mlist = new ArrayList<String>();
+    private final List<String> mlist = new ArrayList<String>();
     public static int timeout = 300;//300 seconds
     private HashMap<String, Integer> integerHashMap = new HashMap<>();
 
@@ -242,24 +316,7 @@ public class ScanActivity extends Activity implements OnClickListener {
             BtEncerrarVarredura.setOnClickListener(this);
             BtExportCsv.setOnClickListener(this);
 
-            if (sessaoAtual == null && sessaoAtualStatic != null && !sessaoAtualStatic.encerrada()) {
-                sessaoAtual = sessaoAtualStatic;
-                if (etOperador != null && sessaoAtual.operador != null) {
-                    etOperador.setText(sessaoAtual.operador);
-                    etOperador.setEnabled(false);
-                }
-                if (etUnidade != null && sessaoAtual.unidade != null) {
-                    etUnidade.setText(sessaoAtual.unidade);
-                    etUnidade.setEnabled(false);
-                }
-            } else {
-                SharedPreferences prefs = getSharedPreferences("FieaColetaPrefs", MODE_PRIVATE);
-                String ultimoOp = prefs.getString("ultimo_operador", "");
-                if (!ultimoOp.isEmpty() && etOperador != null && etOperador.getText().toString().isEmpty()) {
-                    etOperador.setText(ultimoOp);
-                }
-            }
-            atualizarStatus();
+            restaurarSessaoAtivaSeExistir();
 
             if (RFIDSDKManager.getInstance().getRfidManager() != null) {
                 RFIDSDKManager.getInstance().getRfidManager().registerCallback(callback);
@@ -335,6 +392,27 @@ public class ScanActivity extends Activity implements OnClickListener {
         adapter.notifyDataSetChanged();
     }
 
+    private long ultimoUpdateLista = 0;
+    private final Runnable runnableUpdateLista = this::updateList;
+
+    private void updateListThrottled() {
+        tv_alltag.setText(String.valueOf(CardNumber));
+        tv_count.setText("" + adapter.getCount());
+        long agora = System.currentTimeMillis();
+        if (agora - ultimoUpdateLista >= 200) {
+            ultimoUpdateLista = agora;
+            if (handler != null) {
+                handler.removeCallbacks(runnableUpdateLista);
+            }
+            updateList();
+        } else {
+            if (handler != null) {
+                handler.removeCallbacks(runnableUpdateLista);
+                handler.postDelayed(runnableUpdateLista, 200 - (agora - ultimoUpdateLista));
+            }
+        }
+    }
+
     private void addEPCToList(String rfid, String rssi) {
         if (!TextUtils.isEmpty(rfid)) {
             map = new HashMap<String, String>();
@@ -362,23 +440,22 @@ public class ScanActivity extends Activity implements OnClickListener {
             
             if (index == -1) {
                 tagList.add(map);
-                // Sem setAdapter a cada etiqueta nova: o notifyDataSetChanged de
-                // updateList basta, e a lista não volta ao topo nem recria as linhas.
-                tv_count.setText("" + adapter.getCount());
                 mlist.add(data[0]);
                 integerHashMap.put(epc, mlist.size() - 1);
-                updateList();
+                updateListThrottled();
             } else {
                 int tagcount = Integer.parseInt(tagList.get(index).get("tagCount"), 10) + 1;
                 map.put("tagCount", String.valueOf(tagcount));
                 tagList.set(index, map);
-                updateList();
+                updateListThrottled();
             }
         }
     }
 
     private void updateList() {
+        ultimoUpdateLista = System.currentTimeMillis();
         tv_alltag.setText(String.valueOf(CardNumber));
+        tv_count.setText("" + adapter.getCount());
         adapter.notifyDataSetChanged();
         atualizarStatus();
     }
@@ -398,16 +475,29 @@ public class ScanActivity extends Activity implements OnClickListener {
             avisar(R.string.msgSessaoCamposVazios);
             return;
         }
+        sessaoAtual = new Sessao(unidade, operador, System.currentTimeMillis());
+        sessaoAtualStatic = sessaoAtual;
+
+        // Persiste a sessão ativa para permitir continuidade caso o app seja fechado
         getSharedPreferences("FieaColetaPrefs", MODE_PRIVATE)
                 .edit()
                 .putString("ultimo_operador", operador)
+                .putBoolean("sessao_ativa", true)
+                .putString("sessao_id", sessaoAtual.id)
+                .putString("sessao_unidade", sessaoAtual.unidade)
+                .putString("sessao_operador", sessaoAtual.operador)
+                .putLong("sessao_inicio", sessaoAtual.inicio)
+                .putInt("sessao_varreduras", sessaoAtual.totalVarreduras())
+                .remove("sessao_salas_varridas")
                 .apply();
-        sessaoAtual = new Sessao(unidade, operador, System.currentTimeMillis());
-        sessaoAtualStatic = sessaoAtual;
+
         TagsSalaActivity.limparSessao();
         ultimaSessaoEncerrada = null;
         ultimaVarreduraEncerrada = null;
         etUnidade.setEnabled(false);
+        if (spinnerUnidade != null) {
+            spinnerUnidade.setEnabled(false);
+        }
         etOperador.setEnabled(false);
         atualizarStatus();
         // Registra o início imediatamente. O arquivo será atualizado com o fim
@@ -428,18 +518,40 @@ public class ScanActivity extends Activity implements OnClickListener {
         sessaoAtual = null;
         sessaoAtualStatic = null;
         ultimaSessaoEncerrada = s;
+
+        // Limpa a persistência da sessão ativa
+        getSharedPreferences("FieaColetaPrefs", MODE_PRIVATE)
+                .edit()
+                .putBoolean("sessao_ativa", false)
+                .remove("sessao_id")
+                .remove("sessao_unidade")
+                .remove("sessao_operador")
+                .remove("sessao_inicio")
+                .remove("sessao_varreduras")
+                .remove("sessao_salas_varridas")
+                .apply();
+
+        // RF09/RF10: envia resoluções ainda não sincronizadas e limpa pendências da sessão
+        TagsSalaActivity.finalizarSessaoAtual(this);
+        limparVarreduraEmAndamento();
+
         etUnidade.setEnabled(true);
+        if (spinnerUnidade != null) {
+            spinnerUnidade.setEnabled(true);
+        }
         etOperador.setEnabled(true);
         atualizarStatus();
         exportarSessao(s, true);
 
-        // RF09/RF10: a aba de Pendências reflete a sessão; ao encerrar, envia o
-        // que falta e esvazia a lista — sem precisar reiniciar o app ou iniciar
-        // uma nova sessão.
-        TagsSalaActivity.finalizarSessaoAtual(this);
+        // Notifica o encerramento da sessão ao servidor (com fila offline automática se offline)
+        SyncManager sm = SyncManager.getInstance(this);
+        sm.encerrarSessao(s, sucesso -> {
+            if (sucesso) {
+                Log.d(TAG, "Encerramento da sessão enviado com sucesso ao servidor");
+            }
+        });
 
         // Se há itens na fila offline e o servidor estiver acessível, sincroniza automaticamente
-        SyncManager sm = SyncManager.getInstance(this);
         if (sm.totalPendenciasNaFila() > 0) {
             sm.testarConexao(online -> {
                 if (online) {
@@ -478,13 +590,78 @@ public class ScanActivity extends Activity implements OnClickListener {
         } catch (Exception ignored) {}
         leiturasBrutas.clear();
         clearData(); // Limpa as tags exibidas na tela para a nova sala
-        varreduraAtual = new Varredura(s, s.proximoNumero(), sala, tecnica, potencia,
+        int numeroVarredura = s.totalVarreduras() + 1;
+        varreduraAtual = new Varredura(s, numeroVarredura, sala, tecnica, potencia,
                 System.currentTimeMillis());
+        salvarVarreduraEmAndamento();
         spinnerTecnica.setEnabled(false);
         atualizarStatus();
 
         // Pré-carrega bens da sala se online
         SyncManager.getInstance(this).buscarBensDaSala(sala, s.unidade, null);
+    }
+
+    private void salvarVarreduraEmAndamento() {
+        Varredura v = varreduraAtual;
+        if (v == null) return;
+        try {
+            SharedPreferences.Editor editor = getSharedPreferences("FieaColetaPrefs", MODE_PRIVATE).edit();
+            editor.putBoolean("varredura_ativa", true);
+            editor.putInt("varredura_numero", v.numero);
+            editor.putString("varredura_sala", v.sala);
+            editor.putString("varredura_tecnica", v.tecnica);
+            editor.putInt("varredura_potencia", v.potenciaDbm);
+            editor.putLong("varredura_inicio", v.inicio);
+
+            JSONArray array = new JSONArray();
+            synchronized (leiturasBrutas) {
+                for (Leitura l : leiturasBrutas) {
+                    JSONObject obj = new JSONObject();
+                    obj.put("t", l.timestamp);
+                    obj.put("e", l.epc);
+                    obj.put("r", l.rssi);
+                    array.put(obj);
+                }
+            }
+            File f = new File(getFilesDir(), "varredura_leituras.json");
+            try (FileOutputStream fos = new FileOutputStream(f)) {
+                fos.write(array.toString().getBytes(StandardCharsets.UTF_8));
+            }
+            editor.apply();
+        } catch (Exception e) {
+            Log.e(TAG, "Erro ao salvar varredura em andamento", e);
+        }
+    }
+
+    private void limparVarreduraEmAndamento() {
+        try {
+            getSharedPreferences("FieaColetaPrefs", MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("varredura_ativa", false)
+                    .remove("varredura_numero")
+                    .remove("varredura_sala")
+                    .remove("varredura_tecnica")
+                    .remove("varredura_potencia")
+                    .remove("varredura_inicio")
+                    .apply();
+            File f = new File(getFilesDir(), "varredura_leituras.json");
+            if (f.exists()) {
+                f.delete();
+            }
+        } catch (Exception ignored) {}
+    }
+
+    private void cancelarVarredura() {
+        stopReading();
+        varreduraAtual = null;
+        clearData();
+        synchronized (leiturasBrutas) {
+            leiturasBrutas.clear();
+        }
+        limparVarreduraEmAndamento();
+        spinnerTecnica.setEnabled(true);
+        atualizarStatus();
+        avisar(R.string.msgVarreduraCancelada);
     }
 
     private void encerrarVarredura() {
@@ -495,6 +672,14 @@ public class ScanActivity extends Activity implements OnClickListener {
         stopReading();
         v.fim = System.currentTimeMillis();
         varreduraAtual = null;
+        limparVarreduraEmAndamento();
+        if (sessaoAtual != null) {
+            sessaoAtual.proximoNumero();
+            getSharedPreferences("FieaColetaPrefs", MODE_PRIVATE)
+                    .edit()
+                    .putInt("sessao_varreduras", sessaoAtual.totalVarreduras())
+                    .apply();
+        }
         ultimaVarreduraEncerrada = v;
         spinnerTecnica.setEnabled(true);
         atualizarStatus();
@@ -525,6 +710,7 @@ public class ScanActivity extends Activity implements OnClickListener {
         andamento.etiquetas = epcsLidos.size();
         andamento.ultima = v;
         atualizarListaSalas();
+        salvarSalasVarridasNaPersistencia();
 
         // Sem rede a busca espera o timeout antes de cair no cache; o aviso mostra
         // que o app está trabalhando e não travou.
@@ -923,6 +1109,10 @@ public class ScanActivity extends Activity implements OnClickListener {
         Menu itens = menu.getMenu();
         // Os botões ocultos guardam o estado de cada ação (setViewEnabled, atualizarStatus).
         itens.findItem(R.id.acao_limpar).setVisible(lendoSala).setEnabled(BtClear.isEnabled());
+        MenuItem itemDescartar = itens.findItem(R.id.acao_descartar);
+        if (itemDescartar != null) {
+            itemDescartar.setVisible(lendoSala);
+        }
         MenuItem exportarXls = itens.findItem(R.id.acao_exportar_xls).setEnabled(Btimport.isEnabled());
         if (!lendoSala) {
             // Fora da leitura, a lista em memória é a da última sala varrida.
@@ -934,6 +1124,8 @@ public class ScanActivity extends Activity implements OnClickListener {
             int id = item.getItemId();
             if (id == R.id.acao_limpar) {
                 onClick(BtClear);
+            } else if (id == R.id.acao_descartar) {
+                confirmarDescarteVarredura();
             } else if (id == R.id.acao_exportar_xls) {
                 onClick(Btimport);
             } else if (id == R.id.acao_reexportar) {
@@ -945,6 +1137,21 @@ public class ScanActivity extends Activity implements OnClickListener {
             return true;
         });
         menu.show();
+    }
+
+    private void confirmarDescarteVarredura() {
+        final Varredura v = varreduraAtual;
+        if (v == null) return;
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.btDescartarVarredura)
+                .setMessage(getString(R.string.msgDescartarVarredura, v.sala))
+                .setPositiveButton(R.string.btDescartarVarredura, (dialog, which) -> {
+                    if (varreduraAtual == v) {
+                        cancelarVarredura();
+                    }
+                })
+                .setNegativeButton(R.string.btContinuarLendo, null)
+                .show();
     }
 
     private void toggleReading() {
@@ -990,14 +1197,51 @@ public class ScanActivity extends Activity implements OnClickListener {
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        registrarCallback();
-        if (sessaoAtual == null && sessaoAtualStatic != null && !sessaoAtualStatic.encerrada()) {
-            sessaoAtual = sessaoAtualStatic;
+    private void restaurarSessaoAtivaSeExistir() {
+        TagsSalaActivity.setAppContext(this);
+        TagsSalaActivity.restaurarEstadoSeNecessario(this);
+
+        if (sessaoAtual != null && !sessaoAtual.encerrada()) {
+            if (sessaoExpirou2359(sessaoAtual.inicio)) {
+                encerrarSessaoExpiradaViradaDia(sessaoAtual);
+                return;
+            }
+            return;
         }
-        if (sessaoAtual != null) {
+        if (sessaoAtualStatic != null && !sessaoAtualStatic.encerrada()) {
+            if (sessaoExpirou2359(sessaoAtualStatic.inicio)) {
+                encerrarSessaoExpiradaViradaDia(sessaoAtualStatic);
+                return;
+            }
+            sessaoAtual = sessaoAtualStatic;
+        } else {
+            SharedPreferences prefs = getSharedPreferences("FieaColetaPrefs", MODE_PRIVATE);
+            boolean ativa = prefs.getBoolean("sessao_ativa", false);
+            if (ativa) {
+                long sInicio = prefs.getLong("sessao_inicio", 0);
+                if (sessaoExpirou2359(sInicio)) {
+                    String sId = prefs.getString("sessao_id", null);
+                    String sUnidade = prefs.getString("sessao_unidade", null);
+                    String sOperador = prefs.getString("sessao_operador", null);
+                    int sVarreduras = prefs.getInt("sessao_varreduras", 0);
+                    Sessao exp = new Sessao(sId != null ? sId : "", sUnidade != null ? sUnidade : "",
+                            sOperador != null ? sOperador : "", sInicio, sVarreduras);
+                    encerrarSessaoExpiradaViradaDia(exp);
+                    return;
+                }
+                String sId = prefs.getString("sessao_id", null);
+                String sUnidade = prefs.getString("sessao_unidade", null);
+                String sOperador = prefs.getString("sessao_operador", null);
+                int sVarreduras = prefs.getInt("sessao_varreduras", 0);
+                if (sId != null && sInicio > 0) {
+                    sessaoAtual = new Sessao(sId, sUnidade != null ? sUnidade : "",
+                            sOperador != null ? sOperador : "", sInicio, sVarreduras);
+                    sessaoAtualStatic = sessaoAtual;
+                }
+            }
+        }
+
+        if (sessaoAtual != null && !sessaoAtual.encerrada()) {
             if (etOperador != null && sessaoAtual.operador != null) {
                 etOperador.setText(sessaoAtual.operador);
                 etOperador.setEnabled(false);
@@ -1006,8 +1250,181 @@ public class ScanActivity extends Activity implements OnClickListener {
                 etUnidade.setText(sessaoAtual.unidade);
                 etUnidade.setEnabled(false);
             }
-            atualizarStatus();
-        } else if (unidadeSugerida != null && !unidadeSugerida.isEmpty()) {
+            if (spinnerUnidade != null) {
+                spinnerUnidade.setEnabled(false);
+                for (int i = 0; i < spinnerUnidade.getCount(); i++) {
+                    if (sessaoAtual.unidade.equalsIgnoreCase(String.valueOf(spinnerUnidade.getItemAtPosition(i)))) {
+                        spinnerUnidade.setSelection(i);
+                        break;
+                    }
+                }
+            }
+            montarSalasDaSessao();
+            restaurarVarreduraEmAndamentoSeExistir();
+        } else {
+            SharedPreferences prefs = getSharedPreferences("FieaColetaPrefs", MODE_PRIVATE);
+            String ultimoOp = prefs.getString("ultimo_operador", "");
+            if (!ultimoOp.isEmpty() && etOperador != null && etOperador.getText().toString().isEmpty()) {
+                etOperador.setText(ultimoOp);
+            }
+            if (etUnidade != null) {
+                etUnidade.setEnabled(true);
+            }
+            if (spinnerUnidade != null) {
+                spinnerUnidade.setEnabled(true);
+            }
+            if (etOperador != null) {
+                etOperador.setEnabled(true);
+            }
+        }
+        atualizarStatus();
+    }
+
+    private void encerrarSessaoExpiradaViradaDia(Sessao s) {
+        if (s == null) return;
+        Calendar calFim = Calendar.getInstance();
+        calFim.setTimeInMillis(s.inicio);
+        calFim.set(Calendar.HOUR_OF_DAY, 23);
+        calFim.set(Calendar.MINUTE, 59);
+        calFim.set(Calendar.SECOND, 59);
+        s.fim = calFim.getTimeInMillis();
+
+        sessaoAtual = null;
+        sessaoAtualStatic = null;
+        getSharedPreferences("FieaColetaPrefs", MODE_PRIVATE)
+                .edit()
+                .putBoolean("sessao_ativa", false)
+                .remove("sessao_id")
+                .remove("sessao_unidade")
+                .remove("sessao_operador")
+                .remove("sessao_inicio")
+                .remove("sessao_varreduras")
+                .remove("sessao_salas_varridas")
+                .apply();
+        TagsSalaActivity.limparSessao(this);
+        limparVarreduraEmAndamento();
+        if (etUnidade != null) etUnidade.setEnabled(true);
+        if (spinnerUnidade != null) spinnerUnidade.setEnabled(true);
+        if (etOperador != null) etOperador.setEnabled(true);
+        salasDaSessao.clear();
+        atualizarStatus();
+        exportarSessao(s, true);
+        SyncManager.getInstance(this).encerrarSessao(s, null);
+        Toast.makeText(this, R.string.msgSessaoExpiradaViradaDia, Toast.LENGTH_LONG).show();
+    }
+
+    private void restaurarVarreduraEmAndamentoSeExistir() {
+        if (sessaoAtual == null || varreduraAtual != null) return;
+        SharedPreferences prefs = getSharedPreferences("FieaColetaPrefs", MODE_PRIVATE);
+        boolean varreduraAtiva = prefs.getBoolean("varredura_ativa", false);
+        if (!varreduraAtiva) return;
+
+        int vNumero = prefs.getInt("varredura_numero", sessaoAtual.totalVarreduras() + 1);
+        String vSala = prefs.getString("varredura_sala", "");
+        String vTecnica = prefs.getString("varredura_tecnica", "");
+        int vPotencia = prefs.getInt("varredura_potencia", 30);
+        long vInicio = prefs.getLong("varredura_inicio", System.currentTimeMillis());
+
+        if (vSala.isEmpty()) return;
+
+        varreduraAtual = new Varredura(sessaoAtual, vNumero, vSala, vTecnica, vPotencia, vInicio);
+        clearData();
+        synchronized (leiturasBrutas) {
+            leiturasBrutas.clear();
+            File f = new File(getFilesDir(), "varredura_leituras.json");
+            if (f.exists()) {
+                try (FileInputStream fis = new FileInputStream(f)) {
+                    byte[] data = new byte[(int) f.length()];
+                    int read = fis.read(data);
+                    if (read > 0) {
+                        String jsonStr = new String(data, 0, read, StandardCharsets.UTF_8);
+                        JSONArray array = new JSONArray(jsonStr);
+                        for (int i = 0; i < array.length(); i++) {
+                            JSONObject obj = array.getJSONObject(i);
+                            long t = obj.optLong("t", vInicio);
+                            String epc = obj.optString("e", "");
+                            int r = obj.optInt("r", 0);
+                            if (!epc.isEmpty()) {
+                                leiturasBrutas.add(new Leitura(t, epc, r));
+                                addEPCToList(epc, String.valueOf(r));
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Erro ao restaurar leituras da varredura", e);
+                }
+            }
+        }
+        if (spinnerTecnica != null) {
+            spinnerTecnica.setEnabled(false);
+        }
+    }
+
+    private void salvarSalasVarridasNaPersistencia() {
+        try {
+            JSONObject obj = new JSONObject();
+            for (SalaDaSessao s : salasDaSessao) {
+                if (s.varreduras > 0) {
+                    JSONObject sObj = new JSONObject();
+                    sObj.put("varreduras", s.varreduras);
+                    sObj.put("etiquetas", s.etiquetas);
+                    if (s.ultima != null) {
+                        sObj.put("numero", s.ultima.numero);
+                        sObj.put("tecnica", s.ultima.tecnica);
+                        sObj.put("potencia", s.ultima.potenciaDbm);
+                        sObj.put("inicio", s.ultima.inicio);
+                        sObj.put("fim", s.ultima.fim);
+                        int p = TagsSalaActivity.pendentesDe(s.ultima);
+                        sObj.put("pendentes", p);
+                    } else if (s.pendentes >= 0) {
+                        sObj.put("pendentes", s.pendentes);
+                    }
+                    obj.put(s.nome, sObj);
+                }
+            }
+            getSharedPreferences("FieaColetaPrefs", MODE_PRIVATE)
+                    .edit()
+                    .putString("sessao_salas_varridas", obj.toString())
+                    .apply();
+        } catch (Exception ignored) {}
+    }
+
+    private void restaurarSalasVarridasDaPersistencia() {
+        try {
+            SharedPreferences prefs = getSharedPreferences("FieaColetaPrefs", MODE_PRIVATE);
+            String jsonStr = prefs.getString("sessao_salas_varridas", null);
+            if (jsonStr == null || jsonStr.isEmpty()) return;
+            JSONObject obj = new JSONObject(jsonStr);
+            Iterator<String> keys = obj.keys();
+            while (keys.hasNext()) {
+                String nomeSala = keys.next();
+                JSONObject dados = obj.optJSONObject(nomeSala);
+                if (dados != null) {
+                    SalaDaSessao sala = salaDaSessao(nomeSala);
+                    sala.varreduras = dados.optInt("varreduras", 1);
+                    sala.etiquetas = dados.optInt("etiquetas", 0);
+                    sala.pendentes = dados.optInt("pendentes", -1);
+                    if (sessaoAtual != null && sala.ultima == null) {
+                        int num = dados.optInt("numero", sala.varreduras);
+                        String tec = dados.optString("tecnica", "Livre");
+                        int pot = dados.optInt("potencia", 30);
+                        long ini = dados.optLong("inicio", System.currentTimeMillis());
+                        long fim = dados.optLong("fim", ini);
+                        Varredura v = new Varredura(sessaoAtual, num, nomeSala, tec, pot, ini);
+                        v.fim = fim;
+                        sala.ultima = v;
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registrarCallback();
+        restaurarSessaoAtivaSeExistir();
+        if (sessaoAtual == null && unidadeSugerida != null && !unidadeSugerida.isEmpty()) {
             if (spinnerUnidade != null && spinnerUnidade.getVisibility() == View.VISIBLE) {
                 for (int i = 0; i < spinnerUnidade.getCount(); i++) {
                     if (unidadeSugerida.equalsIgnoreCase(String.valueOf(spinnerUnidade.getItemAtPosition(i)))) {
@@ -1056,6 +1473,15 @@ public class ScanActivity extends Activity implements OnClickListener {
         tvUnidadeAviso.setVisibility(temLista ? View.GONE : View.VISIBLE);
         if (temLista) {
             preencherSpinner(spinnerUnidade, new ArrayList<>(unidades));
+            if (sessaoAtual != null && !sessaoAtual.encerrada()) {
+                spinnerUnidade.setEnabled(false);
+                for (int i = 0; i < spinnerUnidade.getCount(); i++) {
+                    if (sessaoAtual.unidade.equalsIgnoreCase(String.valueOf(spinnerUnidade.getItemAtPosition(i)))) {
+                        spinnerUnidade.setSelection(i);
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -1104,12 +1530,15 @@ public class ScanActivity extends Activity implements OnClickListener {
         }
         salasDaSessao.clear();
         salasDaSessao.addAll(novas);
+        restaurarSalasVarridasDaPersistencia();
         atualizarListaSalas();
     }
 
     private SalaDaSessao procurarSala(String nome) {
+        if (nome == null) return null;
+        String limpo = nome.trim();
         for (SalaDaSessao sala : salasDaSessao) {
-            if (sala.nome.equals(nome)) {
+            if (sala.nome != null && sala.nome.trim().equalsIgnoreCase(limpo)) {
                 return sala;
             }
         }
@@ -1164,13 +1593,14 @@ public class ScanActivity extends Activity implements OnClickListener {
         if (sala == null || sessaoAtual == null || varreduraAtual != null) {
             return;
         }
-        if (sala.varreduras == 0 || sala.ultima == null) {
+        if (sala.varreduras == 0) {
             iniciarVarredura(sala.nome);
             return;
         }
+        String horaFim = (sala.ultima != null && sala.ultima.fim > 0) ? hora(sala.ultima.fim) : "";
         new AlertDialog.Builder(this)
                 .setTitle(R.string.tituloRevarrer)
-                .setMessage(getString(R.string.msgRevarrer, sala.nome, hora(sala.ultima.fim)))
+                .setMessage(getString(R.string.msgRevarrer, sala.nome, horaFim))
                 .setPositiveButton(R.string.btVarrerDeNovo, (dialog, which) -> iniciarVarredura(sala.nome))
                 .setNegativeButton(R.string.btCancelar, null)
                 .show();
@@ -1216,6 +1646,11 @@ public class ScanActivity extends Activity implements OnClickListener {
                     }
                 })
                 .setNegativeButton(R.string.btContinuarLendo, null)
+                .setNeutralButton(R.string.btDescartarVarredura, (dialog, which) -> {
+                    if (varreduraAtual == v) {
+                        cancelarVarredura();
+                    }
+                })
                 .show();
         return true;
     }
@@ -1240,15 +1675,22 @@ public class ScanActivity extends Activity implements OnClickListener {
                 View faixa = convertView.findViewById(R.id.v_sala_faixa);
 
                 nome.setText(getString(R.string.pendSala, sala.nome));
-                if (sala.varreduras == 0 || sala.ultima == null) {
+                if (sala.varreduras == 0) {
                     detalhe.setText(R.string.salaAindaNaoVarrida);
                     selo.setVisibility(View.GONE);
                     faixa.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.contorno_forte));
                 } else {
-                    detalhe.setText(getString(R.string.salaVarridaResumo,
-                            hora(sala.ultima.fim), sala.etiquetas));
+                    String horaTexto = (sala.ultima != null && sala.ultima.fim > 0) ? hora(sala.ultima.fim) : "";
+                    if (!horaTexto.isEmpty()) {
+                        detalhe.setText(getString(R.string.salaVarridaResumo, horaTexto, sala.etiquetas));
+                    } else {
+                        detalhe.setText(getString(R.string.seloVarrida) + " · " + sala.etiquetas + " etiquetas");
+                    }
                     // Pendências ainda abertas na aba Pendências; resolvidas lá, o selo muda aqui.
-                    int pendentes = TagsSalaActivity.pendentesDe(sala.ultima);
+                    int pendentes = sala.ultima != null ? TagsSalaActivity.pendentesDe(sala.ultima) : 0;
+                    if (pendentes <= 0 && sala.pendentes > 0) {
+                        pendentes = sala.pendentes;
+                    }
                     boolean comPendencias = pendentes > 0;
                     String texto = comPendencias
                             ? getResources().getQuantityString(R.plurals.seloPendentes, pendentes, pendentes)
@@ -1285,6 +1727,25 @@ public class ScanActivity extends Activity implements OnClickListener {
     protected void onPause() {
         super.onPause();
         stopReading();
+        if (varreduraAtual != null) {
+            salvarVarreduraEmAndamento();
+        }
+        if (handler != null) {
+            handler.removeCallbacks(runnableUpdateLista);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            if (RFIDSDKManager.getInstance().getRfidManager() != null) {
+                RFIDSDKManager.getInstance().getRfidManager().registerCallback(null);
+            }
+        } catch (Exception ignored) {}
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
+        }
     }
 
     public static boolean isTriggerKey(int keyCode) {

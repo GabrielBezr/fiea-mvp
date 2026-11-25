@@ -169,6 +169,138 @@ class TestSincronizacao(unittest.TestCase):
 
         self.assertEqual(set(self._linhas()), {("AAA", "RFID"), ("CCC", "FALTANTE")})
 
+    def test_sessao_com_fim_zerado_grava_como_nulo_e_nao_1969(self):
+        resposta = self.cliente.post("/api/sincronizar", json={
+            "sessao": {
+                "id": "S_ABERTA", "unidade": "UFAL", "operador": "Rafael",
+                "inicio": "2026-10-26 10:00:00", "fim": "1969-12-31 21:00:00",
+                "duracao_s": -29889749, "n_varreduras": 1
+            },
+            "varredura": {
+                "id": "S_ABERTA-v01", "sala": "Lab A", "tecnica": "movel_ambiente",
+                "inicio": "2026-10-26 10:00:00", "fim": "2026-10-26 10:05:00",
+                "duracao_s": 300
+            },
+            "leituras": [],
+        })
+        self.assertEqual(resposta.status_code, 200)
+        s = self.con.execute("SELECT * FROM sessao WHERE id = 'S_ABERTA'").fetchone()
+        self.assertIsNone(s["fim"])
+        self.assertIsNone(s["duracao_s"])
+
+    def test_sincronizacao_apenas_sessao_encerra_com_sucesso(self):
+        # 1. Cria a sessão em andamento
+        self.cliente.post("/api/sincronizar", json={
+            "sessao": {"id": "S_ENC", "unidade": "UFAL", "operador": "Rafael", "inicio": "2026-10-26 10:00:00"},
+            "varredura": {"id": "S_ENC-v01", "sala": "Lab A", "tecnica": "movel_ambiente",
+                          "inicio": "2026-10-26 10:00:00", "fim": "2026-10-26 10:05:00", "duracao_s": 300},
+            "leituras": [],
+        })
+        # 2. Envia encerramento apenas com sessao (sem varredura)
+        resposta = self.cliente.post("/api/sincronizar", json={
+            "sessao": {
+                "id": "S_ENC", "unidade": "UFAL", "operador": "Rafael",
+                "inicio": "2026-10-26 10:00:00", "fim": "2026-10-26 10:30:00",
+                "duracao_s": 1800, "n_varreduras": 1
+            }
+        })
+        self.assertEqual(resposta.status_code, 200)
+        s = self.con.execute("SELECT * FROM sessao WHERE id = 'S_ENC'").fetchone()
+        self.assertEqual(s["fim"], "2026-10-26 10:30:00")
+        self.assertEqual(s["duracao_s"], 1800)
+
+    def test_endpoint_encerrar_sessao_calcula_duracao_se_ausente(self):
+        self.con.execute(
+            "INSERT INTO sessao (id, unidade, operador, inicio) VALUES ('S_AUTO', 'UFAL', 'Rafael', '2026-10-26 10:00:00')"
+        )
+        self.con.commit()
+        resposta = self.cliente.post("/api/encerrar_sessao", json={
+            "id": "S_AUTO",
+            "fim": "2026-10-26 10:15:00",
+        })
+        self.assertEqual(resposta.status_code, 200)
+        s = self.con.execute("SELECT * FROM sessao WHERE id = 'S_AUTO'").fetchone()
+        self.assertEqual(s["fim"], "2026-10-26 10:15:00")
+        self.assertEqual(s["duracao_s"], 900)
+
+    def test_formatar_data_hora_retorna_em_aberto_para_ano_1969_ou_1970(self):
+        self.assertEqual(servidor.formatar_data_hora(None), "Em aberto")
+        self.assertEqual(servidor.formatar_data_hora(""), "Em aberto")
+        self.assertEqual(servidor.formatar_data_hora("1969-12-31 21:00:00"), "Em aberto")
+        self.assertEqual(servidor.formatar_data_hora("1970-01-01 00:00:00"), "Em aberto")
+        self.assertEqual(servidor.formatar_data_hora("2026-10-26 10:00:00"), "26/10/2026 10:00")
+
+    def test_formatar_duracao_horas_minutos_segundos(self):
+        self.assertEqual(servidor.formatar_duracao(None), "")
+        self.assertEqual(servidor.formatar_duracao(0), "0s")
+        self.assertEqual(servidor.formatar_duracao(45), "45s")
+        self.assertEqual(servidor.formatar_duracao(120), "2min")
+        self.assertEqual(servidor.formatar_duracao(125), "2min 5s")
+        self.assertEqual(servidor.formatar_duracao(3600), "1h")
+        self.assertEqual(servidor.formatar_duracao(3665), "1h 1min 5s")
+        self.assertEqual(servidor.formatar_duracao(7230), "2h 30s")
+
+    def test_encerrar_sessao_reseta_encerrada_auto(self):
+        self.con.execute(
+            "INSERT INTO sessao (id, unidade, operador, inicio, encerrada_auto) VALUES ('S_ENC_AUTO', 'UFAL', 'Rafael', '2026-10-26 10:00:00', 1)"
+        )
+        self.con.commit()
+        resposta = self.cliente.post("/api/encerrar_sessao", json={
+            "id": "S_ENC_AUTO",
+            "fim": "2026-10-26 10:30:00",
+            "duracao_s": 1800,
+        })
+        self.assertEqual(resposta.status_code, 200)
+        s = self.con.execute("SELECT * FROM sessao WHERE id = 'S_ENC_AUTO'").fetchone()
+        self.assertEqual(s["encerrada_auto"], 0)
+        self.assertEqual(s["fim"], "2026-10-26 10:30:00")
+
+    def test_sincronizar_com_fim_reseta_encerrada_auto(self):
+        self.con.execute(
+            "INSERT INTO sessao (id, unidade, operador, inicio, encerrada_auto) VALUES ('S_SYNC_AUTO', 'UFAL', 'Rafael', '2026-10-26 10:00:00', 1)"
+        )
+        self.con.commit()
+        resposta = self.cliente.post("/api/sincronizar", json={
+            "sessao": {
+                "id": "S_SYNC_AUTO", "unidade": "UFAL", "operador": "Rafael",
+                "inicio": "2026-10-26 10:00:00", "fim": "2026-10-26 10:30:00",
+                "duracao_s": 1800, "n_varreduras": 1
+            }
+        })
+        self.assertEqual(resposta.status_code, 200)
+        s = self.con.execute("SELECT * FROM sessao WHERE id = 'S_SYNC_AUTO'").fetchone()
+        self.assertEqual(s["encerrada_auto"], 0)
+        self.assertEqual(s["fim"], "2026-10-26 10:30:00")
+
+    def test_fechamento_automatico_virada_dia_2359(self):
+        # 1. Sessão de data anterior sem varreduras deve fechar às 23:59:59
+        self.con.execute(
+            "INSERT INTO sessao (id, unidade, operador, inicio) VALUES ('S_PASSADA_SEM_VAR', 'UFAL', 'Rafael', '2026-10-01 10:00:00')"
+        )
+        # 2. Sessão de data anterior com varredura concluída deve fechar com o fim da varredura
+        self.con.execute(
+            "INSERT INTO sessao (id, unidade, operador, inicio) VALUES ('S_PASSADA_COM_VAR', 'UFAL', 'Rafael', '2026-10-01 10:00:00')"
+        )
+        self.con.execute(
+            "INSERT INTO varredura (id, sessao_id, numero, inicio, fim, tecnica, potencia_dbm, arquivo_origem, importado_em, linhas_brutas) "
+            "VALUES ('S_PASSADA_COM_VAR-v01', 'S_PASSADA_COM_VAR', 1, '2026-10-01 10:05:00', '2026-10-01 10:20:00', 'movel', 25, 'teste.csv', '2026-10-01', 0)"
+        )
+        self.con.commit()
+
+        # Re-conecta para acionar a verificação de inicialização do esquema
+        con_reaberta = esquema.conectar(servidor.CAMINHO_DB)
+        self.addCleanup(con_reaberta.close)
+
+        s_sem_var = con_reaberta.execute("SELECT * FROM sessao WHERE id = 'S_PASSADA_SEM_VAR'").fetchone()
+        self.assertEqual(s_sem_var["encerrada_auto"], 1)
+        self.assertEqual(s_sem_var["fim"], "2026-10-01 23:59:59")
+        self.assertGreater(s_sem_var["duracao_s"], 0)
+
+        s_com_var = con_reaberta.execute("SELECT * FROM sessao WHERE id = 'S_PASSADA_COM_VAR'").fetchone()
+        self.assertEqual(s_com_var["encerrada_auto"], 1)
+        self.assertEqual(s_com_var["fim"], "2026-10-01 10:20:00")
+        self.assertEqual(s_com_var["duracao_s"], 20 * 60)
+
     def test_sala_desconhecida_recusa_sync_sem_gravar_nada(self):
         resposta = self.cliente.post("/api/sincronizar", json={
             "sessao": {"id": "S2", "unidade": "UFAL", "operador": "Ana"},
