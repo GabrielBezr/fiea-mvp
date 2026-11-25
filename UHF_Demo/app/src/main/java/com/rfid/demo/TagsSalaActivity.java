@@ -22,9 +22,11 @@ import androidx.core.content.ContextCompat;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import com.rfid.demo.utils.CsvExport;
 import com.rfid.demo.utils.Dialogos;
 import com.rfid.demo.utils.Leitura;
 import com.rfid.demo.utils.Sessao;
+import com.rfid.demo.utils.StoragePermission;
 import com.rfid.demo.utils.SyncManager;
 import com.rfid.demo.utils.Varredura;
 
@@ -679,6 +681,7 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
                                 // Item lido via RFID em outra sala: resolução como faltante é inconsistente
                                 sala.resolvidas.remove(i);
                                 sala.resolucoesNaoEnviadas = true;
+                                exportarResolucoes(sala);
                                 b.status = "FORA_DO_LOCAL";
                             } else {
                                 b.status = "LOCALIZADO_" + pr.metodo;
@@ -837,6 +840,17 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         }
     }
 
+    /**
+     * Regrava o CSV de resolucoes da sala (caminho USB, RF10). Sem permissao de
+     * arquivo apenas pula: o envio por Wi-Fi nao depende dele.
+     */
+    private void exportarResolucoes(SalaConferida sala) {
+        if (sala == null || !StoragePermission.concedida(this)) {
+            return;
+        }
+        CsvExport.exportarPendencias(sala.varredura, sala.resolvidas);
+    }
+
     /** Guarda a resolução na sala aberta e atualiza contagem e lista. */
     private void registrarResolucao(SyncManager.PendenciaResolvida resolucao) {
         if (salaAberta == null || resolucao == null) {
@@ -851,6 +865,7 @@ public class TagsSalaActivity extends Activity implements View.OnClickListener {
         }
         salaAberta.resolvidas.add(resolucao);
         salaAberta.resolucoesNaoEnviadas = true;
+        exportarResolucoes(salaAberta);
         salvarEstado(this);
         atualizarContadores();
         adaptador.notifyDataSetChanged();

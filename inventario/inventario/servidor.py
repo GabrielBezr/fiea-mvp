@@ -4872,7 +4872,8 @@ def importar_csv_offline():
     erros = []
     sessao_id_detectada = None
 
-    for f in arquivos:
+    # Em ordem de nome: leituras_* entra antes de pendencias_* (que precisa da varredura).
+    for f in sorted(arquivos, key=lambda a: a.filename or ""):
         if not f or not f.filename:
             continue
         nome = f.filename.lower()
@@ -4887,7 +4888,7 @@ def importar_csv_offline():
             arquivos_importados += 1
             if resultado.tipo == "sessao":
                 sessao_id_detectada = resultado.identificador
-            elif resultado.tipo == "varredura" and not sessao_id_detectada:
+            elif resultado.tipo in ("varredura", "pendencia") and not sessao_id_detectada:
                 if "-" in resultado.identificador:
                     sessao_id_detectada = resultado.identificador.split("-")[0]
         except Exception as e:
@@ -5429,31 +5430,7 @@ def api_sincronizar():
     # 5. Grava Resolução de Pendências (QR Code, Manual ou Faltante - RF10)
     # O coletor manda a lista inteira de resoluções da varredura a cada envio; uma
     # lista nova substitui a anterior, e um envio sem resoluções não mexe nelas.
-    if pendencias:
-        con.execute(
-            "DELETE FROM leitura WHERE varredura_id = ? AND metodo != 'RFID'", (varredura_id,)
-        )
-    for p in pendencias:
-        metodo = p.get("metodo", "MANUAL").upper()
-        epc = p.get("epc", "").strip().upper()
-        patrimonio = p.get("patrimonio", "").strip()
-
-        # Se o EPC não veio direto, procura se o bem já tinha EPC cadastrado
-        if not epc and patrimonio:
-            b_row = con.execute("SELECT epc FROM bem WHERE patrimonio = ?", (patrimonio,)).fetchone()
-            if b_row and b_row["epc"]:
-                epc = b_row["epc"]
-            else:
-                epc = f"PAT_{patrimonio}"
-
-        agora = p.get("timestamp") or datetime.now().strftime("%Y-%m-%d %H:%M:%S.000")
-        con.execute(
-            "INSERT INTO leitura (varredura_id, epc, metodo, leituras, rssi_min, "
-            "rssi_medio, rssi_max, primeira_leitura, ultima_leitura) "
-            "VALUES (?, ?, ?, 1, 0, 0, 0, ?, ?) "
-            "ON CONFLICT(varredura_id, epc, metodo) DO NOTHING",
-            (varredura_id, epc, metodo, agora, agora),
-        )
+    importador.gravar_resolucoes(con, varredura_id, pendencias)
 
     con.commit()
     return jsonify({

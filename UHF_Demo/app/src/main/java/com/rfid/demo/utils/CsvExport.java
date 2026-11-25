@@ -46,6 +46,46 @@ public class CsvExport {
         }
     }
 
+    /**
+     * Gera pendencias_<id_sessao>_v<nn>.csv com as resolucoes (QR, manual,
+     * faltante) da varredura. Grava a lista inteira, sobrescrevendo a anterior:
+     * as resolucoes acontecem depois do leituras_*.csv, e sem este arquivo o
+     * caminho USB perdia tudo o que o Wi-Fi levava.
+     */
+    public static boolean exportarPendencias(Varredura v, List<SyncManager.PendenciaResolvida> resolvidas) {
+        try {
+            File pasta = prepararPasta();
+            if (pasta == null) {
+                return false;
+            }
+            File arquivo = new File(pasta,
+                    "pendencias_" + v.sessao.id + "_" + v.sufixoArquivo() + ".csv");
+            BufferedWriter w = abrir(arquivo);
+            try {
+                w.write("id_sessao,unidade,operador,id_varredura,sala,"
+                        + "patrimonio,epc,metodo,timestamp" + EOL);
+                String prefixo = campo(v.sessao.id) + SEP
+                        + campo(v.sessao.unidade) + SEP
+                        + campo(v.sessao.operador) + SEP
+                        + campo(v.id) + SEP
+                        + campo(v.sala) + SEP;
+                for (SyncManager.PendenciaResolvida p : resolvidas) {
+                    w.write(prefixo
+                            + campo(p.patrimonio) + SEP
+                            + campo(p.epc) + SEP
+                            + campo(p.metodo) + SEP
+                            + campo(p.timestamp) + EOL);
+                }
+            } finally {
+                w.close();
+            }
+            return true;
+        } catch (Exception ex) {
+            Log.e(TAG, "Falha ao exportar as pendencias", ex);
+            return false;
+        }
+    }
+
     /** Gera sessao_<id_sessao>.csv com a unidade, o operador e o tempo total. */
     public static boolean exportarSessao(Sessao s) {
         try {
