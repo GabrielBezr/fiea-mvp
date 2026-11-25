@@ -206,7 +206,7 @@ Durante os ensaios práticos de bancada e campo para homologação do Marco 2, f
   Em uma varredura estática de 16 segundos na sala piloto `EASY`, foram capturadas **292 leituras brutas**, consolidadas automaticamente em **63 tags RFID distintas** (~18,25 leituras brutas/segundo), sem travamentos.
 * **Potência de Rádio e Alcance Útil:**  
   * Em **30 dBm (Varredura):** Leitura consistente a até 4,5 metros de distância.
-  * Em **10 dBm (Cadastro de Bancada):** Leitura delimitada a ~15 cm, permitindo etiquetar itens lado a lado sem contaminação de sinal.
+  * Em **5 dBm (Cadastro de Bancada):** Leitura delimitada a ~15 cm, permitindo etiquetar itens lado a lado sem contaminação de sinal.
 * **Eficácia na Detecção de Leitura Cruzada:**  
   Um item deliberadamente cadastrado na sala `IC` foi lido na varredura da sala `EASY`. O motor de conferência classificou-o na hora como `FORA DO LOCAL` e emitiu o diagnóstico: *"Transferência indevida: esperado em 'IC', mas detectado em 'EASY'"*.
 

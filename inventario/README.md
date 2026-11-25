@@ -24,7 +24,10 @@ ligar, e o comando `bens` recusa rodar.
 O banco fica em `dados/inventario.db` e os CSV originais são preservados em
 `dados/brutos/` (RNF05). Ambos podem ser trocados por `--db` e `--brutos`.
 
-Como tirar os arquivos do aparelho: eles ficam em `/sdcard/XLSFile/` no DT50.
+Como tirar os arquivos do aparelho: eles ficam em `/sdcard/XLSFile/` no DT50. Além de
+`leituras_*.csv` e `sessao_*.csv`, o app grava `pendencias_<sessao>_v<nn>.csv` com as
+resoluções de Pendências (QR, manual, faltante); importe junto, o `leituras_*` da mesma
+varredura precisa entrar antes.
 Hoje a cópia é manual, por USB. O importador recebe um caminho de arquivo, então
 trocar isso por um envio pela rede depois não mexe em nada aqui dentro.
 
@@ -203,4 +206,7 @@ adicional. EPCs lidos que não correspondem a um bem nem a uma tag de referênci
 cadastrada são listados separadamente como não cadastrados. Uma varredura sem
 sala identificada não é usada para atribuir localização.
 
-Ainda não existem planilha final (RF12) nem indicadores (RF13).
+A planilha final (RF12) é o CSV do relatório (`/relatorio/<sessao>/exportar-csv`, separador `;`,
+com a coluna `Metodo`). Dos indicadores (RF13), o relatório já mostra o método de localização
+(RFID, QR ou Manual) e a meta de 90% de RFID, calculada sobre os bens localizados. Ainda não
+existem os indicadores de tempo e custo (homens-hora, custo por hora e redução do tempo).
