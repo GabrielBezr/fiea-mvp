@@ -3918,6 +3918,37 @@ HTML_RELATORIO_TEMPLATE = """
             </div>
         </div>
 
+        <!-- RF13: como os bens localizados foram confirmados (RFID x QR x Manual) -->
+        {% if resumo_metodos %}
+        <div class="card mb-4">
+            <div class="card-body p-3">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                    <div class="fw-semibold">Método de localização dos bens localizados</div>
+                    {% if resumo_metodos.localizados %}
+                    <span class="badge {% if resumo_metodos.atingiu_meta %}badge-localizado{% else %}badge-fora-local{% endif %}">
+                        Meta RFID ≥ {{ "%g"|format(resumo_metodos.meta_rfid_pct) }}%: {{ "atingida" if resumo_metodos.atingiu_meta else "não atingida" }}
+                    </span>
+                    {% endif %}
+                </div>
+                {% if resumo_metodos.localizados %}
+                <div class="progress mb-2" style="height: 1.25rem;">
+                    <div class="progress-bar bg-success" style="width: {{ resumo_metodos.pct_rfid }}%;" title="RFID">{{ resumo_metodos.pct_rfid }}%</div>
+                    <div class="progress-bar bg-info" style="width: {{ resumo_metodos.pct_qr }}%;" title="QR Code"></div>
+                    <div class="progress-bar bg-warning" style="width: {{ resumo_metodos.pct_manual }}%;" title="Manual"></div>
+                </div>
+                <div class="d-flex flex-wrap gap-3 small text-muted">
+                    <span><span class="status-dot online"></span> RFID: <strong>{{ resumo_metodos.rfid }}</strong> ({{ resumo_metodos.pct_rfid }}%)</span>
+                    <span><span class="status-dot" style="background-color: var(--info);"></span> QR Code: <strong>{{ resumo_metodos.qr }}</strong> ({{ resumo_metodos.pct_qr }}%)</span>
+                    <span><span class="status-dot" style="background-color: var(--alerta);"></span> Manual: <strong>{{ resumo_metodos.manual }}</strong> ({{ resumo_metodos.pct_manual }}%)</span>
+                    <span>de {{ resumo_metodos.localizados }} localizados ({{ resumo_metodos.total_bens }} bens esperados)</span>
+                </div>
+                {% else %}
+                <div class="small text-muted fst-italic">Nenhum bem localizado nesta sessão ainda.</div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Barra de Filtros e Busca (No-print) -->
         <div class="card mb-4 no-print">
             <div class="card-body p-3">
@@ -4012,6 +4043,7 @@ HTML_RELATORIO_TEMPLATE = """
                                 <td>
                                     {% if b.situacao == 'localizado' %}
                                         <span class="badge badge-localizado">Localizado</span>
+                                         {% if b.metodo %}<span class="badge bg-light text-dark border ms-1">{{ b.metodo }}</span>{% endif %}
                                     {% elif b.situacao == 'fora do local' %}
                                         <span class="badge badge-fora-local">Fora do Local</span>
                                     {% elif b.situacao == 'nao localizado' %}
@@ -4792,6 +4824,7 @@ def ver_relatorio():
     indeterminados = []
     nao_cadastrados = []
     pct_localizados = 0.0
+    resumo_metodos = None
 
     if sessao_id:
         sessao_atual = con.execute("SELECT * FROM sessao WHERE id = ?", (sessao_id,)).fetchone()
@@ -4824,6 +4857,7 @@ def ver_relatorio():
             nao_cadastrados = relatorio.epcs_nao_cadastrados
             if relatorio.bens:
                 pct_localizados = round((len(localizados) / len(relatorio.bens)) * 100, 1)
+            resumo_metodos = conferencia.resumir_metodos(relatorio.bens)
         except conferencia.SessaoNaoEncontrada:
             relatorio = None
 
@@ -4850,6 +4884,7 @@ def ver_relatorio():
         indeterminados=indeterminados,
         nao_cadastrados=nao_cadastrados,
         pct_localizados=pct_localizados,
+        resumo_metodos=resumo_metodos,
         ip_local=ip_local,
         token_conexao=gerar_token_conexao(ip_local),
         mensagem=msg,
@@ -4946,7 +4981,7 @@ def exportar_relatorio_csv(sessao_id):
     writer.writerow([
         "Patrimonio", "Descricao", "EPC", "Sala_Esperada", "Salas_Lidas",
         "Situacao", "Unidade", "Sessao_ID", "Diagnostico",
-        "Sala_Provavel", "Criterio", "Sinal_Por_Sala",
+        "Sala_Provavel", "Criterio", "Sinal_Por_Sala", "Metodo",
     ])
 
     for b in rel.bens:
@@ -4987,6 +5022,7 @@ def exportar_relatorio_csv(sessao_id):
             b.sala_provavel,
             ROTULOS_CRITERIO.get(b.criterio, b.criterio),
             _texto_sinais(b.sinal_por_sala),
+            b.metodo,
         ])
 
     for item in rel.epcs_nao_cadastrados:
@@ -5003,6 +5039,7 @@ def exportar_relatorio_csv(sessao_id):
             item.sala_provavel,
             ROTULOS_CRITERIO.get(item.criterio, item.criterio),
             _texto_sinais(item.sinal_por_sala),
+            conferencia.METODO_RFID,
         ])
 
     csv_data = output.getvalue()

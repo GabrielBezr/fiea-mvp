@@ -31,6 +31,13 @@ CRITERIO_SALA_NAO_VARRIDA = "sala nao varrida"  # lido fora, sala esperada sem v
 # dizendo que procurou ali e nao achou.
 METODOS_CONFIRMACAO = {"QR", "MANUAL"}
 METODO_FALTANTE = "FALTANTE"
+# Metodos pelos quais um bem e dado como localizado (BemConferido.metodo).
+METODO_RFID = "RFID"
+METODO_QR = "QR"
+METODO_MANUAL = "MANUAL"
+# RF13: meta de bens localizados pelo radio, em % dos localizados.
+META_RFID_PCT = 90.0
+
 # Resolucao manual de bem sem EPC: o servidor grava "PAT_<patrimonio>" no lugar do EPC.
 PREFIXO_SEM_EPC = "PAT_"
 
@@ -49,6 +56,8 @@ class BemConferido:
     salas_lidas: list = field(default_factory=list)
     sala_provavel: str = ""
     criterio: str = ""
+    # Como a sala provavel foi estabelecida: RFID, QR ou MANUAL ("" se nao ha sala).
+    metodo: str = ""
     # RSSI da METRICA_SINAL na melhor varredura de cada sala, como o coletor mede.
     sinal_por_sala: dict = field(default_factory=dict)
 
@@ -140,7 +149,7 @@ def conferir_sessao(conexao, sessao_id):
     nomes_salas = {v["sala_id"]: v["sala"] for v in varreduras if v["sala_id"] is not None}
     # Radio: epc -> {sala_id: melhor _Sinal da etiqueta naquela sala, ou None}
     leituras_por_epc = {}
-    confirmados = {}  # QR ou manual: chave do bem -> salas onde o operador o achou
+    confirmados = {}  # QR ou manual: chave do bem -> {sala_id: metodos} onde o operador o achou
     faltantes = {}    # chave do bem -> salas onde o operador procurou e nao achou
     epcs_lidos = set()
     epcs_em_sala_nao_identificada = set()
@@ -162,7 +171,8 @@ def conferir_sessao(conexao, sessao_id):
                 continue
             if metodo in METODOS_CONFIRMACAO:
                 if varredura["sala_id"] is not None:
-                    confirmados.setdefault(epc, set()).add(varredura["sala_id"])
+                    confirmados.setdefault(epc, {}).setdefault(
+                        varredura["sala_id"], set()).add(metodo)
                 continue
             epcs_lidos.add(epc)
             if varredura["sala_id"] is None:
@@ -199,7 +209,11 @@ def conferir_sessao(conexao, sessao_id):
             if sala_id not in excluidas
         } if epc else {}
         # A confirmacao do operador vale mais que o faltante marcado na mesma sala.
-        confirmadas = set().union(*(confirmados.get(c, set()) for c in chaves))
+        metodos_confirmados = {}
+        for c in chaves:
+            for sala_id, metodos in confirmados.get(c, {}).items():
+                metodos_confirmados.setdefault(sala_id, set()).update(metodos)
+        confirmadas = set(metodos_confirmados)
         for sala_id in confirmadas:
             salas.setdefault(sala_id, None)
         sala_esperada_id = bem["sala_esperada_id"]
@@ -230,6 +244,7 @@ def conferir_sessao(conexao, sessao_id):
             salas_lidas=sorted(nomes_salas[s] for s in salas),
             sala_provavel=nomes_salas.get(sala_id, "") if sala_id is not None else "",
             criterio=criterio,
+            metodo=_metodo_da_localizacao(sala_id, criterio, metodos_confirmados),
             sinal_por_sala=_sinais_por_nome(salas, nomes_salas),
         ))
 
@@ -262,6 +277,62 @@ def conferir_sessao(conexao, sessao_id):
         ))
 
     return relatorio
+
+
+def _metodo_da_localizacao(sala_id, criterio, metodos_confirmados):
+    """RFID, QR ou MANUAL: o que estabeleceu a sala do bem ("" se nao ha sala)."""
+    if sala_id is None:
+        return ""
+    if criterio == CRITERIO_CONFIRMADO:
+        # QR vale mais que manual: leu a etiqueta fisica do bem.
+        return METODO_QR if METODO_QR in metodos_confirmados.get(sala_id, ()) else METODO_MANUAL
+    return METODO_RFID
+
+
+@dataclass
+class ResumoMetodos:
+    """RF13: de que jeito os bens localizados foram confirmados."""
+    total_bens: int = 0
+    localizados: int = 0
+    rfid: int = 0
+    qr: int = 0
+    manual: int = 0
+    meta_rfid_pct: float = META_RFID_PCT
+
+    def _pct(self, parte):
+        return round(parte / self.localizados * 100, 1) if self.localizados else 0.0
+
+    @property
+    def pct_rfid(self):
+        return self._pct(self.rfid)
+
+    @property
+    def pct_qr(self):
+        return self._pct(self.qr)
+
+    @property
+    def pct_manual(self):
+        return self._pct(self.manual)
+
+    @property
+    def atingiu_meta(self):
+        return self.localizados > 0 and self.pct_rfid >= self.meta_rfid_pct
+
+
+def resumir_metodos(bens):
+    """Conta os bens LOCALIZADOS por metodo. O percentual e sobre os localizados."""
+    resumo = ResumoMetodos(total_bens=len(bens))
+    for bem in bens:
+        if bem.situacao != LOCALIZADO:
+            continue
+        resumo.localizados += 1
+        if bem.metodo == METODO_QR:
+            resumo.qr += 1
+        elif bem.metodo == METODO_MANUAL:
+            resumo.manual += 1
+        else:
+            resumo.rfid += 1
+    return resumo
 
 
 def _sinais_por_nome(salas, nomes_salas):

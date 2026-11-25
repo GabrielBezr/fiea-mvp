@@ -206,6 +206,57 @@ class TestConferencia(unittest.TestCase):
         # Achado depois na mesma sala: a confirmacao vale mais que o faltante.
         self.assertEqual(bens["305"].situacao, LOCALIZADO)
 
+    def test_metodo_de_localizacao_distingue_rfid_qr_e_manual(self):
+        self._bem("310", "Lab A", "ASSET_RADIO")
+        self._rfid("S1-v01", "ASSET_RADIO", 80)
+        self._bem("311", "Lab A", "ASSET_QR2")
+        self._leitura("S1-v01", "ASSET_QR2", "QR")
+        self._bem("312", "Lab A", None)
+        self._leitura("S1-v01", "PAT_312", "MANUAL")
+        self._bem("313", "Lab A", "ASSET_QR_E_MANUAL")
+        self._leitura("S1-v01", "ASSET_QR_E_MANUAL", "MANUAL")
+        self._leitura("S1-v01", "ASSET_QR_E_MANUAL", "QR")
+        self._bem("314", "Lab A", "ASSET_NADA")
+        bens, _ = self._conferir()
+
+        self.assertEqual(bens["310"].metodo, "RFID")
+        self.assertEqual(bens["311"].metodo, "QR")
+        self.assertEqual(bens["312"].metodo, "MANUAL")
+        self.assertEqual(bens["313"].metodo, "QR")  # QR vale mais que manual
+        self.assertEqual(bens["314"].metodo, "")    # nao localizado: sem metodo
+
+    def test_resumo_de_metodos_conta_so_os_localizados(self):
+        self._bem("310", "Lab A", "ASSET_RADIO")
+        self._rfid("S1-v01", "ASSET_RADIO", 80)
+        self._bem("311", "Lab A", "ASSET_QR2")
+        self._leitura("S1-v01", "ASSET_QR2", "QR")
+        self._bem("312", "Lab A", None)
+        self._leitura("S1-v01", "PAT_312", "MANUAL")
+        _, relatorio = self._conferir()
+
+        resumo = conferencia.resumir_metodos(relatorio.bens)
+
+        # O bem 100 do setUp (lido em Lab A e Lab B, vale o cadastro) tambem e RFID.
+        self.assertEqual((resumo.localizados, resumo.rfid, resumo.qr, resumo.manual), (4, 2, 1, 1))
+        self.assertEqual(resumo.total_bens, len(relatorio.bens))
+        self.assertEqual(resumo.pct_rfid, 50.0)
+        self.assertFalse(resumo.atingiu_meta)
+
+    def test_meta_de_90_por_cento_de_rfid(self):
+        def bem(metodo):
+            return conferencia.BemConferido("1", "", "", "Sala", LOCALIZADO, metodo=metodo)
+
+        noventa = conferencia.resumir_metodos([bem("RFID")] * 9 + [bem("QR")])
+        self.assertEqual(noventa.pct_rfid, 90.0)
+        self.assertTrue(noventa.atingiu_meta)
+
+        abaixo = conferencia.resumir_metodos([bem("RFID")] * 8 + [bem("QR"), bem("MANUAL")])
+        self.assertFalse(abaixo.atingiu_meta)
+
+        vazio = conferencia.resumir_metodos([])
+        self.assertEqual(vazio.pct_rfid, 0.0)
+        self.assertFalse(vazio.atingiu_meta)
+
     def test_resolucoes_nao_entram_como_epc_nao_cadastrado(self):
         self._leitura("S1-v01", "PAT_999", "MANUAL")
         self._leitura("S1-v01", "HTTPS://BEONTAG.EXEMPLO/QR", "QR")
