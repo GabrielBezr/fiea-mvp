@@ -3,6 +3,7 @@
 O aplicativo exporta dois tipos de arquivo:
   leituras_<id_sessao>_v<nn>.csv  uma linha por evento de leitura
   sessao_<id_sessao>.csv          uma linha, com o tempo total da sessao
+  pendencias_<id_sessao>_v<nn>.csv  resolucoes de Pendencias (QR, manual, faltante)
 
 Aqui acontece a deduplicacao do RF06: as varias linhas da mesma etiqueta dentro
 da mesma varredura viram uma unica LeituraAgregada. O escopo e a varredura, nao
@@ -28,6 +29,13 @@ CABECALHO_LEITURAS_LEGADO = [
     "tecnica", "potencia_dbm", "varredura_inicio", "varredura_fim",
     "varredura_duracao_s", "timestamp", "epc", "rssi",
 ]
+
+CABECALHO_PENDENCIAS = [
+    "id_sessao", "unidade", "operador", "id_varredura", "sala",
+    "patrimonio", "epc", "metodo", "timestamp",
+]
+
+METODOS_PENDENCIA = {"QR", "MANUAL", "FALTANTE"}
 
 CABECALHO_SESSAO = [
     "id_sessao", "unidade", "operador", "inicio", "fim", "duracao_s", "n_varreduras",
@@ -83,6 +91,13 @@ class ArquivoVarredura:
 
 
 @dataclass
+class ArquivoPendencias:
+    """Resolucoes de uma varredura. Sem linhas, varredura_id fica vazio."""
+    varredura_id: str = ""
+    pendencias: list = field(default_factory=list)  # dicts: patrimonio, epc, metodo, timestamp
+
+
+@dataclass
 class ArquivoSessao:
     sessao_id: str
     unidade: str
@@ -100,6 +115,8 @@ def tipo_do_arquivo(caminho):
         return "varredura"
     if cabecalho == CABECALHO_SESSAO:
         return "sessao"
+    if cabecalho == CABECALHO_PENDENCIAS:
+        return "pendencia"
     raise ArquivoInvalido(
         f"{Path(caminho).name}: cabecalho nao reconhecido.\n"
         f"  encontrado: {','.join(cabecalho)}"
@@ -171,6 +188,48 @@ def ler_varredura(caminho):
         )
         for epc, a in sorted(agregados.items())
     ]
+    return arquivo
+
+
+def ler_pendencias(caminho):
+    """Le o arquivo de resolucoes de Pendencias de uma varredura (RF10).
+
+    O aplicativo regrava o arquivo inteiro a cada resolucao, entao a lista
+    do arquivo e sempre o estado completo da varredura.
+    """
+    caminho = Path(caminho)
+    arquivo = ArquivoPendencias()
+    with caminho.open(encoding="utf-8-sig", newline="") as f:
+        leitor = csv.DictReader(f)
+        _exigir_cabecalho(leitor.fieldnames, CABECALHO_PENDENCIAS, caminho)
+        for numero_linha, linha in enumerate(leitor, start=2):
+            _exigir_campos_completos(linha, caminho, numero_linha)
+            varredura_id = linha["id_varredura"].strip()
+            if not varredura_id:
+                raise ArquivoInvalido(f"{caminho.name}:{numero_linha}: id_varredura vazio")
+            if not arquivo.varredura_id:
+                arquivo.varredura_id = varredura_id
+            elif varredura_id != arquivo.varredura_id:
+                raise ArquivoInvalido(
+                    f"{caminho.name}:{numero_linha}: id_varredura mudou no meio do arquivo "
+                    f"({arquivo.varredura_id} -> {varredura_id})"
+                )
+            metodo = linha["metodo"].strip().upper()
+            if metodo not in METODOS_PENDENCIA:
+                raise ArquivoInvalido(
+                    f"{caminho.name}:{numero_linha}: metodo '{linha['metodo']}' invalido "
+                    f"(esperado: {', '.join(sorted(METODOS_PENDENCIA))})"
+                )
+            patrimonio = linha["patrimonio"].strip()
+            if not patrimonio:
+                raise ArquivoInvalido(f"{caminho.name}:{numero_linha}: patrimonio vazio")
+            _exigir_instante(linha["timestamp"], caminho, numero_linha, "timestamp")
+            arquivo.pendencias.append({
+                "patrimonio": patrimonio,
+                "epc": linha["epc"].strip(),
+                "metodo": metodo,
+                "timestamp": linha["timestamp"].strip(),
+            })
     return arquivo
 
 

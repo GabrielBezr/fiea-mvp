@@ -26,6 +26,7 @@ class Resultado:
     reimportado: bool = False
     sala: str = ""
     epc_referencia: str = ""
+    pendencias: int = 0
 
 
 def importar_caminho(caminho, conexao, pasta_brutos=None):
@@ -54,6 +55,8 @@ def importar_arquivo(caminho, conexao, pasta_brutos=None):
     tipo = leitor_csv.tipo_do_arquivo(caminho)
     if tipo == "varredura":
         resultado = _importar_varredura(caminho, conexao)
+    elif tipo == "pendencia":
+        resultado = _importar_pendencias(caminho, conexao)
     else:
         resultado = _importar_sessao(caminho, conexao)
 
@@ -164,6 +167,64 @@ def _importar_varredura(caminho, conexao):
         reimportado=ja_existia,
         sala=sala["nome"] if sala else "",
         epc_referencia=arquivo.epc_referencia,
+    )
+
+
+def gravar_resolucoes(conexao, varredura_id, pendencias):
+    """Grava as resolucoes de Pendencias (QR, MANUAL, FALTANTE) de uma varredura.
+
+    Caminho unico para o Wi-Fi (/api/sincronizar) e para o CSV do USB. A lista
+    recebida e o estado completo da varredura: substitui a anterior, e uma lista
+    vazia nao mexe nas resolucoes ja gravadas.
+    """
+    if not pendencias:
+        return
+    conexao.execute(
+        "DELETE FROM leitura WHERE varredura_id = ? AND metodo != 'RFID'", (varredura_id,)
+    )
+    for p in pendencias:
+        metodo = (p.get("metodo") or "MANUAL").upper()
+        epc = (p.get("epc") or "").strip().upper()
+        patrimonio = (p.get("patrimonio") or "").strip()
+
+        # Se o EPC nao veio direto, procura se o bem ja tinha EPC cadastrado
+        if not epc and patrimonio:
+            b_row = conexao.execute(
+                "SELECT epc FROM bem WHERE patrimonio = ?", (patrimonio,)
+            ).fetchone()
+            if b_row and b_row["epc"]:
+                epc = b_row["epc"]
+            else:
+                epc = f"PAT_{patrimonio}"
+
+        agora = p.get("timestamp") or datetime.now().strftime("%Y-%m-%d %H:%M:%S.000")
+        conexao.execute(
+            "INSERT INTO leitura (varredura_id, epc, metodo, leituras, rssi_min, "
+            "rssi_medio, rssi_max, primeira_leitura, ultima_leitura) "
+            "VALUES (?, ?, ?, 1, 0, 0, 0, ?, ?) "
+            "ON CONFLICT(varredura_id, epc, metodo) DO NOTHING",
+            (varredura_id, epc, metodo, agora, agora),
+        )
+
+
+def _importar_pendencias(caminho, conexao):
+    arquivo = leitor_csv.ler_pendencias(caminho)
+    if arquivo.pendencias:
+        existe = conexao.execute(
+            "SELECT 1 FROM varredura WHERE id = ?", (arquivo.varredura_id,)
+        ).fetchone()
+        if not existe:
+            raise ArquivoInvalido(
+                f"{caminho.name}: a varredura {arquivo.varredura_id} ainda nao foi "
+                f"importada; importe antes o leituras_*.csv dela"
+            )
+        gravar_resolucoes(conexao, arquivo.varredura_id, arquivo.pendencias)
+
+    return Resultado(
+        arquivo=caminho.name,
+        tipo="pendencia",
+        identificador=arquivo.varredura_id,
+        pendencias=len(arquivo.pendencias),
     )
 
 

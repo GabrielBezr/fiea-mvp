@@ -349,5 +349,122 @@ class TestPasta(BaseTemp):
         self.assertEqual(tipos, ["sessao", "varredura"])
 
 
+CABECALHO_PEND = ",".join(leitor_csv.CABECALHO_PENDENCIAS)
+
+
+def linha_pend(patrimonio, epc, metodo, timestamp="2026-10-08 09:20:00.000", varredura="20261008090000-v01"):
+    return (f"20261008090000,Casa da Industria,Gabriel,{varredura},Lab 1,"
+            f"{patrimonio},{epc},{metodo},{timestamp}")
+
+
+def csv_pend(linhas):
+    return "\n".join([CABECALHO_PEND] + linhas) + "\n"
+
+
+class TestPendenciasCsv(BaseTemp):
+    """P5: as resolucoes de Pendencias tambem chegam pelo caminho USB."""
+
+    def _importar_varredura(self):
+        caminho = self.escrever("leituras_20261008090000_v01.csv", csv_varredura([
+            linha("2026-10-08 09:10:01.000", "AAA", 80)]))
+        importar_arquivo(caminho, self.conexao)
+
+    def _metodos(self):
+        return [tuple(r) for r in self.conexao.execute(
+            "SELECT epc, metodo FROM leitura ORDER BY epc, metodo")]
+
+    def test_reconhece_o_tipo_pelo_cabecalho(self):
+        caminho = self.escrever("pendencias_x.csv", csv_pend([]))
+        self.assertEqual(leitor_csv.tipo_do_arquivo(caminho), "pendencia")
+
+    def test_importa_qr_manual_e_faltante(self):
+        self._importar_varredura()
+        caminho = self.escrever("pendencias_20261008090000_v01.csv", csv_pend([
+            linha_pend("P1", "QR-LIDO", "QR"),
+            linha_pend("P2", "", "MANUAL"),
+            linha_pend("P3", "", "FALTANTE"),
+        ]))
+
+        resultado = importar_arquivo(caminho, self.conexao)
+
+        self.assertEqual(resultado.tipo, "pendencia")
+        self.assertEqual(resultado.pendencias, 3)
+        self.assertEqual(resultado.identificador, "20261008090000-v01")
+        self.assertEqual(self._metodos(), [
+            ("AAA", "RFID"), ("PAT_P2", "MANUAL"), ("PAT_P3", "FALTANTE"),
+            ("QR-LIDO", "QR"),
+        ])
+
+    def test_usa_o_epc_cadastrado_do_bem_quando_o_csv_nao_traz(self):
+        self._importar_varredura()
+        self.conexao.execute(
+            "INSERT INTO bem (patrimonio, descricao, epc, importado_em) "
+            "VALUES ('P2', 'Mesa', 'E280AAAA', '2026-10-01')")
+        self.conexao.commit()
+        caminho = self.escrever("pendencias.csv", csv_pend([linha_pend("P2", "", "MANUAL")]))
+
+        importar_arquivo(caminho, self.conexao)
+
+        self.assertIn(("E280AAAA", "MANUAL"), self._metodos())
+
+    def test_reimportar_substitui_e_nao_duplica(self):
+        self._importar_varredura()
+        nome = "pendencias.csv"
+        self.escrever(nome, csv_pend([linha_pend("P1", "", "MANUAL"), linha_pend("P2", "", "FALTANTE")]))
+        importar_arquivo(self.pasta / nome, self.conexao)
+
+        self.escrever(nome, csv_pend([linha_pend("P1", "", "MANUAL")]))
+        importar_arquivo(self.pasta / nome, self.conexao)
+
+        self.assertEqual(self._metodos(), [("AAA", "RFID"), ("PAT_P1", "MANUAL")])
+
+    def test_arquivo_sem_linhas_nao_apaga_resolucoes_ja_gravadas(self):
+        self._importar_varredura()
+        self.escrever("a.csv", csv_pend([linha_pend("P1", "", "MANUAL")]))
+        importar_arquivo(self.pasta / "a.csv", self.conexao)
+
+        self.escrever("b.csv", csv_pend([]))
+        resultado = importar_arquivo(self.pasta / "b.csv", self.conexao)
+
+        self.assertEqual(resultado.pendencias, 0)
+        self.assertIn(("PAT_P1", "MANUAL"), self._metodos())
+
+    def test_reimportar_as_leituras_mantem_as_pendencias(self):
+        self._importar_varredura()
+        self.escrever("p.csv", csv_pend([linha_pend("P1", "", "MANUAL")]))
+        importar_arquivo(self.pasta / "p.csv", self.conexao)
+
+        self._importar_varredura()
+
+        self.assertIn(("PAT_P1", "MANUAL"), self._metodos())
+
+    def test_recusa_pendencias_de_varredura_nao_importada(self):
+        caminho = self.escrever("p.csv", csv_pend([linha_pend("P1", "", "MANUAL")]))
+        with self.assertRaisesRegex(ArquivoInvalido, "ainda nao foi importada"):
+            importar_arquivo(caminho, self.conexao)
+        self.assertEqual(self._metodos(), [])
+
+    def test_recusa_metodo_desconhecido(self):
+        caminho = self.escrever("p.csv", csv_pend([linha_pend("P1", "", "TELEPATIA")]))
+        with self.assertRaisesRegex(ArquivoInvalido, r"p\.csv:2: metodo"):
+            leitor_csv.ler_pendencias(caminho)
+
+    def test_recusa_patrimonio_vazio(self):
+        caminho = self.escrever("p.csv", csv_pend([linha_pend("", "", "MANUAL")]))
+        with self.assertRaisesRegex(ArquivoInvalido, "patrimonio vazio"):
+            leitor_csv.ler_pendencias(caminho)
+
+    def test_importa_a_pasta_com_leituras_antes_das_pendencias(self):
+        self.escrever("leituras_20261008090000_v01.csv", csv_varredura([
+            linha("2026-10-08 09:10:01.000", "AAA", 80)]))
+        self.escrever("pendencias_20261008090000_v01.csv",
+                      csv_pend([linha_pend("P1", "", "MANUAL")]))
+
+        resultados = importar_caminho(self.pasta, self.conexao)
+
+        self.assertEqual(sorted(r.tipo for r in resultados), ["pendencia", "varredura"])
+        self.assertIn(("PAT_P1", "MANUAL"), self._metodos())
+
+
 if __name__ == "__main__":
     unittest.main()

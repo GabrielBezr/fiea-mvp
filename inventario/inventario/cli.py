@@ -238,6 +238,8 @@ def _importar(args, conexao):
                 f"{r.linhas_brutas} leituras -> {r.etiquetas_distintas} etiquetas "
                 f"({r.linhas_descartadas} repetidas descartadas)"
             )
+        elif r.tipo == "pendencia":
+            print(f"{r.arquivo}: varredura {r.identificador} | {r.pendencias} resolucao(oes) de pendencias")
         else:
             print(f"{r.arquivo}: sessao {r.identificador}{marca}")
 

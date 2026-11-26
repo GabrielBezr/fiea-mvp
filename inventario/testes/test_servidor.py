@@ -436,9 +436,9 @@ class TestRelatorioSalaProvavel(unittest.TestCase):
         self.assertEqual(cabecalho[:9], ["Patrimonio", "Descricao", "EPC", "Sala_Esperada",
                                          "Salas_Lidas", "Situacao", "Unidade", "Sessao_ID",
                                          "Diagnostico"])
-        self.assertEqual(cabecalho[9:], ["Sala_Provavel", "Criterio", "Sinal_Por_Sala"])
+        self.assertEqual(cabecalho[9:], ["Sala_Provavel", "Criterio", "Sinal_Por_Sala", "Metodo"])
         self.assertEqual(dados["1"][5], "LOCALIZADO")
-        self.assertEqual(dados["1"][9:], ["Lab A", "Sinal mais forte", "Lab A: 82; Lab B: 71"])
+        self.assertEqual(dados["1"][9:], ["Lab A", "Sinal mais forte", "Lab A: 82; Lab B: 71", "RFID"])
         self.assertEqual(dados["2"][5], "INDETERMINADO")
         self.assertEqual(dados["2"][9:11], ["", "Sala esperada não varrida"])
         self.assertEqual(dados["3"][5], "FORA DO LOCAL")
